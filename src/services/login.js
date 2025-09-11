@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const login = axios.create({
-  baseURL: "http://localhost:3001",
+  baseURL: "https://api-backend-usuarios-production.up.railway.app",
 });
 
 export default login;
