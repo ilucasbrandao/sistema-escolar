@@ -1,38 +1,59 @@
-import { Button } from "./components/Button";
-import {
-    Container,
-    TitleH1,
-    TitleH3
-} from "./components/Container";
-import Footer from "./components/Footer";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Container, TitleH1 } from "./components/Container";
+import { Form } from "./components/Form";
+import { Button } from "./components/Button";
+import api from "./services/api";
 
-export default function App() {
+export default function Login() {
     const navigate = useNavigate();
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+    });
 
-    const handleClick = (label) => navigate(`/${label}`);
+    const fields = [
+        {
+            name: "email",
+            label: "E-mail",
+            placeholder: "Digite seu e-mail",
+            type: "email",
+        },
+        {
+            name: "password",
+            label: "Senha",
+            placeholder: "Digite sua senha",
+            type: "password",
+        },
+    ];
 
-    const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("userEmail");
-        navigate("/login");
+    const handleSubmit = async (data) => {
+        try {
+            const response = await api.post("/login", data);
+            const { token, usuario } = response.data;
+
+            localStorage.setItem("token", token);
+            localStorage.setItem("userEmail", usuario.email);
+
+            alert("Login realizado com sucesso!");
+            navigate("/");
+        } catch (error) {
+            alert("Erro ao fazer login. Verifique suas credenciais.");
+            console.error("❌ Erro no login:", error?.response?.data?.message || error.message);
+        }
     };
 
     return (
         <Container>
-            <TitleH1>Reforço Escolar Tia Jeane</TitleH1>
-            <TitleH3>Dashboard</TitleH3>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-                <Button variant="blue" onClick={() => handleClick("alunos")}>Alunos</Button>
-                <Button variant="green" onClick={() => handleClick("professores")}>Professores</Button>
-                <Button variant="purple" onClick={() => handleClick("gestao-financeira")}>Gestão Financeira</Button>
-                <Button variant="yellow" onClick={() => handleClick("notificacoes")}>Notificações</Button>
-                <Button variant="pink" onClick={() => handleClick("gerar-relatorio")}>Gerar Relatório</Button>
-                <Button variant="red" onClick={handleLogout}>Logout</Button>
+            <TitleH1>Login</TitleH1>
+            <Form
+                fields={fields}
+                onSubmit={handleSubmit}
+                className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+            />
+            <div className="mt-4 text-center text-xs text-gray-500">
+                Essas credenciais serão usadas para acessar a plataforma.
             </div>
-
-            <Footer />
         </Container>
     );
 }
