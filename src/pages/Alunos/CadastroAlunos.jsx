@@ -47,20 +47,41 @@ export default function CadastroAlunos() {
 
     const handleSubmit = async (data) => {
         try {
+
+            const hoje = new Date();
+
+            // Validação antes de qualquer conversão
+            if (!data.name || !data.dataNascimento || !data.dataMatricula || !data.serie) {
+                alert("Preencha todos os campos obrigatórios.");
+                return;
+            }
+
+            if (new Date(data.dataMatricula) > hoje) {
+                alert("A data de matrícula não pode ser futura.");
+                return;
+            }
+
+            // Agora sim, converta as datas
             const payload = {
                 ...data,
                 dataNascimento: new Date(data.dataNascimento),
                 dataMatricula: new Date(data.dataMatricula),
             };
 
+            console.log("📦 Enviando dados:", payload);
+
             const response = await api.post("/alunos", payload);
+            console.log("✅ Resposta da API:", response);
+
             alert("Aluno cadastrado com sucesso!");
             console.log("✅ Aluno cadastrado:", response.data);
             navigate("/alunos");
         } catch (error) {
             alert("Erro ao cadastrar aluno. Verifique os dados e tente novamente.");
-            console.error("❌ Erro ao cadastrar aluno:", error);
+            console.error("❌ Erro ao cadastrar aluno:", error?.response?.data?.message || error?.message || error);
         }
+
+
     };
 
     return (
