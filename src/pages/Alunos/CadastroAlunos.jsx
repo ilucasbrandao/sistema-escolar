@@ -53,7 +53,7 @@ export default function CadastroAlunos() {
                 dataMatricula: new Date(data.dataMatricula),
             };
 
-            const response = await api.post("/alunos/cadastrar", payload);
+            const response = await api.post("/alunos", payload);
             alert("Aluno cadastrado com sucesso!");
             console.log("✅ Aluno cadastrado:", response.data);
             navigate("/alunos");
