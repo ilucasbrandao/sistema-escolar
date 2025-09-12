@@ -56,17 +56,21 @@ export default function CadastroAlunos() {
                 return;
             }
 
-            if (new Date(data.dataMatricula) > hoje) {
+            const hojeISO = new Date().toISOString().split("T")[0];
+
+            if (data.dataMatricula > hojeISO) {
                 alert("A data de matrícula não pode ser futura.");
                 return;
             }
 
+
             // Agora sim, converta as datas
             const payload = {
                 ...data,
-                dataNascimento: new Date(data.dataNascimento),
-                dataMatricula: new Date(data.dataMatricula),
+                dataNascimento: new Date(data.dataNascimento).toISOString().split("T")[0],
+                dataMatricula: new Date(data.dataMatricula).toISOString().split("T")[0],
             };
+
 
             console.log("📦 Enviando dados:", payload);
 
