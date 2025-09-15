@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const variants = {
     pink: "from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400",
     blue: "from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400",
@@ -27,3 +29,31 @@ export function Button({ children, variant = "pink", className = "", ...props })
     );
 }
 
+
+export function DefaultButton({ children, theme, ...props }) {
+    // Base do botão
+    const baseClass =
+        "font-semibold py-3 px-9 rounded-full text-base transition-all duration-300 transform active:scale-95 active:opacity-80 cursor-pointer";
+
+    // Tema primary
+    const primaryClass =
+        "bg-gradient-to-r from-blue-400 to-blue-800 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-95";
+
+    // Tema secundário (ou transparente)
+    const secondaryClass =
+        "bg-white/20 text-white border border-white/50 backdrop-blur-sm shadow-sm hover:bg-white/15 hover:border-white/80";
+
+
+    const themeClass = theme === "primary" ? primaryClass : secondaryClass;
+
+    return (
+        <button className={`${baseClass} ${themeClass}`} {...props}>
+            {children}
+        </button>
+    );
+}
+
+DefaultButton.propTypes = {
+    children: PropTypes.node.isRequired,
+    theme: PropTypes.string,
+};

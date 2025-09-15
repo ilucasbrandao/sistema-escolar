@@ -26,16 +26,26 @@ export default function App() {
 
       <TitleH3>Dashboard</TitleH3>
 
-
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-        <Button variant="blue" onClick={() => handleClick("alunos")}>Alunos</Button>
-        <Button variant="green" onClick={() => handleClick("professores")}>Professores</Button>
-        <Button variant="purple" onClick={() => handleClick("gestao-financeira")}>Gestão Financeira</Button>
-        <Button variant="yellow" onClick={() => handleClick("notificacoes")}>Notificações</Button>
-        <Button variant="pink" onClick={() => handleClick("gerar-relatorio")}>Gerar Relatório</Button>
+        <Button variant="blue" onClick={() => handleClick("alunos")}>
+          Alunos
+        </Button>
+        <Button variant="green" onClick={() => handleClick("professores")}>
+          Professores
+        </Button>
+        <Button
+          variant="purple"
+          onClick={() => handleClick("gestao-financeira")}
+        >
+          Gestão Financeira
+        </Button>
+        <Button variant="yellow" onClick={() => handleClick("notificacoes")}>
+          Notificações
+        </Button>
+        <Button variant="pink" onClick={() => handleClick("gerar-relatorio")}>
+          Gerar Relatório
+        </Button>
       </div>
-
-
 
       <Footer />
     </Container>
