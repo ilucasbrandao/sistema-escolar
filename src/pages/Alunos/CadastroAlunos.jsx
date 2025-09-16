@@ -45,32 +45,34 @@ export default function CadastroAlunos() {
         },
     ];
 
+    const formatDateToDDMMYYYY = (dateStr) => {
+        const date = new Date(dateStr);
+        const dia = String(date.getDate()).padStart(2, "0");
+        const mes = String(date.getMonth() + 1).padStart(2, "0");
+        const ano = date.getFullYear();
+        return `${dia}/${mes}/${ano}`;
+    };
+
     const handleSubmit = async (data) => {
         try {
-
             const hoje = new Date();
+            const hojeISO = hoje.toISOString().split("T")[0];
 
-            // Validação antes de qualquer conversão
-            if (!data.name || !data.dataNascimento || !data.dataMatricula || !data.serie) {
+            if (!data.name || !data.dataNascimento || !data.dataMatricula || !data.serie || !data.responsavel) {
                 alert("Preencha todos os campos obrigatórios.");
                 return;
             }
-
-            const hojeISO = new Date().toISOString().split("T")[0];
 
             if (data.dataMatricula > hojeISO) {
                 alert("A data de matrícula não pode ser futura.");
                 return;
             }
 
-
-            // Agora sim, converta as datas
             const payload = {
                 ...data,
-                dataNascimento: new Date(data.dataNascimento).toISOString().split("T")[0],
-                dataMatricula: new Date(data.dataMatricula).toISOString().split("T")[0],
+                dataNascimento: formatDateToDDMMYYYY(data.dataNascimento),
+                dataMatricula: formatDateToDDMMYYYY(data.dataMatricula),
             };
-
 
             console.log("📦 Enviando dados:", payload);
 
@@ -78,32 +80,25 @@ export default function CadastroAlunos() {
             console.log("✅ Resposta da API:", response);
 
             alert("Aluno cadastrado com sucesso!");
-            console.log("✅ Aluno cadastrado:", response.data);
             navigate("/alunos");
         } catch (error) {
             alert("Erro ao cadastrar aluno. Verifique os dados e tente novamente.");
-            console.error("❌ Erro ao cadastrar aluno:", error?.response?.data?.message || error?.message || error);
+            console.error("❌ Erro ao cadastrar aluno:", error?.response?.data?.error || error?.message || error);
         }
-
-
     };
 
     return (
         <Container>
-            {/* Botão de voltar */}
             <Button onClick={() => navigate("/alunos")} className="mb-4 flex items-center gap-2">
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
 
-            {/* Título */}
             <TitleH1>Cadastrar Aluno</TitleH1>
 
-            {/* Formulário */}
             <Form
                 fields={fields}
                 onSubmit={handleSubmit}
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
-
             />
         </Container>
     );
