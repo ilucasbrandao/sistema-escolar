@@ -3,6 +3,9 @@ import { Button } from "./components/Button";
 import { Container, TitleH1, TitleH3 } from "./components/Container";
 import Footer from "./components/Footer";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { ResumoCard } from "./components/ResumoCard";
+import api from "./services/api"
 
 export default function App() {
   const navigate = useNavigate();
@@ -13,6 +16,21 @@ export default function App() {
     localStorage.removeItem("userEmail");
     navigate("/login");
   };
+
+  const [resumo, setResumo] = useState(null);
+
+  useEffect(() => {
+    async function fetchResumo() {
+      try {
+        const { data } = await api.get("/dashboard/resumo");
+        setResumo(data);
+      } catch (error) {
+        console.error("Erro ao carregar resumo:", error.message);
+      }
+    }
+    fetchResumo();
+  }, []);
+
 
   return (
     <Container>
@@ -25,6 +43,19 @@ export default function App() {
       <TitleH1>Reforço Escolar Tia Jeane</TitleH1>
 
       <TitleH3>Dashboard</TitleH3>
+
+      {resumo && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 px-4">
+          <ResumoCard label="Últimas Matrículas" value={`${resumo.ultimasMatriculas} esta semana`} />
+          <ResumoCard label="Saldo de Entradas" value={`R$ ${resumo.saldoEntradas.toFixed(2)}`} color="green" />
+          <ResumoCard label="Saldo de Saídas" value={`R$ ${resumo.saldoSaidas.toFixed(2)}`} color="red" />
+          <ResumoCard label="Alunos Ativos" value={resumo.alunosAtivos} />
+          <ResumoCard label="Alunos Inativos" value={resumo.alunosInativos} />
+          <ResumoCard label="Professores Ativos" value={resumo.professoresAtivos} />
+        </div>
+      )}
+
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
         <Button variant="blue" onClick={() => handleClick("alunos")}>

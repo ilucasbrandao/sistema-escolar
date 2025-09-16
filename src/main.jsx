@@ -12,6 +12,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import VisualizarDados from "./pages/Alunos/DadoAluno.jsx";
+import { EditarAluno } from "./pages/Alunos/EditarAluno.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -56,6 +57,15 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+  {
+    path: "/alunos/editar/:id",
+    element: (
+      <ProtectedRoute>
+        <EditarAluno />
+      </ProtectedRoute>
+    )
+
+  }
 ]);
 
 createRoot(document.getElementById("root")).render(

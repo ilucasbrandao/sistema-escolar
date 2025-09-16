@@ -58,10 +58,19 @@ export function Input({
     );
 }
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export function Form({ fields = [], onSubmit }) {
     const [formData, setFormData] = useState({});
+
+    // Preenche os valores iniciais quando os campos forem carregados
+    useEffect(() => {
+        const initial = {};
+        fields.forEach((field) => {
+            initial[field.name] = field.value || "";
+        });
+        setFormData(initial);
+    }, [fields]);
 
     const handleChange = (name, value) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
@@ -77,14 +86,12 @@ export function Form({ fields = [], onSubmit }) {
         >
             <div className="flex flex-wrap -mx-3 mb-6">
                 {fields.map((field, idx) => {
-                    // Condicional: só renderiza se não tiver "showIf" ou se a condição for verdadeira
                     if (field.showIf && !field.showIf(formData)) return null;
 
                     return (
                         <div
                             key={idx}
-                            className={`w-full ${field.fullWidth ? "" : "md:w-1/2"
-                                } px-3 mb-6`}
+                            className={`w-full ${field.fullWidth ? "" : "md:w-1/2"} px-3 mb-6`}
                         >
                             <Input
                                 label={field.label}
@@ -103,14 +110,14 @@ export function Form({ fields = [], onSubmit }) {
                 <button
                     type="submit"
                     className="
-  w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 
-  rounded-xl bg-gradient-to-r from-pink-200 to-pink-300 
-  text-sm sm:text-base text-slate-800 font-semibold shadow-md 
-  hover:from-pink-300 hover:to-pink-400 hover:shadow-lg 
-  active:scale-95 transition-all duration-300 ease-out
-"
+            w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 
+            rounded-xl bg-gradient-to-r from-pink-200 to-pink-300 
+            text-sm sm:text-base text-slate-800 font-semibold shadow-md 
+            hover:from-pink-300 hover:to-pink-400 hover:shadow-lg 
+            active:scale-95 transition-all duration-300 ease-out
+          "
                 >
-                    Cadastrar
+                    Salvar
                 </button>
             </div>
         </form>

@@ -1,7 +1,14 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button"; // sem chaves, assumindo export default
 import { Container, Paragrafos, TitleH1 } from "../../components/Container";
-import { ChevronLeftIcon, Eye, Pencil, User, UserRoundPlus } from "lucide-react";
+import {
+    ChevronLeftIcon,
+    Eye,
+    Pencil,
+    Trash,
+    User,
+    UserRoundPlus,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 
@@ -16,6 +23,27 @@ export function Alunos() {
         }
         getStudents();
     }, []);
+
+    async function handleDelete(id) {
+        const senha = prompt("Digite a senha para excluir o aluno:");
+
+        if (senha !== "JulianneKelly2025") {
+            alert("Senha incorreta. Exclusão cancelada.");
+            return;
+        }
+
+        const confirm = window.confirm("Tem certeza que deseja excluir este aluno?");
+        if (!confirm) return;
+
+        try {
+            await api.delete(`/alunos/${id}`);
+            setStudents((prev) => prev.filter((student) => student.id !== id));
+            alert("Aluno excluído com sucesso!");
+        } catch (error) {
+            console.error("Erro ao excluir aluno:", error.message);
+            alert("Erro ao excluir aluno.");
+        }
+    }
 
     return (
         <Container>
@@ -38,12 +66,13 @@ export function Alunos() {
 
                 <ul className="divide-y divide-gray-200 rounded-lg border border-gray-300 bg-white shadow-md mt-6">
                     {/* Cabeçalho */}
-                    <li className="grid grid-cols-6 gap-4 p-3.5 bg-gray-50 font-semibold text-gray-600 text-sm uppercase">
+                    <li className="grid grid-cols-7 gap-4 p-3.5 bg-gray-50 font-semibold text-gray-600 text-sm uppercase">
                         <span>Mat.</span>
                         <span>Nome</span>
                         <span>Responsável</span>
                         <span>Situação</span>
                         <span className="text-center">Editar</span>
+                        <span className="text-center">Excluir</span>
                         <span className="text-center">Ver</span>
                     </li>
 
@@ -51,10 +80,12 @@ export function Alunos() {
                     {students.map((student) => (
                         <li
                             key={student.id}
-                            className="grid grid-cols-6 gap-4 p-3.5 hover:bg-gray-100 items-center text-sm"
+                            className="grid grid-cols-7 gap-4 p-3.5 hover:bg-gray-100 items-center text-sm"
                         >
                             <span className="text-gray-500">{student.id}</span>
-                            <span className="font-semibold text-gray-800">{student.name}</span>
+                            <span className="font-semibold text-gray-800">
+                                {student.name}
+                            </span>
                             <span className="text-gray-500">{student.responsavel}</span>
                             <span
                                 className={`${student.situacao === "ativo"
@@ -64,10 +95,23 @@ export function Alunos() {
                             >
                                 {student.situacao}
                             </span>
-                            <span className="flex justify-center">
+                            <span
+                                onClick={() => navigate(`/alunos/editar/${student.id}`)}
+                                className="flex justify-center"
+                            >
                                 <Pencil className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800" />
                             </span>
-                            <span onClick={() => navigate(`/alunos/${student.id}`)} className="flex justify-center">
+                            <span
+                                onClick={() => handleDelete(student.id)}
+                                className="flex justify-center"
+                            >
+                                <Trash className="w-5 h-5 text-red-600 cursor-pointer hover:text-red-800" />
+                            </span>
+
+                            <span
+                                onClick={() => navigate(`/alunos/${student.id}`)}
+                                className="flex justify-center"
+                            >
                                 <Eye className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
                             </span>
                         </li>
