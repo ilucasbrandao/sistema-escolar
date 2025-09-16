@@ -8,23 +8,25 @@ import api from "../../services/api";
 
 export default function CadastroAlunos() {
     const navigate = useNavigate();
+    const hoje = new Date().toISOString().split("T")[0];
+
     const [formData, setFormData] = useState({
         name: "",
         dataNascimento: "",
         responsavel: "",
         telefone: "",
-        dataMatricula: "",
+        dataMatricula: hoje,
         serie: "",
         observacao: "",
-        status: "ativo",
+        situacao: "ativo",
     });
 
     const fields = [
         { name: "name", label: "Nome", placeholder: "Nome do Aluno", type: "text" },
-        { name: "dataNascimento", label: "Data de Nascimento", type: "date" },
+        { name: "dataNascimento", label: "Data de Nascimento", type: "date", max: hoje },
         { name: "responsavel", label: "Responsável", placeholder: "Nome do responsável", type: "text" },
         { name: "telefone", label: "Telefone", placeholder: "(99) 99999-9999", type: "tel" },
-        { name: "dataMatricula", label: "Data de Matrícula", type: "date" },
+        { name: "dataMatricula", label: "Data de Matrícula", type: "date", max: hoje },
         {
             name: "serie", label: "Série", type: "select", options: [
                 { label: "", value: "" },
@@ -33,11 +35,9 @@ export default function CadastroAlunos() {
                 { label: "Fundamental", value: "Fundamental" },
             ]
         },
+        { name: "observacao", label: "Observação", placeholder: "Observações sobre o aluno", type: "textarea", fullWidth: true },
         {
-            name: "observacao", label: "Observação", placeholder: "Observações sobre o aluno", type: "textarea", fullWidth: true
-        },
-        {
-            name: "status", label: "Status", type: "select", options: [
+            name: "situacao", label: "Status", type: "select", options: [
                 { label: "", value: "" },
                 { label: "Ativo", value: "ativo" },
                 { label: "Inativo", value: "inativo" },
@@ -45,45 +45,25 @@ export default function CadastroAlunos() {
         },
     ];
 
-    const formatDateToDDMMYYYY = (dateStr) => {
-        const date = new Date(dateStr);
-        const dia = String(date.getDate()).padStart(2, "0");
-        const mes = String(date.getMonth() + 1).padStart(2, "0");
-        const ano = date.getFullYear();
-        return `${dia}/${mes}/${ano}`;
-    };
-
     const handleSubmit = async (data) => {
+        // ✅ Validação de campos obrigatórios
+        const obrigatorios = ["name", "dataNascimento", "responsavel", "dataMatricula", "serie"];
+        for (let campo of obrigatorios) {
+            if (!data[campo]) {
+                alert(`Campo ${campo} é obrigatório.`);
+                return;
+            }
+        }
+
         try {
-            const hoje = new Date();
-            const hojeISO = hoje.toISOString().split("T")[0];
-
-            if (!data.name || !data.dataNascimento || !data.dataMatricula || !data.serie || !data.responsavel) {
-                alert("Preencha todos os campos obrigatórios.");
-                return;
-            }
-
-            if (data.dataMatricula > hojeISO) {
-                alert("A data de matrícula não pode ser futura.");
-                return;
-            }
-
-            const payload = {
-                ...data,
-                dataNascimento: formatDateToDDMMYYYY(data.dataNascimento),
-                dataMatricula: formatDateToDDMMYYYY(data.dataMatricula),
-            };
-
-            console.log("📦 Enviando dados:", payload);
-
-            const response = await api.post("/alunos", payload);
-            console.log("✅ Resposta da API:", response);
-
+            console.log("📤 Enviando para API:", data);
+            const response = await api.post("/alunos", data);
+            console.log("✅ Resposta da API:", response.data);
             alert("Aluno cadastrado com sucesso!");
             navigate("/alunos");
         } catch (error) {
+            console.error("❌ Erro ao cadastrar aluno:", error?.response?.data || error);
             alert("Erro ao cadastrar aluno. Verifique os dados e tente novamente.");
-            console.error("❌ Erro ao cadastrar aluno:", error?.response?.data?.error || error?.message || error);
         }
     };
 
@@ -95,11 +75,7 @@ export default function CadastroAlunos() {
 
             <TitleH1>Cadastrar Aluno</TitleH1>
 
-            <Form
-                fields={fields}
-                onSubmit={handleSubmit}
-                className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
-            />
+            <Form fields={fields} onSubmit={handleSubmit} className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base" />
         </Container>
     );
 }
