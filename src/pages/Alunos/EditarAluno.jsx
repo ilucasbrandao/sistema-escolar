@@ -36,6 +36,7 @@ export function EditarAluno() {
                         label: "Data de Nascimento",
                         type: "date",
                         value: formatDateForInput(data.data_nascimento),
+                        disabled: true,
                     },
                     {
                         name: "responsavel",
@@ -96,17 +97,23 @@ export function EditarAluno() {
 
     async function handleSubmit(formData) {
         const payload = {
-            ...formData,
-            data_nascimento: dayjs(formData.data_nascimento).toISOString(),
-            data_matricula: dayjs(formData.data_matricula).toISOString(),
+            nome: formData.nome,
+            data_nascimento: formData.data_nascimento,
+            responsavel: formData.responsavel,
+            telefone: formData.telefone,
+            data_matricula: formData.data_matricula,
+            serie: formData.serie,
+            observacao: formData.observacao,
+            status: formData.status,
         };
 
         try {
+            console.log(payload)
             await api.put(`/alunos/${id}`, payload);
             alert("Aluno atualizado com sucesso!");
             navigate("/alunos");
         } catch (error) {
-            console.error("Erro ao atualizar aluno:", error.message);
+            console.error("Erro ao atualizar aluno:", error.response?.data || error.message);
             alert("Erro ao atualizar aluno.");
         }
     }

@@ -13,6 +13,7 @@ import {
 } from "react-router-dom";
 import VisualizarDados from "./pages/Alunos/DadoAluno.jsx";
 import { EditarAluno } from "./pages/Alunos/EditarAluno.jsx";
+import { Professores } from "./pages/Funcionarios/index.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -65,7 +66,15 @@ const router = createBrowserRouter([
       </ProtectedRoute>
     )
 
-  }
+  },
+  {
+    path: "/professores",
+    element: (
+      <ProtectedRoute>
+        <Professores />
+      </ProtectedRoute>
+    ),
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(

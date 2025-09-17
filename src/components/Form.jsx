@@ -6,6 +6,7 @@ export function Input({
     placeholder,
     type = "text",
     options = [],
+    disabled = false,
     ...props
 }) {
     return (
@@ -17,25 +18,29 @@ export function Input({
             {type === "textarea" ? (
                 <textarea
                     placeholder={placeholder}
+                    disabled={disabled}
                     {...props}
-                    className="
-            block w-full bg-slate-100 text-slate-800 
-            border border-slate-300 rounded-xl 
-            py-3 px-4 mb-3 leading-relaxed 
-            focus:outline-none focus:bg-white focus:border-pink-300 
-            transition-colors duration-200
-          "
+                    className={`
+                        block w-full bg-slate-100 text-slate-800 
+                        border border-slate-300 rounded-xl 
+                        py-3 px-4 mb-3 leading-relaxed 
+                        focus:outline-none focus:bg-white focus:border-pink-300 
+                        transition-colors duration-200
+                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                    `}
                 />
             ) : type === "select" ? (
                 <select
+                    disabled={disabled}
                     {...props}
-                    className="
-            block w-full bg-slate-100 text-slate-800 
-            border border-slate-300 rounded-xl 
-            py-3 px-4 mb-3 leading-tight 
-            focus:outline-none focus:bg-white focus:border-pink-300
-            transition-colors duration-200
-          "
+                    className={`
+                        block w-full bg-slate-100 text-slate-800 
+                        border border-slate-300 rounded-xl 
+                        py-3 px-4 mb-3 leading-tight 
+                        focus:outline-none focus:bg-white focus:border-pink-300
+                        transition-colors duration-200
+                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                    `}
                 >
                     {options.map((opt, idx) => (
                         <option key={idx} value={opt.value}>
@@ -47,19 +52,22 @@ export function Input({
                 <input
                     type={type}
                     placeholder={placeholder}
+                    disabled={disabled}
                     {...props}
-                    className="
-            block w-full bg-slate-100 text-slate-800 
-            border border-slate-300 rounded-xl 
-            py-3 px-4 mb-3 leading-tight 
-            focus:outline-none focus:bg-white focus:border-pink-300 
-            transition-colors duration-200
-          "
+                    className={`
+                        block w-full bg-slate-100 text-slate-800 
+                        border border-slate-300 rounded-xl 
+                        py-3 px-4 mb-3 leading-tight 
+                        focus:outline-none focus:bg-white focus:border-pink-300 
+                        transition-colors duration-200
+                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                    `}
                 />
             )}
         </div>
     );
 }
+
 
 
 export function Form({ fields = [], onSubmit }) {
@@ -100,6 +108,7 @@ export function Form({ fields = [], onSubmit }) {
                                 placeholder={field.placeholder}
                                 type={field.type}
                                 options={field.options}
+                                disabled={field.disabled}
                                 value={formData[field.name] || ""}
                                 onChange={(e) => handleChange(field.name, e.target.value)}
                             />
