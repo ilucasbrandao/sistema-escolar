@@ -5,6 +5,18 @@ import { Button } from "../../components/Button";
 import { Container, TitleH1, TitleH3 } from "../../components/Container";
 import { ChevronLeftIcon } from "lucide-react";
 import { Form } from "../../components/Form";
+import dayjs from "dayjs";
+
+// Função para converter DD/MM/YYYY → ISO
+function formatDateToISO(dateString) {
+    if (!dateString || !dayjs(dateString, "DD/MM/YYYY").isValid()) return null;
+    return dayjs(dateString, "DD/MM/YYYY").toISOString();
+}
+
+// Função para converter ISO → YYYY-MM-DD (para input type="date")
+function formatDateForInput(dateISO) {
+    return dayjs(dateISO).format("YYYY-MM-DD");
+}
 
 export function EditarAluno() {
     const { id } = useParams();
@@ -18,22 +30,57 @@ export function EditarAluno() {
                 const { data } = await api.get(`/alunos/${id}`);
 
                 setFields([
-                    { name: "name", label: "Nome", type: "text", value: data.name },
-                    { name: "dataNascimento", label: "Data de Nascimento", type: "text", value: data.dataNascimento },
-                    { name: "responsavel", label: "Responsável", type: "text", value: data.responsavel },
-                    { name: "telefone", label: "Telefone", type: "text", value: data.telefone },
-                    { name: "dataMatricula", label: "Data de Matrícula", type: "text", value: data.dataMatricula },
-                    { name: "serie", label: "Série", type: "text", value: data.serie },
-                    { name: "observacao", label: "Observações", type: "textarea", value: data.observacao },
+                    { name: "nome", label: "Nome", type: "text", value: data.nome },
                     {
-                        name: "situacao",
-                        label: "Situação",
+                        name: "data_nascimento",
+                        label: "Data de Nascimento",
+                        type: "date",
+                        value: formatDateForInput(data.data_nascimento),
+                    },
+                    {
+                        name: "responsavel",
+                        label: "Responsável",
+                        type: "text",
+                        value: data.responsavel,
+                    },
+                    {
+                        name: "telefone",
+                        label: "Telefone",
+                        type: "tel",
+                        value: data.telefone,
+                    },
+                    {
+                        name: "data_matricula",
+                        label: "Data de Matrícula",
+                        type: "date",
+                        value: formatDateForInput(data.data_matricula),
+                    },
+                    {
+                        name: "serie",
+                        label: "Série",
+                        type: "select",
+                        options: [
+                            { label: "Infantil I", value: "Infantil I" },
+                            { label: "Infantil II", value: "Infantil II" },
+                            { label: "Fundamental", value: "Fundamental" },
+                        ],
+                        value: data.serie,
+                    },
+                    {
+                        name: "observacao",
+                        label: "Observações",
+                        type: "textarea",
+                        value: data.observacao,
+                    },
+                    {
+                        name: "status",
+                        label: "Status",
                         type: "select",
                         options: [
                             { label: "Ativo", value: "ativo" },
                             { label: "Inativo", value: "inativo" },
                         ],
-                        value: data.situacao,
+                        value: data.status,
                     },
                 ]);
             } catch (error) {
@@ -48,8 +95,14 @@ export function EditarAluno() {
     }, [id]);
 
     async function handleSubmit(formData) {
+        const payload = {
+            ...formData,
+            data_nascimento: dayjs(formData.data_nascimento).toISOString(),
+            data_matricula: dayjs(formData.data_matricula).toISOString(),
+        };
+
         try {
-            await api.put(`/alunos/${id}`, formData);
+            await api.put(`/alunos/${id}`, payload);
             alert("Aluno atualizado com sucesso!");
             navigate("/alunos");
         } catch (error) {
@@ -62,7 +115,10 @@ export function EditarAluno() {
 
     return (
         <Container>
-            <Button onClick={() => navigate("/alunos")} className="mb-4 flex items-center gap-2">
+            <Button
+                onClick={() => navigate("/alunos")}
+                className="mb-4 flex items-center gap-2"
+            >
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
 

@@ -7,7 +7,19 @@ import { useEffect, useState } from "react";
 import { ResumoCard } from "./components/ResumoCard";
 import api from "./services/api"
 
+
+
 export default function App() {
+
+  const testar = async () => {
+    try {
+      const res = await api.get("/ping");
+      alert(res.data.message);
+    } catch (err) {
+      alert("Erro ao conectar com a API");
+    }
+  };
+
   const navigate = useNavigate();
 
   const handleClick = (label) => navigate(`/${label}`);
@@ -77,6 +89,8 @@ export default function App() {
           Gerar Relatório
         </Button>
       </div>
+
+      <button onClick={testar}>Testar conexão</button>
 
       <Footer />
     </Container>

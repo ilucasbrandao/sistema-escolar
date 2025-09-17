@@ -4,28 +4,18 @@ import { Button } from "../../components/Button";
 import { Container, TitleH1 } from "../../components/Container";
 import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
+import dayjs from "dayjs";
+
+// Função para formatar data ISO → DD/MM/YYYY
+function formatarDataLegivel(dataISO) {
+    if (!dataISO || !dayjs(dataISO).isValid()) return "—";
+    return dayjs(dataISO).format("DD/MM/YYYY");
+}
 
 export default function VisualizarDados() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [student, setStudent] = useState(null);
-
-    function formatDate(date) {
-        if (!date) return "";
-
-        // Se estiver no formato YYYY-MM-DD
-        if (date.includes("-")) {
-            const [year, month, day] = date.split("-");
-            return `${day}/${month}/${year}`;
-        }
-
-        // Se estiver no formato DD/MM/YYYY, retorna como está
-        if (date.includes("/")) {
-            return date;
-        }
-
-        return "Data inválida";
-    }
 
     useEffect(() => {
         async function getStudentById() {
@@ -56,28 +46,30 @@ export default function VisualizarDados() {
                     className="flex items-center gap-2"
                 >
                     <ChevronLeftIcon className="w-5 h-5" />
-
                 </Button>
             </div>
 
             {/* Título */}
             <div className="text-center mb-8">
                 <TitleH1>Dados do Aluno</TitleH1>
-
-                <h3 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">{student.name}</h3>
+                <h3 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">
+                    {student.nome}
+                </h3>
             </div>
 
-            {/* Formulário */}
+            {/* Informações */}
             <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-4 sm:p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="font-semibold text-gray-700">ID:</label>
                     <span className="text-sm sm:text-base text-gray-800">{student.id}</span>
 
                     <label className="font-semibold text-gray-700">Nome:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.name}</span>
+                    <span className="text-sm sm:text-base text-gray-800">{student.nome}</span>
 
                     <label className="font-semibold text-gray-700">Data de Nascimento:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{formatDate(student.dataNascimento)}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {formatarDataLegivel(student.data_nascimento)}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Responsável:</label>
                     <span className="text-sm sm:text-base text-gray-800">{student.responsavel}</span>
@@ -86,20 +78,26 @@ export default function VisualizarDados() {
                     <span className="text-sm sm:text-base text-gray-800">{student.telefone}</span>
 
                     <label className="font-semibold text-gray-700">Data da Matrícula:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{formatDate(student.dataMatricula)}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {formatarDataLegivel(student.data_matricula)}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Série:</label>
                     <span className="text-sm sm:text-base text-gray-800">{student.serie}</span>
 
                     <label className="font-semibold text-gray-700">Observação:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.observacao || "—"}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.observacao || "—"}
+                    </span>
 
-                    <label className="font-semibold text-gray-700">Situação:</label>
+                    <label className="font-semibold text-gray-700">Status:</label>
                     <span
-                        className={`font-semibold ${student.situacao === "ativo" ? "text-sm sm:text-base text-green-600" : "text-sm sm:text-base text-red-600"
+                        className={`font-semibold ${student.status === "ativo"
+                            ? "text-sm sm:text-base text-green-600"
+                            : "text-sm sm:text-base text-red-600"
                             }`}
                     >
-                        {student.situacao}
+                        {student.status}
                     </span>
                 </div>
             </div>

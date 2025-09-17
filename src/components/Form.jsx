@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import dayjs from "dayjs";
+
 export function Input({
     label,
     placeholder,
@@ -58,12 +61,10 @@ export function Input({
     );
 }
 
-import { useEffect, useState } from "react";
 
 export function Form({ fields = [], onSubmit }) {
     const [formData, setFormData] = useState({});
 
-    // Preenche os valores iniciais quando os campos forem carregados
     useEffect(() => {
         const initial = {};
         fields.forEach((field) => {
@@ -75,6 +76,7 @@ export function Form({ fields = [], onSubmit }) {
     const handleChange = (name, value) => {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
+
 
     return (
         <form

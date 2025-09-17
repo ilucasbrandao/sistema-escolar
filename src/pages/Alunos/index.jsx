@@ -70,7 +70,7 @@ export function Alunos() {
                         <span>Mat.</span>
                         <span>Nome</span>
                         <span>Responsável</span>
-                        <span>Situação</span>
+                        <span>Status</span>
                         <span className="text-center">Editar</span>
                         <span className="text-center">Excluir</span>
                         <span className="text-center">Ver</span>
@@ -84,16 +84,16 @@ export function Alunos() {
                         >
                             <span className="text-gray-500">{student.id}</span>
                             <span className="font-semibold text-gray-800">
-                                {student.name}
+                                {student.nome}
                             </span>
                             <span className="text-gray-500">{student.responsavel}</span>
                             <span
-                                className={`${student.situacao === "ativo"
+                                className={`${student.status === "ativo"
                                     ? "text-green-600 font-semibold"
                                     : "text-red-600 font-semibold"
                                     }`}
                             >
-                                {student.situacao}
+                                {student.status}
                             </span>
                             <span
                                 onClick={() => navigate(`/alunos/editar/${student.id}`)}
