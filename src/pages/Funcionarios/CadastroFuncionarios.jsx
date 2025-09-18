@@ -1,10 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container } from "../../components/Container";
+import { Container, TitleH1 } from "../../components/Container";
+import { Button } from "../../components/Button";
+import { ChevronLeftIcon } from "lucide-react";
+import { formatarDataLegivel, formatarParaISO } from "../../utils/date";
+import api from "../../services/api";
+
+import { Form } from "../../components/Form";
 
 export default function CadastroProfessor() {
     const navigate = useNavigate();
-    const hoje = new Date().toISOString().split("T"[0]);
+    const hoje = new Date().toISOString().split("T")[0];
+
 
     const [formData, setFormData] = useState({
         nome: "",
@@ -102,7 +109,7 @@ export default function CadastroProfessor() {
         const payload = {
             ...data,
             data_nascimento: formatarParaISO(data.data_nascimento),
-            data_contratacao: formatarParaISO(data.data_matricula),
+            data_contratacao: formatarParaISO(data.data_contratacao),
         };
 
         try {
@@ -111,14 +118,36 @@ export default function CadastroProfessor() {
             navigate("/professores");
         } catch (error) {
             console.log(data);
-            console.error("Erro ao cadastrar aluno:", error?.response?.data || error);
+            console.error("Erro ao cadastrar professor:", error?.response?.data || error);
             alert("Erro ao cadastrar professor(a). Verifique os dados e tente novamente.");
         }
     };
 
     return (
         <Container>
+            <Button
+                onClick={() => navigate("/professores")}
+                className="mb-4 flex items-center gap-2"
+            >
+                <ChevronLeftIcon className="w-5 h-5" />
+            </Button>
 
+            <TitleH1>Cadastrar Professor(a)</TitleH1>
+
+            <Form
+                fields={fields}
+                onSubmit={handleSubmit}
+                values={formData}
+                onChange={setFormData}
+                className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+            />
+
+            {/* Exemplo de exibição da data formatada */}
+            {formData.data_nascimento && (
+                <p className="mt-4 text-sm text-gray-600">
+                    Data de nascimento formatada: {formatarDataLegivel(formData.data_nascimento)}
+                </p>
+            )}
         </Container>
     )
 

@@ -14,6 +14,9 @@ import {
 import VisualizarDados from "./pages/Alunos/DadoAluno.jsx";
 import { EditarAluno } from "./pages/Alunos/EditarAluno.jsx";
 import { Professores } from "./pages/Funcionarios/index.jsx";
+import CadastroProfessor from "./pages/Funcionarios/CadastroFuncionarios.jsx";
+import VisualizarDadosFuncionario from "./pages/Funcionarios/DadosFuncionarios.jsx";
+import { EditarFuncionario } from "./pages/Funcionarios/EditarFuncionário.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -74,6 +77,31 @@ const router = createBrowserRouter([
         <Professores />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: "/professores/cadastrar",
+    element: (
+      <ProtectedRoute>
+        <CadastroProfessor />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/professores/:id",
+    element: (
+      <ProtectedRoute>
+        <VisualizarDadosFuncionario />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/professores/editar/:id",
+    element: (
+      <ProtectedRoute>
+        <EditarFuncionario />
+      </ProtectedRoute>
+    )
+
   },
 ]);
 

@@ -47,7 +47,7 @@ export default function App() {
   return (
     <Container>
       {/* Botão de Logout */}
-      <div className="flex mb-6">
+      <div className="flex mb-6 alie">
         <Button variant="red" onClick={handleLogout}>
           <LogOutIcon className="w-5 h-5" />
         </Button>

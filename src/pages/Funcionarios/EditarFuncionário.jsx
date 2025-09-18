@@ -1,0 +1,150 @@
+import dayjs from "dayjs";
+import api from "../../services/api";
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { Container, TitleH1, TitleH3 } from "../../components/Container";
+import { Button } from "../../components/Button";
+import { ChevronLeftIcon } from "lucide-react";
+import { Form } from "../../components/Form";
+
+// Converte "DD/MM/YYYY" para ISO
+function formatDateToISO(dateString) {
+    if (!dateString || !dayjs(dateString, "DD/MM/YYYY").isValid()) return null;
+    return dayjs(dateString, "DD/MM/YYYY").toISOString();
+}
+
+// Converte ISO para "YYYY-MM-DD" (para input type="date")
+function formatDateForInput(dateISO) {
+    return dayjs(dateISO).format("YYYY-MM-DD");
+}
+
+// Remove formatação monetária e converte para número
+function parseSalario(valor) {
+    if (typeof valor === "string") {
+        return parseFloat(
+            valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
+        );
+    }
+    return valor;
+}
+
+export function EditarFuncionario() {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [fields, setFields] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchTeacher() {
+            try {
+                const { data } = await api.get(`/professores/${id}`);
+                setFields([
+                    { name: "nome", label: "Nome", type: "text", value: data.nome },
+                    {
+                        name: "data_nascimento",
+                        label: "Data de Nascimento",
+                        type: "date",
+                        value: formatDateForInput(data.data_nascimento),
+                        disabled: true,
+                    },
+                    {
+                        name: "telefone",
+                        label: "Telefone",
+                        type: "tel",
+                        value: data.telefone,
+                    },
+                    {
+                        name: "endereco",
+                        label: "Endereço",
+                        type: "text",
+                        value: data.endereco,
+                    },
+                    {
+                        name: "data_contratacao",
+                        label: "Data de Contratação",
+                        type: "date",
+                        value: formatDateForInput(data.data_contratacao),
+                    },
+                    {
+                        name: "nivel_ensino",
+                        label: "Nível de Ensino",
+                        type: "select",
+                        options: [
+                            { label: "Infantil I", value: "Infantil" },
+                            { label: "Fundamental", value: "Fundamental" },
+                        ],
+                        value: data.nivel_ensino,
+                    },
+                    {
+                        name: "salario",
+                        label: "Salário",
+                        type: "number",
+                        value: parseSalario(data.salario),
+                        step: "0.01",
+                        min: "0",
+                    },
+                    {
+                        name: "status",
+                        label: "Status",
+                        type: "select",
+                        options: [
+                            { label: "Ativo", value: "ativo" },
+                            { label: "Inativo", value: "inativo" },
+                        ],
+                        value: data.status,
+                    },
+                ]);
+            } catch (error) {
+                console.error("Erro ao carregar professor(a)", error.message);
+                alert("Erro ao carregar dados do professor(a)");
+            } finally {
+                setLoading(false);
+            }
+        }
+        fetchTeacher();
+    }, [id]);
+
+    async function handleSubmit(formData) {
+        const payload = {
+            nome: formData.nome,
+            data_nascimento: formData.data_nascimento,
+            telefone: formData.telefone,
+            endereco: formData.endereco,
+            data_contratacao: formData.data_contratacao,
+            nivel_ensino: formData.nivel_ensino,
+            salario: parseFloat(formData.salario),
+            status: formData.status,
+        };
+
+        try {
+            await api.put(`/professores/${id}`, payload);
+            alert("Professor(a) atualizado com sucesso!");
+            navigate("/professores");
+        } catch (error) {
+            console.error("Erro ao atualizar professor(a)", error.response?.data || error.message);
+            alert("Erro ao atualizar professor(a)");
+        }
+    }
+
+    if (loading) return <p className="text-center mt-6">Carregando dados...</p>;
+
+    return (
+        <Container>
+            <Button
+                onClick={() => navigate("/professores")}
+                className="mb-4 flex items-center gap-2"
+            >
+                <ChevronLeftIcon className="w-5 h-5" />
+            </Button>
+
+            <TitleH1>Editar Professor(a)</TitleH1>
+            <TitleH3>Mat: {id}</TitleH3>
+
+            <Form
+                fields={fields}
+                onSubmit={handleSubmit}
+                className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
+            />
+        </Container>
+    );
+}

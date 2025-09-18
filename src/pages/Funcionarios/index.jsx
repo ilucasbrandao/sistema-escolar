@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
+import api from "../../services/api.js"
 import { useNavigate } from "react-router-dom";
 import { Container, Paragrafos, TitleH1 } from "../../components/Container";
 import { Button } from "../../components/Button";
-import { ChevronLeftIcon, UserRoundPlus } from "lucide-react";
+import { ChevronLeftIcon, Eye, Pencil, Trash, UserRoundPlus } from "lucide-react";
+
 
 export function Professores() {
     const navigate = useNavigate();
@@ -17,11 +19,12 @@ export function Professores() {
         getTeacher();
     }, []);
 
+    //! FUNÇÃO PARA PESQUISAR !//
     const filteredTeachers = teacher.filter((teacher) =>
         teacher.nome.toLowerCase().includes(searchTerm.toLowerCase())
     )
 
-
+    //! FUNÇÃO DE DELETAR ALUNO !//
     async function handleDelete(id) {
 
         const senha = prompt("Digite a senha para excluir o professor(a): ")
@@ -62,7 +65,7 @@ export function Professores() {
                 <div className="mt-6 mb-4 flex justify-end">
                     <input
                         type="text"
-                        placeholder="Pesquisar por nome ..."
+                        placeholder="Pesquisar..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-md w-72 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
@@ -74,7 +77,7 @@ export function Professores() {
                     <li className="grid grid-cols-7 gap-4 p-3.5 bg-gray-50 font-semibold text-gray-600 text-sm uppercase">
                         <span>Id</span>
                         <span>Nome</span>
-                        <span>Responsável</span>
+                        <span>Salário</span>
                         <span>Status</span>
                         <span className="text-center">Editar</span>
                         <span className="text-center">Excluir</span>
@@ -90,6 +93,9 @@ export function Professores() {
                             <span className="text-gray-500">{teacher.id}</span>
                             <span className="font-semibold text-gray-800">
                                 {teacher.nome}
+                            </span>
+                            <span className="font-semibold text-gray-800">
+                                {teacher.salario}
                             </span>
                             <span
                                 className={`${teacher.status === "ativo"
