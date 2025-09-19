@@ -1,26 +1,25 @@
 import PropTypes from "prop-types";
 
 const variants = {
-    pink: "from-pink-200 to-pink-300 hover:from-pink-300 hover:to-pink-400",
-    blue: "from-blue-200 to-blue-300 hover:from-blue-300 hover:to-blue-400",
-    green: "from-green-200 to-green-300 hover:from-green-300 hover:to-green-400",
-    purple: "from-purple-200 to-purple-300 hover:from-purple-300 hover:to-purple-400",
-    yellow: "from-yellow-200 to-yellow-300 hover:from-yellow-300 hover:to-yellow-400",
+    primary: "bg-blue-500/90 text-white hover:bg-blue-500 focus:ring-blue-400",
+    secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200 focus:ring-slate-300",
+    success: "bg-green-500/90 text-white hover:bg-green-500 focus:ring-green-400",
+    danger: "bg-red-500/90 text-white hover:bg-red-500 focus:ring-red-400",
 };
 
-export function Button({ children, variant = "pink", className = "", ...props }) {
+export function Button({ children, variant = "primary", className = "", ...props }) {
     return (
         <button
             {...props}
             className={`
-                px-4 py-2 sm:px-5 sm:py-3
-                rounded-xl 
-                bg-gradient-to-r ${variants[variant] || variants.pink}
-                text-sm sm:text-base text-slate-800 font-semibold 
-                shadow-md hover:shadow-lg 
-                active:scale-95 
-                transition-all duration-300 ease-out 
-                focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${variant}
+                px-4 py-2 sm:px-5 sm:py-2.5
+                rounded-md
+                font-medium text-sm sm:text-base
+                shadow-sm hover:shadow-md
+                active:scale-95
+                transition-all duration-200 ease-out
+                focus:outline-none focus:ring-2 focus:ring-offset-1
+                ${variants[variant] || variants.primary}
                 ${className}
             `}
         >
@@ -29,25 +28,17 @@ export function Button({ children, variant = "pink", className = "", ...props })
     );
 }
 
-
-export function DefaultButton({ children, theme, ...props }) {
-    // Base do botão
+export function DefaultButton({ children, theme = "primary", ...props }) {
     const baseClass =
-        "font-semibold py-3 px-9 rounded-full text-base transition-all duration-300 transform active:scale-95 active:opacity-80 cursor-pointer";
+        "font-medium py-2.5 px-6 rounded-md text-sm transition-all duration-200 active:scale-95 cursor-pointer";
 
-    // Tema primary
-    const primaryClass =
-        "bg-gradient-to-r from-blue-400 to-blue-800 text-white shadow-lg hover:shadow-xl hover:scale-105 hover:opacity-95";
-
-    // Tema secundário (ou transparente)
-    const secondaryClass =
-        "bg-white/20 text-white border border-white/50 backdrop-blur-sm shadow-sm hover:bg-white/15 hover:border-white/80";
-
-
-    const themeClass = theme === "primary" ? primaryClass : secondaryClass;
+    const themes = {
+        primary: "bg-blue-500/90 text-white hover:bg-blue-500 shadow-sm",
+        secondary: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shadow-sm",
+    };
 
     return (
-        <button className={`${baseClass} ${themeClass}`} {...props}>
+        <button className={`${baseClass} ${themes[theme]}`} {...props}>
             {children}
         </button>
     );

@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import dayjs from "dayjs";
 
 export function Input({
     label,
@@ -10,8 +9,8 @@ export function Input({
     ...props
 }) {
     return (
-        <div className="w-full px-3 mb-6 md:mb-0">
-            <label className="block text-slate-700 font-semibold text-sm mb-2">
+        <div className="w-full">
+            <label className="block text-slate-600 font-medium text-sm mb-2">
                 {label}
             </label>
 
@@ -21,12 +20,12 @@ export function Input({
                     disabled={disabled}
                     {...props}
                     className={`
-                        block w-full bg-slate-100 text-slate-800 
-                        border border-slate-300 rounded-xl 
-                        py-3 px-4 mb-3 leading-relaxed 
-                        focus:outline-none focus:bg-white focus:border-pink-300 
+                        block w-full bg-white text-slate-800 
+                        border border-slate-300 rounded-md 
+                        py-2.5 px-3 leading-relaxed
+                        focus:outline-none focus:ring-2 focus:ring-blue-400 
                         transition-colors duration-200
-                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
                     `}
                 />
             ) : type === "select" ? (
@@ -34,12 +33,12 @@ export function Input({
                     disabled={disabled}
                     {...props}
                     className={`
-                        block w-full bg-slate-100 text-slate-800 
-                        border border-slate-300 rounded-xl 
-                        py-3 px-4 mb-3 leading-tight 
-                        focus:outline-none focus:bg-white focus:border-pink-300
+                        block w-full bg-white text-slate-800 
+                        border border-slate-300 rounded-md 
+                        py-2.5 px-3 leading-tight
+                        focus:outline-none focus:ring-2 focus:ring-blue-400
                         transition-colors duration-200
-                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
                     `}
                 >
                     {options.map((opt, idx) => (
@@ -55,20 +54,18 @@ export function Input({
                     disabled={disabled}
                     {...props}
                     className={`
-                        block w-full bg-slate-100 text-slate-800 
-                        border border-slate-300 rounded-xl 
-                        py-3 px-4 mb-3 leading-tight 
-                        focus:outline-none focus:bg-white focus:border-pink-300 
+                        block w-full bg-white text-slate-800 
+                        border border-slate-300 rounded-md 
+                        py-2.5 px-3 leading-tight
+                        focus:outline-none focus:ring-2 focus:ring-blue-400
                         transition-colors duration-200
-                        ${disabled ? "bg-gray-200 cursor-not-allowed" : ""}
+                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
                     `}
                 />
             )}
         </div>
     );
 }
-
-
 
 export function Form({ fields = [], onSubmit }) {
     const [formData, setFormData] = useState({});
@@ -85,23 +82,22 @@ export function Form({ fields = [], onSubmit }) {
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-
     return (
         <form
             onSubmit={(e) => {
                 e.preventDefault();
                 onSubmit && onSubmit(formData);
             }}
-            className="w-full max-w-2xl mx-auto mt-6 sm:mt-8 bg-white p-4 sm:p-6 rounded-2xl shadow-lg"
+            className="w-full max-w-2xl mx-auto mt-8 bg-white p-6 sm:p-8 rounded-lg shadow-md border border-slate-200"
         >
-            <div className="flex flex-wrap -mx-3 mb-6">
+            <div className="flex flex-wrap gap-6 mb-6">
                 {fields.map((field, idx) => {
                     if (field.showIf && !field.showIf(formData)) return null;
 
                     return (
                         <div
                             key={idx}
-                            className={`w-full ${field.fullWidth ? "" : "md:w-1/2"} px-3 mb-6`}
+                            className={`w-full ${field.fullWidth ? "" : "md:w-[48%]"}`}
                         >
                             <Input
                                 label={field.label}
@@ -117,16 +113,17 @@ export function Form({ fields = [], onSubmit }) {
                 })}
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex justify-end">
                 <button
                     type="submit"
                     className="
-            w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 
-            rounded-xl bg-gradient-to-r from-pink-200 to-pink-300 
-            text-sm sm:text-base text-slate-800 font-semibold shadow-md 
-            hover:from-pink-300 hover:to-pink-400 hover:shadow-lg 
-            active:scale-95 transition-all duration-300 ease-out
-          "
+                        px-6 py-2.5 
+                        rounded-md bg-gray-600 text-white 
+                        text-sm font-medium 
+                        shadow-sm hover:bg-gray-700 
+                        active:scale-95 transition-all
+                        focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
+                    "
                 >
                     Salvar
                 </button>

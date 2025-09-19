@@ -1,19 +1,16 @@
 export function Container({ children }) {
     return (
-
-        <div className="min-h-screen w-full bg-gradient-to-br from-slate-50 to-slate-100 px-4 py-6 sm:px-6 sm:py-8 lg:px-12 overflow-y-auto">
-
-            <div className="w-full max-w-7xl mx-auto bg-white rounded-2xl shadow-lg p-4 sm:p-6 lg:p-10">
+        <div className="min-h-screen w-full bg-slate-50 px-4 py-6 sm:px-6 sm:py-8 lg:px-12 overflow-y-auto">
+            <div className="w-full max-w-6xl mx-auto bg-white rounded-lg shadow-md p-6 sm:p-8 lg:p-10 border border-slate-200">
                 {children}
             </div>
         </div>
     );
 }
 
-
 export function TitleH1({ children }) {
     return (
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold text-center text-slate-800 tracking-tight mb-6">
+        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-slate-900 tracking-tight mb-6">
             {children}
         </h1>
     );
@@ -21,8 +18,7 @@ export function TitleH1({ children }) {
 
 export function TitleH3({ children }) {
     return (
-        <h3 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-semibold text-center text-slate-600 border-b border-slate-300 pb-3 mb-4">
-
+        <h3 className="text-xl md:text-2xl font-medium text-slate-700 border-b border-slate-200 pb-2 mb-4">
             {children}
         </h3>
     );
@@ -30,7 +26,7 @@ export function TitleH3({ children }) {
 
 export function Paragrafos({ children }) {
     return (
-        <p className="text-base sm:text-lg leading-relaxed text-slate-700 mb-4 text-center">
+        <p className="text-base md:text-lg leading-relaxed text-slate-600 mb-4">
             {children}
         </p>
     );

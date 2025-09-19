@@ -6,9 +6,13 @@ export function ResumoCard({ label, value, color = "slate" }) {
     }[color];
 
     return (
-        <div className="bg-white rounded-xl shadow-md p-4">
-            <p className="text-sm text-slate-500">{label}</p>
-            <p className={`text-lg font-bold ${textColor}`}>{value}</p>
+        <div className="bg-white border border-slate-200 rounded-md shadow-sm p-4">
+            <p className="text-xs font-medium text-slate-500 tracking-wide uppercase">
+                {label}
+            </p>
+            <p className={`mt-1 text-xl font-semibold ${textColor}`}>
+                {value}
+            </p>
         </div>
     );
 }

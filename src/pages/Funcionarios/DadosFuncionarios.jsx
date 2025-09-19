@@ -71,7 +71,9 @@ export default function VisualizarDadosFuncionario() {
                     </span>
 
                     <label className="font-semibold text-gray-700">Salário (R$):</label>
-                    <span className="text-sm sm:text-base text-gray-800">R$ {teacher.salario},00</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {Number(teacher.salario).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Telefone:</label>
                     <span className="text-sm sm:text-base text-gray-800">{teacher.telefone}</span>

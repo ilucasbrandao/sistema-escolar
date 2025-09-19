@@ -86,9 +86,9 @@ export function Alunos() {
                 </div>
 
 
-                <ul className="divide-y divide-gray-200 rounded-lg border border-gray-300 bg-white shadow-md mt-6">
+                <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white shadow-sm mt-6">
                     {/* Cabeçalho */}
-                    <li className="grid grid-cols-7 gap-4 p-3.5 bg-gray-50 font-semibold text-gray-600 text-sm uppercase">
+                    <li className="grid grid-cols-7 gap-4 p-3 bg-slate-100 font-medium text-slate-600 text-xs uppercase tracking-wide">
                         <span>Mat.</span>
                         <span>Nome</span>
                         <span>Responsável</span>
@@ -102,43 +102,49 @@ export function Alunos() {
                     {filteredStudents.map((student) => (
                         <li
                             key={student.id}
-                            className="grid grid-cols-7 gap-4 p-3.5 hover:bg-gray-100 items-center text-sm"
+                            className="grid grid-cols-7 gap-4 p-3 text-sm odd:bg-white even:bg-slate-50 hover:bg-slate-100 transition-colors"
                         >
-                            <span className="text-gray-500">{student.id}</span>
-                            <span className="font-semibold text-gray-800">
-                                {student.nome}
-                            </span>
-                            <span className="text-gray-500">{student.responsavel}</span>
+                            <span className="text-slate-500">{student.id}</span>
+                            <span className="font-medium text-slate-800">{student.nome}</span>
+                            <span className="text-slate-500">{student.responsavel}</span>
                             <span
-                                className={`${student.status === "ativo"
-                                    ? "text-green-600 font-semibold"
-                                    : "text-red-600 font-semibold"
+                                className={`font-semibold ${student.status === "ativo"
+                                    ? "text-green-600"
+                                    : "text-red-500"
                                     }`}
                             >
                                 {student.status}
                             </span>
-                            <span
-                                onClick={() => navigate(`/alunos/editar/${student.id}`)}
-                                className="flex justify-center"
-                            >
-                                <Pencil className="w-5 h-5 text-blue-600 cursor-pointer hover:text-blue-800" />
-                            </span>
-                            <span
-                                onClick={() => handleDelete(student.id)}
-                                className="flex justify-center"
-                            >
-                                <Trash className="w-5 h-5 text-red-600 cursor-pointer hover:text-red-800" />
-                            </span>
 
-                            <span
-                                onClick={() => navigate(`/alunos/${student.id}`)}
-                                className="flex justify-center"
-                            >
-                                <Eye className="w-5 h-5 text-gray-600 cursor-pointer hover:text-gray-800" />
+                            {/* Ações */}
+                            <span className="flex justify-center">
+                                <button
+                                    onClick={() => navigate(`/alunos/editar/${student.id}`)}
+                                    className="p-1.5 rounded-md hover:bg-slate-200 transition"
+                                >
+                                    <Pencil className="w-4 h-4 text-slate-600" />
+                                </button>
+                            </span>
+                            <span className="flex justify-center">
+                                <button
+                                    onClick={() => handleDelete(student.id)}
+                                    className="p-1.5 rounded-md hover:bg-red-100 transition"
+                                >
+                                    <Trash className="w-4 h-4 text-red-600" />
+                                </button>
+                            </span>
+                            <span className="flex justify-center">
+                                <button
+                                    onClick={() => navigate(`/alunos/${student.id}`)}
+                                    className="p-1.5 rounded-md hover:bg-slate-200 transition"
+                                >
+                                    <Eye className="w-4 h-4 text-slate-600" />
+                                </button>
                             </span>
                         </li>
                     ))}
                 </ul>
+
             </div>
         </Container>
     );
