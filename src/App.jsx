@@ -56,6 +56,7 @@ export default function App() {
 
       <TitleH3>Dashboard</TitleH3>
 
+
       {resumo && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 px-4">
           <ResumoCard label="Últimas Matrículas" value={`${resumo.ultimasMatriculas} esta semana`} />
@@ -78,7 +79,7 @@ export default function App() {
         </Button>
         <Button
           variant="purple"
-          onClick={() => handleClick("gestao-financeira")}
+          onClick={() => handleClick("lancamentos")}
         >
           Gestão Financeira
         </Button>

@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Container, TitleH1 } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
+import { formatarParaBRL } from "../../utils/format.js";
 
 function formatarDataLegivel(dataISO) {
     if (!dataISO || !dayjs(dataISO).isValid()) return "-";
@@ -21,6 +22,7 @@ export default function VisualizarDadosFuncionario() {
             try {
                 const { data } = await api.get(`/professores/${id}`);
                 setTeacher(data);
+                console.log(data)
             } catch (error) {
                 console.error("Erro ao buscar professor(a) ", error);
             }
@@ -35,6 +37,7 @@ export default function VisualizarDadosFuncionario() {
             </Container>
         )
     }
+
 
     return (
         <Container>
@@ -71,9 +74,8 @@ export default function VisualizarDadosFuncionario() {
                     </span>
 
                     <label className="font-semibold text-gray-700">Salário (R$):</label>
-                    <span className="text-sm sm:text-base text-gray-800">
-                        {Number(teacher.salario).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                    </span>
+                    <span>{formatarParaBRL(teacher.salario)}</span>
+
 
                     <label className="font-semibold text-gray-700">Telefone:</label>
                     <span className="text-sm sm:text-base text-gray-800">{teacher.telefone}</span>

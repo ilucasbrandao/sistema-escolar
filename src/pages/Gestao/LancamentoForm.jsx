@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Container, TitleH1 } from "../../components/Container";
 import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
@@ -9,26 +9,25 @@ import { formatarParaISO } from "../../utils/date";
 
 export default function CadastroLancamento() {
     const navigate = useNavigate();
-    const { id } = useParams(); // para edição
     const location = useLocation();
     const tipoInicial = location.state?.tipo || "entrada";
     const hoje = new Date().toISOString().split("T")[0];
 
     const [alunos, setAlunos] = useState([]);
     const [professores, setProfessores] = useState([]);
-    const [formData, setFormData] = useState({
+
+    const [formData, setFormData] = useState(() => ({
         tipo: tipoInicial,
         categoria: "",
         descricao: "",
         valor: "",
-        data_vencimento: hoje,
         data_pagamento: tipoInicial === "entrada" ? hoje : "",
+        data_vencimento: tipoInicial === "saida" ? hoje : "",
         aluno_id: "",
         professor_id: "",
         status: tipoInicial === "entrada" ? "pago" : "pendente",
-    });
+    }));
 
-    // Carregar alunos e professores
     useEffect(() => {
         async function carregarDados() {
             try {
@@ -45,37 +44,14 @@ export default function CadastroLancamento() {
         carregarDados();
     }, []);
 
-    // Carregar lançamento para edição
-    useEffect(() => {
-        if (!id) return;
-        async function carregarLancamento() {
-            try {
-                const { data } = await api.get(`/lancamentos/${id}`);
-                setFormData({
-                    tipo: data.tipo,
-                    categoria: data.categoria,
-                    descricao: data.descricao,
-                    valor: data.valor,
-                    data_vencimento: data.data_vencimento,
-                    data_pagamento: data.data_pagamento || "",
-                    aluno_id: data.aluno_id || "",
-                    professor_id: data.professor_id || "",
-                    status: data.status || "pendente",
-                });
-            } catch (error) {
-                console.error("Erro ao carregar lançamento:", error.message);
-            }
-        }
-        carregarLancamento();
-    }, [id]);
-
-    // Categorias pré-definidas
     const categoriasEntrada = [
+        { label: "Escolha a categoria", value: "" },
         { label: "Salário", value: "salario" },
         { label: "Mensalidade", value: "mensalidade" },
     ];
 
     const categoriasSaida = [
+        { label: "Escolha a categoria", value: "" },
         { label: "Água, Luz, Internet", value: "manutencao" },
         { label: "Cartão de Crédito", value: "cartao" },
         { label: "Outros", value: "outros" },
@@ -96,14 +72,13 @@ export default function CadastroLancamento() {
             name: "categoria",
             label: "Categoria",
             type: "select",
-            options:
-                formData.tipo === "entrada" ? categoriasEntrada : categoriasSaida,
+            options: formData.tipo === "entrada" ? categoriasEntrada : categoriasSaida,
         },
         {
             name: "descricao",
             label: "Descrição",
-            placeholder: "Descrição do lançamento",
             type: "textarea",
+            placeholder: "Descrição do lançamento",
             fullWidth: true,
         },
         {
@@ -118,18 +93,8 @@ export default function CadastroLancamento() {
             name: formData.tipo === "entrada" ? "data_pagamento" : "data_vencimento",
             label: formData.tipo === "entrada" ? "Data de Pagamento" : "Data de Vencimento",
             type: "date",
+            value: formData.tipo === "entrada" ? formData.data_pagamento : formData.data_vencimento,
             max: hoje,
-            value:
-                formData.tipo === "entrada"
-                    ? formData.data_pagamento || hoje
-                    : formData.data_vencimento,
-            onChange: (e) => {
-                if (formData.tipo === "entrada") {
-                    setFormData({ ...formData, data_pagamento: e.target.value });
-                } else {
-                    setFormData({ ...formData, data_vencimento: e.target.value });
-                }
-            },
         },
         {
             name: "aluno_id",
@@ -152,9 +117,13 @@ export default function CadastroLancamento() {
     ];
 
     const handleSubmit = async () => {
+        const valorNumerico = parseFloat(String(formData.valor).replace(",", "."));
+
         const payload = {
-            ...formData,
-            valor: parseFloat(formData.valor) || 0, // tenta converter, se falhar usa 0
+            tipo: formData.tipo,
+            categoria: formData.categoria,
+            descricao: formData.descricao,
+            valor: isNaN(valorNumerico) ? 0 : valorNumerico,
             status: formData.tipo === "entrada" ? "pago" : "pendente",
             data_pagamento:
                 formData.tipo === "entrada"
@@ -163,36 +132,32 @@ export default function CadastroLancamento() {
             data_vencimento:
                 formData.tipo === "saida"
                     ? formatarParaISO(formData.data_vencimento)
-                    : formatarParaISO(formData.data_vencimento),
+                    : null,
+            aluno_id: formData.aluno_id || null,
+            professor_id: formData.professor_id || null,
         };
 
         try {
-            if (id) {
-                await api.put(`/lancamentos/${id}`, payload);
-                alert("Lançamento atualizado com sucesso!");
-            } else {
-                await api.post("/lancamentos", payload);
-                alert("Lançamento cadastrado com sucesso!");
-            }
-            navigate("/gestao-financeira");
+            await api.post("/lancamentos", payload);
+            alert("Lançamento cadastrado com sucesso!");
+            navigate("/lancamentos");
         } catch (error) {
             console.error("Erro ao salvar lançamento:", error?.response?.data || error);
             alert("Erro ao salvar lançamento. Verifique os dados e tente novamente.");
         }
     };
 
-
     return (
         <Container>
             <Button
-                onClick={() => navigate("/gestao-financeira")}
+                onClick={() => navigate("/lancamentos")}
                 className="mb-4 flex items-center gap-2"
             >
                 <ChevronLeftIcon className="w-5 h-5" />
                 Voltar
             </Button>
 
-            <TitleH1>{id ? "Editar Lançamento" : "Cadastrar Lançamento"}</TitleH1>
+            <TitleH1>Cadastrar Lançamento</TitleH1>
 
             <Form
                 fields={campos}

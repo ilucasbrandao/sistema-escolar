@@ -41,86 +41,101 @@ const router = createBrowserRouter([
   },
   {
     path: "/alunos",
-    element: (
-      <ProtectedRoute>
-        <Alunos />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/alunos/cadastrar",
-    element: (
-      <ProtectedRoute>
-        <CadastroAlunos />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/alunos/:id",
-    element: (
-      <ProtectedRoute>
-        <VisualizarDados />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/alunos/editar/:id",
-    element: (
-      <ProtectedRoute>
-        <EditarAluno />
-      </ProtectedRoute>
-    )
-
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute>
+            <Alunos />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cadastrar",
+        element: (
+          <ProtectedRoute>
+            <CadastroAlunos />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ":id",
+        element: (
+          <ProtectedRoute>
+            <VisualizarDados />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "editar/:id",
+        element: (
+          <ProtectedRoute>
+            <EditarAluno />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
   {
     path: "/professores",
-    element: (
-      <ProtectedRoute>
-        <Professores />
-      </ProtectedRoute>
-    ),
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute>
+            <Professores />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cadastrar",
+        element: (
+          <ProtectedRoute>
+            <CadastroProfessor />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: ":id",
+        element: (
+          <ProtectedRoute>
+            <VisualizarDadosFuncionario />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "editar/:id",
+        element: (
+          <ProtectedRoute>
+            <EditarFuncionario />
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
-  {
-    path: "/professores/cadastrar",
-    element: (
-      <ProtectedRoute>
-        <CadastroProfessor />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/professores/:id",
-    element: (
-      <ProtectedRoute>
-        <VisualizarDadosFuncionario />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/professores/editar/:id",
-    element: (
-      <ProtectedRoute>
-        <EditarFuncionario />
-      </ProtectedRoute>
-    )
 
-  },
   {
-    path: "/gestao-financeira",
-    element: (
-      <ProtectedRoute>
-        <Lancamentos />
-      </ProtectedRoute>
-    )
-  },
-  {
-    path: "/gestao-financeira/cadastrar",
-    element: (
-      <ProtectedRoute>
-        <LancamentoForm />
-      </ProtectedRoute>
-    )
-  },
+    path: "/lancamentos",
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute>
+            <Lancamentos />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "cadastrar",
+        element: (
+          <ProtectedRoute>
+            <LancamentoForm />
+          </ProtectedRoute>
+        ),
+      },
+
+    ]
+  }
 ]);
 
 createRoot(document.getElementById("root")).render(

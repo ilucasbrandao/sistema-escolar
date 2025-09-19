@@ -5,8 +5,23 @@
  */
 export function formatarParaBRL(valor) {
   if (!valor && valor !== 0) return "-";
-  const numero = typeof valor === "number" ? valor : parseFloat(valor);
+
+  let numero;
+
+  if (typeof valor === "string") {
+    // Remove "R$", pontos de milhar e troca vírgula por ponto
+    const limpo = valor
+      .replace("R$", "")
+      .replace(/\./g, "")
+      .replace(",", ".")
+      .trim();
+    numero = parseFloat(limpo);
+  } else {
+    numero = Number(valor);
+  }
+
   if (isNaN(numero)) return "-";
+
   return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
