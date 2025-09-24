@@ -76,6 +76,17 @@ export function EditarFuncionario() {
                         value: data.nivel_ensino,
                     },
                     {
+                        name: "turno",
+                        label: "Turno",
+                        type: "select",
+                        options: [
+                            { label: "", value: "" },
+                            { label: "Manhã", value: "Manha" },
+                            { label: "Tarde", value: "Tarde" },
+                        ],
+                        value: data.turno
+                    },
+                    {
                         name: "salario",
                         label: "Salário",
                         type: "number",
