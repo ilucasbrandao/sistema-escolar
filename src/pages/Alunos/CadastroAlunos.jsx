@@ -86,6 +86,7 @@ export default function CadastroAlunos() {
             "data_matricula",
             "serie",
         ];
+
         for (let campo of obrigatorios) {
             if (!data[campo]) {
                 alert(`Campo ${campo} é obrigatório.`);
@@ -104,7 +105,6 @@ export default function CadastroAlunos() {
             alert("Aluno cadastrado com sucesso!");
             navigate("/alunos");
         } catch (error) {
-            console.log(data);
             console.error("Erro ao cadastrar aluno:", error?.response?.data || error);
             alert("Erro ao cadastrar aluno. Verifique os dados e tente novamente.");
         }
@@ -117,22 +117,24 @@ export default function CadastroAlunos() {
                 className="mb-4 flex items-center gap-2"
             >
                 <ChevronLeftIcon className="w-5 h-5" />
+                Voltar
             </Button>
 
             <TitleH1>Cadastrar Aluno</TitleH1>
 
             <Form
                 fields={fields}
-                onSubmit={handleSubmit}
                 values={formData}
                 onChange={setFormData}
+                onSubmit={handleSubmit}
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
 
             {/* Exemplo de exibição da data formatada */}
             {formData.data_nascimento && (
                 <p className="mt-4 text-sm text-gray-600">
-                    Data de nascimento formatada: {formatarDataLegivel(formData.data_nascimento)}
+                    Data de nascimento formatada:{" "}
+                    {formatarDataLegivel(formData.data_nascimento)}
                 </p>
             )}
         </Container>

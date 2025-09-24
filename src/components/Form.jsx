@@ -67,32 +67,39 @@ export function Input({
     );
 }
 
-export function Form({ fields = [], onSubmit }) {
-    const [formData, setFormData] = useState({});
+export function Form({ fields = [], values, onChange, onSubmit }) {
+    const [internalData, setInternalData] = useState({});
 
+    // Inicializa dados quando for auto-controlado
     useEffect(() => {
-        const initial = {};
-        fields.forEach((field) => {
-            initial[field.name] = field.value || "";
-        });
-        setFormData(initial);
-    }, [fields]);
+        if (!values) {
+            const initial = {};
+            fields.forEach((field) => {
+                initial[field.name] = field.value || "";
+            });
+            setInternalData(initial);
+        }
+    }, [fields, values]);
+
+    // Decide quem controla os dados
+    const currentValues = values || internalData;
+    const setValues = onChange || setInternalData;
 
     const handleChange = (name, value) => {
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setValues((prev) => ({ ...prev, [name]: value }));
     };
 
     return (
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                onSubmit && onSubmit(formData);
+                onSubmit && onSubmit(currentValues);
             }}
             className="w-full max-w-2xl mx-auto mt-8 bg-white p-6 sm:p-8 rounded-lg shadow-md border border-slate-200"
         >
             <div className="flex flex-wrap gap-6 mb-6">
                 {fields.map((field, idx) => {
-                    if (field.showIf && !field.showIf(formData)) return null;
+                    if (field.showIf && !field.showIf(currentValues)) return null;
 
                     return (
                         <div
@@ -105,7 +112,7 @@ export function Form({ fields = [], onSubmit }) {
                                 type={field.type}
                                 options={field.options}
                                 disabled={field.disabled}
-                                value={formData[field.name] || ""}
+                                value={currentValues[field.name] || ""}
                                 onChange={(e) => handleChange(field.name, e.target.value)}
                             />
                         </div>

@@ -18,7 +18,7 @@ import CadastroProfessor from "./pages/Funcionarios/CadastroFuncionarios.jsx";
 import VisualizarDadosFuncionario from "./pages/Funcionarios/DadosFuncionarios.jsx";
 import { EditarFuncionario } from "./pages/Funcionarios/EditarFuncionário.jsx";
 import { Lancamentos } from "./pages/Gestao/index.jsx";
-import LancamentoForm from "./pages/Gestao/LancamentoForm.jsx";
+import CadastroMensalidade from "./pages/Gestao/Mensalidade.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -126,10 +126,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "cadastrar",
+        path: "mensalidade",
         element: (
           <ProtectedRoute>
-            <LancamentoForm />
+            <CadastroMensalidade />
           </ProtectedRoute>
         ),
       },

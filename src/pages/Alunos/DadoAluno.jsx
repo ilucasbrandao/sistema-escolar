@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../components/Button";
-import { Container, TitleH1 } from "../../components/Container";
+import { Container, Paragrafos, TitleH1 } from "../../components/Container";
 import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import dayjs from "dayjs";
@@ -16,18 +16,22 @@ export default function VisualizarDados() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [student, setStudent] = useState(null);
+    const [movimentacoes, setMovimentacoes] = useState([]);
 
     useEffect(() => {
         async function getStudentById() {
             try {
                 const { data } = await api.get(`/alunos/${id}`);
                 setStudent(data);
+                setMovimentacoes(data.movimentacoes || []);
+
             } catch (error) {
                 console.error("Erro ao buscar aluno:", error);
             }
         }
         getStudentById();
     }, [id]);
+
 
     if (!student) {
         return (
@@ -100,6 +104,23 @@ export default function VisualizarDados() {
                         {student.status}
                     </span>
                 </div>
+            </div>
+
+            <div className="max-w-xl mx-auto mt-8">
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">Histórico de Pagamentos</h3>
+                {movimentacoes.length === 0 ? (
+                    <Paragrafos className="text-gray-600">Nenhuma movimentação registrada.</Paragrafos>
+                ) : (
+                    <ul className="space-y-2">
+                        {movimentacoes.map((mov, i) => (
+                            <li key={i} className="bg-gray-50 p-3 rounded shadow-sm">
+                                <Paragrafos><strong>Valor: </strong> R$ {mov.valor}</Paragrafos>
+                                <Paragrafos><strong>Data: </strong>{formatarDataLegivel(mov.data_pagamento)}</Paragrafos>
+                                <Paragrafos><strong>Mês Referente: </strong> {mov.mes_referencia}</Paragrafos>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </Container>
     );
