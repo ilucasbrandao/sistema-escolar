@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import login from "../../services/login.js";
 import { TopBackground } from "../../components/TopBackground.jsx";
-import { DefaultButton } from "../../components/Button.jsx"
+import { Button } from "../../components/Button.jsx"
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -81,12 +81,12 @@ export default function Login() {
         </div>
 
         {/* Botão */}
-        <DefaultButton
+        <Button
           type="submit"
           className="w-full bg-cyan-600 hover:bg-cyan-700 text-white font-semibold py-2 px-4 rounded-lg transition"
         >
           Entrar
-        </DefaultButton>
+        </Button>
 
         {/* Mensagem de erro */}
         {msg && (

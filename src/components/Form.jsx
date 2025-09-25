@@ -1,45 +1,55 @@
 import { useEffect, useState } from "react";
+import clsx from "clsx";
+
+function BaseInputStyle({ className, ...props }) {
+    return clsx(
+        `block w-full bg-white text-slate-800 
+     border border-slate-300 rounded-md 
+     py-2.5 px-3 leading-relaxed
+     focus:outline-none focus:ring-2 focus:ring-blue-400 
+     transition-colors duration-200`,
+        props.disabled && "bg-slate-100 cursor-not-allowed",
+        className
+    );
+}
 
 export function Input({
+    id,
     label,
     placeholder,
     type = "text",
     options = [],
     disabled = false,
+    error,
     ...props
 }) {
+    const inputId = id || `input-${label?.toLowerCase().replace(/\s+/g, "-")}`;
+
     return (
         <div className="w-full">
-            <label className="block text-slate-600 font-medium text-sm mb-2">
-                {label}
-            </label>
+            {label && (
+                <label
+                    htmlFor={inputId}
+                    className="block text-slate-600 font-medium text-sm mb-2"
+                >
+                    {label}
+                </label>
+            )}
 
             {type === "textarea" ? (
                 <textarea
+                    id={inputId}
                     placeholder={placeholder}
                     disabled={disabled}
                     {...props}
-                    className={`
-                        block w-full bg-white text-slate-800 
-                        border border-slate-300 rounded-md 
-                        py-2.5 px-3 leading-relaxed
-                        focus:outline-none focus:ring-2 focus:ring-blue-400 
-                        transition-colors duration-200
-                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
-                    `}
+                    className={BaseInputStyle({ className: "resize-none", disabled })}
                 />
             ) : type === "select" ? (
                 <select
+                    id={inputId}
                     disabled={disabled}
                     {...props}
-                    className={`
-                        block w-full bg-white text-slate-800 
-                        border border-slate-300 rounded-md 
-                        py-2.5 px-3 leading-tight
-                        focus:outline-none focus:ring-2 focus:ring-blue-400
-                        transition-colors duration-200
-                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
-                    `}
+                    className={BaseInputStyle({ disabled })}
                 >
                     {options.map((opt, idx) => (
                         <option key={idx} value={opt.value}>
@@ -49,19 +59,17 @@ export function Input({
                 </select>
             ) : (
                 <input
+                    id={inputId}
                     type={type}
                     placeholder={placeholder}
                     disabled={disabled}
                     {...props}
-                    className={`
-                        block w-full bg-white text-slate-800 
-                        border border-slate-300 rounded-md 
-                        py-2.5 px-3 leading-tight
-                        focus:outline-none focus:ring-2 focus:ring-blue-400
-                        transition-colors duration-200
-                        ${disabled ? "bg-slate-100 cursor-not-allowed" : ""}
-                    `}
+                    className={BaseInputStyle({ disabled })}
                 />
+            )}
+
+            {error && (
+                <p className="text-sm text-red-500 mt-1">{error}</p>
             )}
         </div>
     );
@@ -70,7 +78,6 @@ export function Input({
 export function Form({ fields = [], values, onChange, onSubmit }) {
     const [internalData, setInternalData] = useState({});
 
-    // Inicializa dados quando for auto-controlado
     useEffect(() => {
         if (!values) {
             const initial = {};
@@ -81,7 +88,6 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
         }
     }, [fields, values]);
 
-    // Decide quem controla os dados
     const currentValues = values || internalData;
     const setValues = onChange || setInternalData;
 
@@ -112,8 +118,10 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
                                 type={field.type}
                                 options={field.options}
                                 disabled={field.disabled}
+                                error={field.error}
                                 value={currentValues[field.name] || ""}
                                 onChange={(e) => handleChange(field.name, e.target.value)}
+                                required={field.required}
                             />
                         </div>
                     );
@@ -124,13 +132,13 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
                 <button
                     type="submit"
                     className="
-                        px-6 py-2.5 
-                        rounded-md bg-gray-600 text-white 
-                        text-sm font-medium 
-                        shadow-sm hover:bg-gray-700 
-                        active:scale-95 transition-all
-                        focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
-                    "
+            px-6 py-2.5 
+            rounded-md bg-gray-600 text-white 
+            text-sm font-medium 
+            shadow-sm hover:bg-gray-700 
+            active:scale-95 transition-all
+            focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
+          "
                 >
                     Salvar
                 </button>

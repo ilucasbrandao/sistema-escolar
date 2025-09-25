@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/Button"; // sem chaves, assumindo export default
-import { Container, Paragrafos, TitleH1 } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import {
     ChevronLeftIcon,
     Eye,
@@ -17,27 +17,33 @@ export function Alunos() {
     const [students, setStudents] = useState([]); //? ESTADO PARA LISTAR ESTUDANTE
     const [searchTerm, setSearchTerm] = useState(''); //? ESTADO PARA REALIZAR A PESQUISA
 
-
     useEffect(() => {
         async function getStudents() {
-            const { data } = await api.get("/alunos");
-            setStudents(data);
+            try {
+                const { data } = await api.get("/alunos");
+                setStudents(data);
+            } catch (error) {
+                console.error("Erro ao buscar alunos:", error.message);
+                alert("Erro ao carregar alunos.");
+            }
         }
         getStudents();
     }, []);
 
+
     //! FUNÇÃO PARA PESQUISAR !//
 
-    const filteredStudents = students.filter((student) =>
-        student.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.responsavel.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    const filteredStudents = searchTerm ?
+        students.filter((student) =>
+            student.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            student.responsavel.toLowerCase().includes(searchTerm.toLowerCase())
+        ) : students
 
     //! FUNÇÃO DE DELETAR ALUNO !//
     async function handleDelete(id) {
         const senha = prompt("Digite a senha para excluir o aluno:");
-
-        if (senha !== "JulianneKelly2025") {
+        const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
+        if (senha !== senhaCorreta) {
             alert("Senha incorreta. Exclusão cancelada.");
             return;
         }
@@ -70,10 +76,10 @@ export function Alunos() {
 
             {/* Título e parágrafo centralizados */}
             <div className="text-center">
-                <TitleH1>Alunos</TitleH1>
-                <Paragrafos className="mt-4">
+                <Title level={1}>Alunos</Title>
+                <Paragraph muted className="mt-4">
                     Informações sobre os alunos serão exibidas aqui:
-                </Paragrafos>
+                </Paragraph>
 
                 <div className="mt-6 mb-4 flex justify-end">
                     <input
@@ -88,7 +94,7 @@ export function Alunos() {
 
                 <ul className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white shadow-sm mt-6">
                     {/* Cabeçalho */}
-                    <li className="grid grid-cols-7 gap-4 p-3 bg-slate-100 font-medium text-slate-600 text-xs uppercase tracking-wide">
+                    <li key="header" className="grid grid-cols-7 gap-4 p-3 bg-slate-100 font-medium text-slate-600 text-xs uppercase tracking-wide">
                         <span>Mat.</span>
                         <span>Nome</span>
                         <span>Responsável</span>
@@ -118,7 +124,7 @@ export function Alunos() {
 
                             {/* Ações */}
                             <span className="flex justify-center">
-                                <button
+                                <button aria-label="Editar aluno"
                                     onClick={() => navigate(`/alunos/editar/${student.id}`)}
                                     className="p-1.5 rounded-md hover:bg-slate-200 transition"
                                 >

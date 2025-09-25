@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import api from "../../services/api";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, TitleH1, TitleH3 } from "../../components/Container";
+import { Container, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import { Form } from "../../components/Form";
@@ -148,8 +148,8 @@ export function EditarFuncionario() {
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
 
-            <TitleH1>Editar Professor(a)</TitleH1>
-            <TitleH3>Mat: {id}</TitleH3>
+            <Title level={1}>Editar Professor(a)</Title>
+            <Title level={3}>Mat: {id}</Title>
 
             <Form
                 fields={fields}

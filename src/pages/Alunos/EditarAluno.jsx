@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
-import { Container, TitleH1, TitleH3 } from "../../components/Container";
+import { Container, Title } from "../../components/Container";
 import { ChevronLeftIcon } from "lucide-react";
 import { Form } from "../../components/Form";
 import dayjs from "dayjs";
@@ -129,8 +129,8 @@ export function EditarAluno() {
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
 
-            <TitleH1>Editar Aluno</TitleH1>
-            <TitleH3>Mat: {id}</TitleH3>
+            <Title level={1}>Editar Aluno</Title>
+            <Title level={3}>Mat: {id}</Title>
 
             <Form
                 fields={fields}

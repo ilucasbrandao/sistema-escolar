@@ -1,50 +1,47 @@
 import PropTypes from "prop-types";
+import clsx from "clsx"; // opcional, mas ajuda muito a organizar classes
 
 const variants = {
     primary: "bg-blue-500/90 text-white hover:bg-blue-500 focus:ring-blue-400",
     secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200 focus:ring-slate-300",
     success: "bg-green-500/90 text-white hover:bg-green-500 focus:ring-green-400",
     danger: "bg-red-500/90 text-white hover:bg-red-500 focus:ring-red-400",
+    outline: "border border-slate-300 text-slate-700 bg-white hover:bg-slate-50 focus:ring-slate-200",
 };
 
-export function Button({ children, variant = "primary", className = "", ...props }) {
+const sizes = {
+    sm: "px-3 py-1.5 text-sm",
+    md: "px-4 py-2 text-base",
+    lg: "px-6 py-3 text-lg",
+};
+
+export function Button({
+    children,
+    variant = "primary",
+    size = "md",
+    className,
+    ...props
+}) {
     return (
         <button
             {...props}
-            className={`
-                px-4 py-2 sm:px-5 sm:py-2.5
-                rounded-md
-                font-medium text-sm sm:text-base
-                shadow-sm hover:shadow-md
-                active:scale-95
-                transition-all duration-200 ease-out
-                focus:outline-none focus:ring-2 focus:ring-offset-1
-                ${variants[variant] || variants.primary}
-                ${className}
-            `}
+            className={clsx(
+                "rounded-md font-medium shadow-sm hover:shadow-md active:scale-95",
+                "transition-all duration-200 ease-out",
+                "focus:outline-none focus:ring-2 focus:ring-offset-1",
+                variants[variant],
+                sizes[size],
+                className
+            )}
         >
             {children}
         </button>
     );
 }
 
-export function DefaultButton({ children, theme = "primary", ...props }) {
-    const baseClass =
-        "font-medium py-2.5 px-6 rounded-md text-sm transition-all duration-200 active:scale-95 cursor-pointer";
-
-    const themes = {
-        primary: "bg-blue-500/90 text-white hover:bg-blue-500 shadow-sm",
-        secondary: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 shadow-sm",
-    };
-
-    return (
-        <button className={`${baseClass} ${themes[theme]}`} {...props}>
-            {children}
-        </button>
-    );
-}
-
-DefaultButton.propTypes = {
+Button.propTypes = {
     children: PropTypes.node.isRequired,
-    theme: PropTypes.string,
+    variant: PropTypes.oneOf(Object.keys(variants)),
+    size: PropTypes.oneOf(Object.keys(sizes)),
+    className: PropTypes.string,
 };

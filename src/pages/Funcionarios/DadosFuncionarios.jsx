@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import api from "../../services/api.js"
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, TitleH1 } from "../../components/Container";
+import { Container, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format.js";
@@ -53,10 +53,10 @@ export default function VisualizarDadosFuncionario() {
 
             {/* Título */}
             <div className="text-center mb-8">
-                <TitleH1>Dados do Professor(a)</TitleH1>
-                <h3 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">
+                <Title level={1}>Dados do Professor(a)</Title>
+                <Title level={3} className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">
                     {teacher.nome}
-                </h3>
+                </Title>
             </div>
 
             {/* Informações */}

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, TitleH1 } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import { formatarDataLegivel, formatarParaISO } from "../../utils/date";
@@ -132,7 +132,7 @@ export default function CadastroProfessor() {
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
 
-            <TitleH1>Cadastrar Professor(a)</TitleH1>
+            <Title level={1}>Cadastrar Professor(a)</Title>
 
             <Form
                 fields={fields}
@@ -142,12 +142,6 @@ export default function CadastroProfessor() {
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
 
-            {/* Exemplo de exibição da data formatada */}
-            {formData.data_nascimento && (
-                <p className="mt-4 text-sm text-gray-600">
-                    Data de nascimento formatada: {formatarDataLegivel(formData.data_nascimento)}
-                </p>
-            )}
         </Container>
     )
 

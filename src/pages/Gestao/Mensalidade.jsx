@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, TitleH1 } from "../../components/Container";
+import { Container, Title } from "../../components/Container";
 import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
@@ -111,7 +111,7 @@ export default function CadastroMensalidade() {
                 Voltar
             </Button>
 
-            <TitleH1>Lançar Mensalidade</TitleH1>
+            <Title level={1}>Lançar Mensalidade</Title>
 
             <Form
                 fields={campos}

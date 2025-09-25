@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../../services/api.js"
 import { useNavigate } from "react-router-dom";
-import { Container, Paragrafos, TitleH1 } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon, Eye, Pencil, Trash, UserRoundPlus } from "lucide-react";
 
@@ -57,10 +57,10 @@ export function Professores() {
                 </Button>
             </div>
             <div className="text-center">
-                <TitleH1>Professores</TitleH1>
-                <Paragrafos className="mt-4">
+                <Title level={1}>Professores</Title>
+                <Paragraph mute className="mt-4">
                     Informações sobre os professores serão exibidas aqui:
-                </Paragrafos>
+                </Paragraph>
 
                 <div className="mt-6 mb-4 flex justify-end">
                     <input

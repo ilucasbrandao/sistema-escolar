@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, TitleH1 } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
@@ -113,6 +113,7 @@ export default function CadastroAlunos() {
     return (
         <Container>
             <Button
+                variant="primary" size="md"
                 onClick={() => navigate("/alunos")}
                 className="mb-4 flex items-center gap-2"
             >
@@ -120,7 +121,7 @@ export default function CadastroAlunos() {
                 Voltar
             </Button>
 
-            <TitleH1>Cadastrar Aluno</TitleH1>
+            <Title level={1}>Cadastrar Aluno</Title>
 
             <Form
                 fields={fields}
@@ -130,13 +131,6 @@ export default function CadastroAlunos() {
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
 
-            {/* Exemplo de exibição da data formatada */}
-            {formData.data_nascimento && (
-                <p className="mt-4 text-sm text-gray-600">
-                    Data de nascimento formatada:{" "}
-                    {formatarDataLegivel(formData.data_nascimento)}
-                </p>
-            )}
         </Container>
     );
 }

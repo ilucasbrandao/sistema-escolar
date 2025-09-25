@@ -19,6 +19,7 @@ import VisualizarDadosFuncionario from "./pages/Funcionarios/DadosFuncionarios.j
 import { EditarFuncionario } from "./pages/Funcionarios/EditarFuncionário.jsx";
 import { Lancamentos } from "./pages/Gestao/index.jsx";
 import CadastroMensalidade from "./pages/Gestao/Mensalidade.jsx";
+import VisualizarMensalidade from "./pages/Gestao/DetalheMensalidade.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -74,6 +75,15 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: ":alunoId/mensalidade/:mensalidadeId",
+        element: (
+          <ProtectedRoute>
+            <VisualizarMensalidade />
+          </ProtectedRoute>
+
+        )
+      }
     ],
   },
   {

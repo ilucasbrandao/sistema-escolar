@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "../../components/Button";
-import { Container, Paragrafos, TitleH1 } from "../../components/Container";
-import { ChevronLeftIcon } from "lucide-react";
+import { Container, Paragraph, Title } from "../../components/Container";
+import { ChevronLeftIcon, Eye } from "lucide-react";
 import api from "../../services/api";
 import dayjs from "dayjs";
+import { formatarParaBRL } from "../../utils/format";
 
 // Função para formatar data ISO → DD/MM/YYYY
 function formatarDataLegivel(dataISO) {
@@ -24,14 +25,46 @@ export default function VisualizarDados() {
                 const { data } = await api.get(`/alunos/${id}`);
                 setStudent(data);
                 setMovimentacoes(data.movimentacoes || []);
-
             } catch (error) {
+                alert("Não foi possível carregar os dados do aluno.");
                 console.error("Erro ao buscar aluno:", error);
             }
         }
         getStudentById();
     }, [id]);
 
+    async function handleDelete(movimentacaoID) {
+        const senha = prompt("Digite a senha para excluir essa mensalidade:");
+        const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
+        if (senha !== senhaCorreta) {
+            alert("Senha incorreta. Exclusão cancelada.");
+            return;
+        }
+
+        const confirm = window.confirm(
+            "Tem certeza que deseja excluir esta mensalidade?"
+        );
+
+        if (!confirm) return;
+
+        try {
+            await api.delete(`/mensalidades/${movimentacaoID}`);
+            setMovimentacoes((prev) =>
+                prev.filter(
+                    (mensalidade) => mensalidade.id_mensalidade !== movimentacaoID
+                )
+            );
+
+            console.log("ID da mensalidade a deletar:", movimentacaoID);
+
+            alert("Mensalidade excluída com sucesso!");
+        } catch (error) {
+            console.log("ID da mensalidade a deletar:", movimentacaoID);
+
+            console.error("Erro ao excluir mensalidade:", error.message);
+            alert("Erro ao excluir mensalidade.");
+        }
+    }
 
     if (!student) {
         return (
@@ -55,7 +88,7 @@ export default function VisualizarDados() {
 
             {/* Título */}
             <div className="text-center mb-8">
-                <TitleH1>Dados do Aluno</TitleH1>
+                <Title level={1}>Dados do Aluno</Title>
                 <h3 className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">
                     {student.nome}
                 </h3>
@@ -65,29 +98,43 @@ export default function VisualizarDados() {
             <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-4 sm:p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="font-semibold text-gray-700">ID:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.id}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.id}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Nome:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.nome}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.nome}
+                    </span>
 
-                    <label className="font-semibold text-gray-700">Data de Nascimento:</label>
+                    <label className="font-semibold text-gray-700">
+                        Data de Nascimento:
+                    </label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(student.data_nascimento)}
                     </span>
 
                     <label className="font-semibold text-gray-700">Responsável:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.responsavel}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.responsavel}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Telefone:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.telefone}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.telefone}
+                    </span>
 
-                    <label className="font-semibold text-gray-700">Data da Matrícula:</label>
+                    <label className="font-semibold text-gray-700">
+                        Data da Matrícula:
+                    </label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(student.data_matricula)}
                     </span>
 
                     <label className="font-semibold text-gray-700">Série:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{student.serie}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.serie}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Observação:</label>
                     <span className="text-sm sm:text-base text-gray-800">
@@ -107,16 +154,28 @@ export default function VisualizarDados() {
             </div>
 
             <div className="max-w-xl mx-auto mt-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Histórico de Pagamentos</h3>
+                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                    Histórico de Pagamentos
+                </h3>
                 {movimentacoes.length === 0 ? (
-                    <Paragrafos className="text-gray-600">Nenhuma movimentação registrada.</Paragrafos>
+                    <Paragraph muted className="text-gray-600">
+                        Nenhuma movimentação registrada.
+                    </Paragraph>
                 ) : (
                     <ul className="space-y-2">
                         {movimentacoes.map((mov, i) => (
-                            <li key={i} className="bg-gray-50 p-3 rounded shadow-sm">
-                                <Paragrafos><strong>Valor: </strong> R$ {mov.valor}</Paragrafos>
-                                <Paragrafos><strong>Data: </strong>{formatarDataLegivel(mov.data_pagamento)}</Paragrafos>
-                                <Paragrafos><strong>Mês Referente: </strong> {mov.mes_referencia}</Paragrafos>
+                            <li key={mov.id_mensalidade} className="bg-gray-50 p-3 rounded shadow-sm">
+                                <Paragraph muted className="">
+                                    <strong>Mês Referente: </strong> {mov.mes_referencia}
+                                    <strong>Valor: </strong> {formatarParaBRL(mov.valor)}
+                                    <button
+                                        onClick={() => navigate(`/alunos/${student.id}/mensalidade/${mov.id_mensalidade}`)}
+                                        className="p-1.5 rounded-md hover:bg-slate-200 transition"
+                                    >
+                                        <Eye className="w-4 h-4 text-slate-600" />
+                                    </button>
+                                </Paragraph>
+
                             </li>
                         ))}
                     </ul>

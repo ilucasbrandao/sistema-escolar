@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
-import { Container, Paragrafos, TitleH1 } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { ChevronLeftIcon, UserRoundPlus } from "lucide-react";
 import { formatarParaBRL, formatarParaData } from "../../utils/format";
 
@@ -47,10 +47,10 @@ export function Lancamentos() {
             </div>
 
             <div className="text-center">
-                <TitleH1>Lançamentos Financeiros</TitleH1>
-                <Paragrafos className="mt-4">
+                <Title level={1}>Lançamentos Financeiros</Title>
+                <Paragraph muted className="mt-4">
                     Informações sobre os lançamentos serão exibidas aqui:
-                </Paragrafos>
+                </Paragraph>
 
                 {/* Pesquisa */}
                 <div className="mt-6 mb-4 flex justify-end">
@@ -86,9 +86,9 @@ export function Lancamentos() {
 
                 {/* Tabela de lançamentos */}
                 {loading ? (
-                    <p>Carregando lançamentos...</p>
+                    <Paragraph muted>Carregando lançamentos...</Paragraph>
                 ) : filteredLancamentos.length === 0 ? (
-                    <p>Nenhum lançamento encontrado.</p>
+                    <Paragraph muted>Nenhum lançamento encontrado.</Paragraph>
                 ) : (
                     <table className="w-full border-collapse border mb-4">
                         <thead>
