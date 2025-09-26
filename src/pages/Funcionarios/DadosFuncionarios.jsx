@@ -1,8 +1,8 @@
 import dayjs from "dayjs";
-import api from "../../services/api.js"
+import api from "../../services/api.js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Container, Title } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format.js";
@@ -16,14 +16,16 @@ export default function VisualizarDadosFuncionario() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [teacher, setTeacher] = useState(null);
+    const [movimentacoes, setMovimentacoes] = useState([]);
 
     useEffect(() => {
         async function getTeacherById() {
             try {
                 const { data } = await api.get(`/professores/${id}`);
                 setTeacher(data);
-                console.log(data)
+                setMovimentacoes(data.movimentacoes || []);
             } catch (error) {
+                alert("Não foi possível carregar os dados do professor(a).");
                 console.error("Erro ao buscar professor(a) ", error);
             }
         }
@@ -35,9 +37,8 @@ export default function VisualizarDadosFuncionario() {
             <Container className="flex justify-center items-center h-full">
                 <p>Carregando dados do aluno...</p>
             </Container>
-        )
+        );
     }
-
 
     return (
         <Container>
@@ -54,7 +55,10 @@ export default function VisualizarDadosFuncionario() {
             {/* Título */}
             <div className="text-center mb-8">
                 <Title level={1}>Dados do Professor(a)</Title>
-                <Title level={3} className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6">
+                <Title
+                    level={3}
+                    className="text-2xl sm:text-4xl lg:text-5xl font-medium text-center text-blue-700 tracking-tight mb-6"
+                >
                     {teacher.nome}
                 </Title>
             </div>
@@ -63,12 +67,18 @@ export default function VisualizarDadosFuncionario() {
             <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-4 sm:p-6 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <label className="font-semibold text-gray-700">ID:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{teacher.id}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {teacher.id}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Nome:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{teacher.nome}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {teacher.nome}
+                    </span>
 
-                    <label className="font-semibold text-gray-700">Data de Nascimento:</label>
+                    <label className="font-semibold text-gray-700">
+                        Data de Nascimento:
+                    </label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(teacher.data_nascimento)}
                     </span>
@@ -76,20 +86,27 @@ export default function VisualizarDadosFuncionario() {
                     <label className="font-semibold text-gray-700">Salário (R$):</label>
                     <span>{formatarParaBRL(teacher.salario)}</span>
 
-
                     <label className="font-semibold text-gray-700">Telefone:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{teacher.telefone}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {teacher.telefone}
+                    </span>
 
-                    <label className="font-semibold text-gray-700">Data da Contratação:</label>
+                    <label className="font-semibold text-gray-700">
+                        Data da Contratação:
+                    </label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(teacher.data_contratacao)}
                     </span>
 
                     <label className="font-semibold text-gray-700">Nível de Série:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{teacher.nivel_ensino}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {teacher.nivel_ensino}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Turno:</label>
-                    <span className="text-sm sm:text-base text-gray-800">{teacher.turno}</span>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {teacher.turno}
+                    </span>
 
                     <label className="font-semibold text-gray-700">Status:</label>
                     <span
@@ -103,7 +120,40 @@ export default function VisualizarDadosFuncionario() {
                 </div>
             </div>
 
+            <div className="max-w-xl mx-auto mt-8">
+                <Title level={2} className="text-xl font-semibold text-gray-800 mb-4">
+                    Histórico de Pagamentos
+                </Title>
+                {movimentacoes.length === 0 ? (
+                    <Paragraph muted className="text-gray-600">
+                        Nenhuma movimentação registrada.
+                    </Paragraph>
+                ) : (
+                    <ul>
+                        {movimentacoes.map((mov, i) => (
+                            <li
+                                key={mov.id_despesas}
+                                className="bg-gray-50 p-3 rounded shadow-sm"
+                            >
+                                <Paragraph muted className="">
+                                    <strong>Mês Referente: </strong> {mov.mes_referencia}
+                                    <strong>Valor: </strong> {mov.valor}
+                                    <button
+                                        onClick={() =>
+                                            navigate(
+                                                `/professor/${teacher.id}/despesa/${mov.id_despesas}`
+                                            )
+                                        }
+                                        className="p-1.5 rounded-md hover:bg-slate-200 transition"
+                                    >
+                                        <Eye className="w-4 h-4 text-slate-600" />
+                                    </button>
+                                </Paragraph>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
         </Container>
-    )
-
+    );
 }

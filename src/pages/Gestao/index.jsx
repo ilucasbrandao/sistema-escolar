@@ -47,7 +47,7 @@ export function Lancamentos() {
             </div>
 
             <div className="text-center">
-                <Title level={1}>Lançamentos Financeiros</Title>
+                <Title level={1}>Histórico de Lançamentos</Title>
                 <Paragraph muted className="mt-4">
                     Informações sobre os lançamentos serão exibidas aqui:
                 </Paragraph>
@@ -61,27 +61,6 @@ export function Lancamentos() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="max-w-md w-72 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
                     />
-                </div>
-
-                {/* Botões Entrada e Saída */}
-                <div className="flex justify-center gap-6 mb-8">
-                    <Button
-                        onClick={() =>
-                            navigate("/lancamentos/cadastrar", { state: { tipo: "entrada" } })
-                        }
-                        className="px-8 py-6 text-xl font-semibold bg-green-500 hover:bg-green-600 rounded-lg shadow-md"
-                    >
-                        Entrada
-                    </Button>
-
-                    <Button
-                        onClick={() =>
-                            navigate("/lancamentos/cadastrar", { state: { tipo: "saida" } })
-                        }
-                        className="px-8 py-6 text-xl font-semibold bg-red-500 hover:bg-red-600 rounded-lg shadow-md"
-                    >
-                        Saída
-                    </Button>
                 </div>
 
                 {/* Tabela de lançamentos */}

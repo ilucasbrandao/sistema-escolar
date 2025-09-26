@@ -46,7 +46,7 @@ export default function App() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
           <Button
             onClick={() =>
-              navigate("lancamentos/mensalidade", { state: { tipo: "entrada" } })
+              navigate("lancamentos/receitas", { state: { tipo: "entrada" } })
             }
             className="flex items-center justify-center gap-2 px-6 py-4 text-lg font-semibold bg-green-500 hover:bg-green-600 rounded-lg shadow-md"
           >
@@ -55,7 +55,7 @@ export default function App() {
 
           <Button
             onClick={() =>
-              navigate("/lancamentos/cadastrar", { state: { tipo: "saida" } })
+              navigate("/lancamentos/despesas", { state: { tipo: "saida" } })
             }
             className="flex items-center justify-center gap-2 px-6 py-4 text-lg font-semibold bg-red-500 hover:bg-red-600 rounded-lg shadow-md"
           >

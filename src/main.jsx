@@ -18,8 +18,9 @@ import CadastroProfessor from "./pages/Funcionarios/CadastroFuncionarios.jsx";
 import VisualizarDadosFuncionario from "./pages/Funcionarios/DadosFuncionarios.jsx";
 import { EditarFuncionario } from "./pages/Funcionarios/EditarFuncionário.jsx";
 import { Lancamentos } from "./pages/Gestao/index.jsx";
-import CadastroMensalidade from "./pages/Gestao/Mensalidade.jsx";
-import VisualizarMensalidade from "./pages/Gestao/DetalheMensalidade.jsx";
+import CadastroReceita from "./pages/Gestao/Receita.jsx";
+import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
+import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -76,10 +77,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ":alunoId/mensalidade/:mensalidadeId",
+        path: ":alunoId/receita/:mensalidadeId",
         element: (
           <ProtectedRoute>
-            <VisualizarMensalidade />
+            <VisualizarReceita />
           </ProtectedRoute>
 
         )
@@ -121,6 +122,15 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: ":professorId/despesa/:despesaId",
+        element: (
+          <ProtectedRoute>
+            <VisualizarReceita />
+          </ProtectedRoute>
+
+        )
+      }
     ],
   },
 
@@ -136,10 +146,18 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "mensalidade",
+        path: "receitas",
         element: (
           <ProtectedRoute>
-            <CadastroMensalidade />
+            <CadastroReceita />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "despesas",
+        element: (
+          <ProtectedRoute>
+            <CadastroDespesa />
           </ProtectedRoute>
         ),
       },

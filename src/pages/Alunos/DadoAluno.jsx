@@ -33,39 +33,6 @@ export default function VisualizarDados() {
         getStudentById();
     }, [id]);
 
-    async function handleDelete(movimentacaoID) {
-        const senha = prompt("Digite a senha para excluir essa mensalidade:");
-        const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
-        if (senha !== senhaCorreta) {
-            alert("Senha incorreta. Exclusão cancelada.");
-            return;
-        }
-
-        const confirm = window.confirm(
-            "Tem certeza que deseja excluir esta mensalidade?"
-        );
-
-        if (!confirm) return;
-
-        try {
-            await api.delete(`/mensalidades/${movimentacaoID}`);
-            setMovimentacoes((prev) =>
-                prev.filter(
-                    (mensalidade) => mensalidade.id_mensalidade !== movimentacaoID
-                )
-            );
-
-            console.log("ID da mensalidade a deletar:", movimentacaoID);
-
-            alert("Mensalidade excluída com sucesso!");
-        } catch (error) {
-            console.log("ID da mensalidade a deletar:", movimentacaoID);
-
-            console.error("Erro ao excluir mensalidade:", error.message);
-            alert("Erro ao excluir mensalidade.");
-        }
-    }
-
     if (!student) {
         return (
             <Container className="flex justify-center items-center h-full">
@@ -154,9 +121,9 @@ export default function VisualizarDados() {
             </div>
 
             <div className="max-w-xl mx-auto mt-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                <Title level={2} className="text-xl font-semibold text-gray-800 mb-4">
                     Histórico de Pagamentos
-                </h3>
+                </Title>
                 {movimentacoes.length === 0 ? (
                     <Paragraph muted className="text-gray-600">
                         Nenhuma movimentação registrada.
@@ -164,18 +131,24 @@ export default function VisualizarDados() {
                 ) : (
                     <ul className="space-y-2">
                         {movimentacoes.map((mov, i) => (
-                            <li key={mov.id_mensalidade} className="bg-gray-50 p-3 rounded shadow-sm">
+                            <li
+                                key={mov.id_mensalidade}
+                                className="bg-gray-50 p-3 rounded shadow-sm"
+                            >
                                 <Paragraph muted className="">
                                     <strong>Mês Referente: </strong> {mov.mes_referencia}
-                                    <strong>Valor: </strong> {formatarParaBRL(mov.valor)}
+                                    <strong>Valor: </strong> {mov.valor}
                                     <button
-                                        onClick={() => navigate(`/alunos/${student.id}/mensalidade/${mov.id_mensalidade}`)}
+                                        onClick={() =>
+                                            navigate(
+                                                `/alunos/${student.id}/receita/${mov.id_mensalidade}`
+                                            )
+                                        }
                                         className="p-1.5 rounded-md hover:bg-slate-200 transition"
                                     >
                                         <Eye className="w-4 h-4 text-slate-600" />
                                     </button>
                                 </Paragraph>
-
                             </li>
                         ))}
                     </ul>

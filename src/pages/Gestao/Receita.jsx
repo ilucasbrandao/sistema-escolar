@@ -7,7 +7,7 @@ import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import { formatarParaISO } from "../../utils/date";
 
-export default function CadastroMensalidade() {
+export default function CadastroReceita() {
     const navigate = useNavigate();
     const hoje = new Date().toISOString().split("T")[0];
 
@@ -74,10 +74,6 @@ export default function CadastroMensalidade() {
     ];
 
     const handleSubmit = async () => {
-        const idAlunoNumerico = Number(formData.id_aluno);
-        const valorNumerico = Number(String(formData.valor).replace(",", "."));
-
-
 
         const payload = {
             id_aluno: Number(formData.id_aluno),
@@ -87,16 +83,13 @@ export default function CadastroMensalidade() {
             ano_referencia: Number(formData.ano_referencia),
         };
 
-
-
-
         try {
             console.log("Payload enviado:", payload);
-            await api.post("/mensalidades", payload);
-            alert("Mensalidade lançada com sucesso!");
+            await api.post("/receita", payload);
+            alert("Receita lançada com sucesso!");
             navigate("/lancamentos");
         } catch (error) {
-            console.error("Erro ao salvar mensalidade:", error?.response?.data || error);
+            console.error("Erro ao salvar Receita:", error?.response?.data || error);
             alert("Erro ao salvar. Verifique os dados e tente novamente.");
         }
     };
@@ -111,7 +104,7 @@ export default function CadastroMensalidade() {
                 Voltar
             </Button>
 
-            <Title level={1}>Lançar Mensalidade</Title>
+            <Title level={1}>Lançar Receitas</Title>
 
             <Form
                 fields={campos}

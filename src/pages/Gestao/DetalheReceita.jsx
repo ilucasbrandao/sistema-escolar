@@ -11,7 +11,7 @@ function formatarDataLegivel(dataISO) {
     return dayjs(dataISO).format("DD/MM/YYYY");
 }
 
-export default function VisualizarMensalidade() {
+export default function VisualizarReceita() {
     const navigate = useNavigate();
     const { alunoId, mensalidadeId } = useParams();
     const [mensalidade, setMensalidade] = useState(null);
@@ -19,7 +19,7 @@ export default function VisualizarMensalidade() {
     useEffect(() => {
         async function carregarMensalidade() {
             try {
-                const response = await api.get(`/mensalidades/aluno/${alunoId}/${mensalidadeId}`);
+                const response = await api.get(`/receita/aluno/${alunoId}/${mensalidadeId}`);
                 setMensalidade(response.data);
             } catch (error) {
                 console.error("Erro ao buscar mensalidade:", error);
@@ -40,7 +40,7 @@ export default function VisualizarMensalidade() {
         if (!confirm) return;
 
         try {
-            await api.delete(`/mensalidades/${mensalidadeId}`);
+            await api.delete(`/receita/${mensalidadeId}`);
             alert("Mensalidade excluída com sucesso!");
             navigate(`/alunos/${alunoId}`); // volta para histórico do aluno
         } catch (error) {
