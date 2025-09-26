@@ -4,12 +4,9 @@ import { Container, Title } from "./components/Container";
 import Footer from "./components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import api from "./services/api"
-
-
+import api from "./services/api";
 
 export default function App() {
-
   const testar = async () => {
     try {
       const res = await api.get("/ping");
@@ -27,7 +24,6 @@ export default function App() {
     localStorage.removeItem("userEmail");
     navigate("/login");
   };
-
 
   return (
     <Container>
@@ -62,11 +58,10 @@ export default function App() {
             <BanknoteArrowDown className="w-5 h-5" /> Lançar Despesa
           </Button>
         </div>
-
       </div>
 
-
-      <div><h3>Campos de Navegação</h3>
+      <div>
+        <Title level={3}>Campos de Navegação</Title>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
           <Button variant="blue" onClick={() => handleClick("alunos")}>
@@ -75,10 +70,7 @@ export default function App() {
           <Button variant="green" onClick={() => handleClick("professores")}>
             Professores
           </Button>
-          <Button
-            variant="purple"
-            onClick={() => handleClick("lancamentos")}
-          >
+          <Button variant="purple" onClick={() => handleClick("lancamentos")}>
             Gestão Financeira
           </Button>
           <Button variant="yellow" onClick={() => handleClick("notificacoes")}>

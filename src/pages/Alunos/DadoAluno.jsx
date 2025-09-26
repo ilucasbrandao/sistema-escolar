@@ -5,7 +5,6 @@ import { Container, Paragraph, Title } from "../../components/Container";
 import { ChevronLeftIcon, Eye } from "lucide-react";
 import api from "../../services/api";
 import dayjs from "dayjs";
-import { formatarParaBRL } from "../../utils/format";
 
 // Função para formatar data ISO → DD/MM/YYYY
 function formatarDataLegivel(dataISO) {

@@ -21,6 +21,7 @@ import { Lancamentos } from "./pages/Gestao/index.jsx";
 import CadastroReceita from "./pages/Gestao/Receita.jsx";
 import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
 import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
+import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -82,9 +83,8 @@ const router = createBrowserRouter([
           <ProtectedRoute>
             <VisualizarReceita />
           </ProtectedRoute>
-
-        )
-      }
+        ),
+      },
     ],
   },
   {
@@ -123,14 +123,13 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ":professorId/despesa/:despesaId",
+        path: ":professorId/despesas/:despesaId",
         element: (
           <ProtectedRoute>
-            <VisualizarReceita />
+            <DetalheDespesa />
           </ProtectedRoute>
-
-        )
-      }
+        ),
+      },
     ],
   },
 
@@ -161,9 +160,8 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
-    ]
-  }
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(

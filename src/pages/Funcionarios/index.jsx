@@ -13,8 +13,13 @@ export function Professores() {
 
     useEffect(() => {
         async function getTeacher() {
-            const { data } = await api.get("/professores");
-            setTeacher(data);
+            try {
+                const { data } = await api.get("/professores");
+                setTeacher(data);
+            } catch (error) {
+                console.error("Erro ao buscar professores:", error.message);
+                alert("Erro ao carregar professores.");
+            }
         }
         getTeacher();
     }, []);

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Container, Paragraph, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, Eye } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format.js";
 
 function formatarDataLegivel(dataISO) {
@@ -132,7 +132,7 @@ export default function VisualizarDadosFuncionario() {
                     <ul>
                         {movimentacoes.map((mov, i) => (
                             <li
-                                key={mov.id_despesas}
+                                key={mov.id_despesa}
                                 className="bg-gray-50 p-3 rounded shadow-sm"
                             >
                                 <Paragraph muted className="">
@@ -140,14 +140,12 @@ export default function VisualizarDadosFuncionario() {
                                     <strong>Valor: </strong> {mov.valor}
                                     <button
                                         onClick={() =>
-                                            navigate(
-                                                `/professor/${teacher.id}/despesa/${mov.id_despesas}`
-                                            )
+                                            navigate(`/professores/${teacher.id}/despesas/${mov.id_despesa}`)
                                         }
-                                        className="p-1.5 rounded-md hover:bg-slate-200 transition"
                                     >
                                         <Eye className="w-4 h-4 text-slate-600" />
                                     </button>
+
                                 </Paragraph>
                             </li>
                         ))}
