@@ -13,6 +13,16 @@ function formatDateToISO(dateString) {
     return dayjs(dateString, "DD/MM/YYYY").toISOString();
 }
 
+// Remove formatação monetária e converte para número
+function parseMensalidade(valor) {
+    if (typeof valor === "string") {
+        return parseFloat(
+            valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
+        );
+    }
+    return valor;
+}
+
 // Função para converter ISO → YYYY-MM-DD (para input type="date")
 function formatDateForInput(dateISO) {
     return dayjs(dateISO).format("YYYY-MM-DD");
@@ -55,6 +65,14 @@ export function EditarAluno() {
                         label: "Data de Matrícula",
                         type: "date",
                         value: formatDateForInput(data.data_matricula),
+                    },
+                    {
+                        name: "valor_mensalidade",
+                        label: "Mensalidade",
+                        type: "number",
+                        value: parseMensalidade(data.valor_mensalidade),
+                        step: "0.01",
+                        min: "0",
                     },
                     {
                         name: "serie",
@@ -102,6 +120,7 @@ export function EditarAluno() {
             responsavel: formData.responsavel,
             telefone: formData.telefone,
             data_matricula: formData.data_matricula,
+            mensalidade: parseFloat(formData.valor_mensalidade),
             serie: formData.serie,
             observacao: formData.observacao,
             status: formData.status,

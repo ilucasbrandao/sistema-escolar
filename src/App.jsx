@@ -76,7 +76,7 @@ export default function App() {
           <Button variant="yellow" onClick={() => handleClick("notificacoes")}>
             Notificações
           </Button>
-          <Button variant="pink" onClick={() => handleClick("gerar-relatorio")}>
+          <Button variant="pink" onClick={() => handleClick("dashboard")}>
             Gerar Relatório
           </Button>
         </div>

@@ -17,6 +17,7 @@ export default function CadastroAlunos() {
         responsavel: "",
         telefone: "",
         data_matricula: hoje,
+        valor_mensalidade: "",
         serie: "",
         observacao: "",
         status: "ativo",
@@ -47,6 +48,14 @@ export default function CadastroAlunos() {
             label: "Data de Matrícula",
             type: "date",
             max: hoje,
+        },
+        {
+            name: "valor_mensalidade",
+            label: "Mensalidade",
+            type: "number",
+            placeholder: "Digite o valor da mensalidade",
+            step: "0.01", // permite casas decimais
+            min: "0",     // evita valores negativos
         },
         {
             name: "serie",
@@ -84,6 +93,7 @@ export default function CadastroAlunos() {
             "data_nascimento",
             "responsavel",
             "data_matricula",
+            "valor_mensalidade",
             "serie",
         ];
 
@@ -98,7 +108,13 @@ export default function CadastroAlunos() {
             ...data,
             data_nascimento: formatarParaISO(data.data_nascimento),
             data_matricula: formatarParaISO(data.data_matricula),
+            // Converter valor_mensalidade
+            valor_mensalidade: data.valor_mensalidade?.trim() !== ""
+                ? parseFloat(data.valor_mensalidade)
+                : null,
+            // se estiver vazio envia null
         };
+
 
         try {
             await api.post("/alunos", payload);

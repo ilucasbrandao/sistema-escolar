@@ -4,17 +4,13 @@
  * @returns {string}
  */
 export function formatarParaBRL(valor) {
-  if (!valor && valor !== 0) return "-";
+  if (valor === null || valor === undefined) return "-";
 
   let numero;
 
   if (typeof valor === "string") {
-    // Remove "R$", pontos de milhar e troca vírgula por ponto
-    const limpo = valor
-      .replace("R$", "")
-      .replace(/\./g, "")
-      .replace(",", ".")
-      .trim();
+    // Se a string contém vírgula, substitui por ponto
+    const limpo = valor.replace(",", ".").trim();
     numero = parseFloat(limpo);
   } else {
     numero = Number(valor);

@@ -5,6 +5,7 @@ import { Container, Paragraph, Title } from "../../components/Container";
 import { ChevronLeftIcon, Eye } from "lucide-react";
 import api from "../../services/api";
 import dayjs from "dayjs";
+import { formatarParaBRL } from "../../utils/format";
 
 // Função para formatar data ISO → DD/MM/YYYY
 function formatarDataLegivel(dataISO) {
@@ -96,6 +97,8 @@ export default function VisualizarDados() {
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(student.data_matricula)}
                     </span>
+                    <label className="font-semibold text-gray-700">Mensalidade (R$):</label>
+                    <span>{formatarParaBRL(student.valor_mensalidade)}</span>
 
                     <label className="font-semibold text-gray-700">Série:</label>
                     <span className="text-sm sm:text-base text-gray-800">
@@ -140,7 +143,7 @@ export default function VisualizarDados() {
                                     <button
                                         onClick={() =>
                                             navigate(
-                                                `/alunos/${student.id}/receita/${mov.id_mensalidade}`
+                                                `/alunos/${student.id}/receitas/${mov.id_mensalidade}`
                                             )
                                         }
                                         className="p-1.5 rounded-md hover:bg-slate-200 transition"

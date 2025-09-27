@@ -13,20 +13,20 @@ function formatarDataLegivel(dataISO) {
 
 export default function VisualizarReceita() {
     const navigate = useNavigate();
-    const { alunoId, mensalidadeId } = useParams();
-    const [mensalidade, setMensalidade] = useState(null);
+    const { alunoId, receitaId } = useParams();
+    const [receita, setReceita] = useState(null);
 
     useEffect(() => {
         async function carregarMensalidade() {
             try {
-                const response = await api.get(`/receita/aluno/${alunoId}/${mensalidadeId}`);
-                setMensalidade(response.data);
+                const response = await api.get(`/receitas/aluno/${alunoId}/${receitaId}`);
+                setReceita(response.data);
             } catch (error) {
                 console.error("Erro ao buscar mensalidade:", error);
             }
         }
         carregarMensalidade();
-    }, [alunoId, mensalidadeId]);
+    }, [alunoId, receitaId]);
 
     async function handleDelete() {
         const senha = prompt("Digite a senha para excluir esta mensalidade:");
@@ -40,7 +40,7 @@ export default function VisualizarReceita() {
         if (!confirm) return;
 
         try {
-            await api.delete(`/receita/${mensalidadeId}`);
+            await api.delete(`/receitas/${receitaId}`);
             alert("Mensalidade excluída com sucesso!");
             navigate(`/alunos/${alunoId}`); // volta para histórico do aluno
         } catch (error) {
@@ -49,7 +49,7 @@ export default function VisualizarReceita() {
         }
     }
 
-    if (!mensalidade) {
+    if (!receita) {
         return (
             <Container className="flex justify-center items-center h-full">
                 <p>Carregando mensalidade...</p>
@@ -73,16 +73,16 @@ export default function VisualizarReceita() {
             <Container className="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
                 <div className="flex flex-col gap-1">
                     <Paragraph>
-                        <strong>Valor: </strong> R$ {mensalidade.valor}
+                        <strong>Valor: </strong> R$ {receita.valor}
                     </Paragraph>
                     <Paragraph>
-                        <strong>Data de Pagamento: </strong> {formatarDataLegivel(mensalidade.data_pagamento)}
+                        <strong>Data de Pagamento: </strong> {formatarDataLegivel(receita.data_pagamento)}
                     </Paragraph>
                     <Paragraph>
-                        <strong>Mês Referente: </strong> {mensalidade.mes_referencia}/{mensalidade.ano_referencia}
+                        <strong>Mês Referente: </strong> {receita.mes_referencia}/{receita.ano_referencia}
                     </Paragraph>
                     <Paragraph>
-                        <strong>Status: </strong> {mensalidade.status}
+                        <strong>Status: </strong> {receita.status}
                     </Paragraph >
                 </div>
 

@@ -10,14 +10,17 @@ import { formatarParaISO } from "../../utils/date";
 export default function CadastroReceita() {
     const navigate = useNavigate();
     const hoje = new Date().toISOString().split("T")[0];
+    const mesAtual = new Date().getMonth() + 1;
+    const anoAtual = new Date().getFullYear();
 
     const [alunos, setAlunos] = useState([]);
     const [formData, setFormData] = useState({
         id_aluno: "",
         valor: "",
         data_pagamento: hoje,
-        mes_referencia: new Date().getMonth() + 1,
-        ano_referencia: new Date().getFullYear(),
+        mes_referencia: mesAtual,
+        ano_referencia: anoAtual,
+        descricao: `Mensalidade referente ao mês: ${mesAtual}/${anoAtual}`,
     });
 
     useEffect(() => {
@@ -71,6 +74,13 @@ export default function CadastroReceita() {
             min: 2000,
             max: 2100,
         },
+        {
+            name: "descricao",
+            label: "Descrição",
+            type: "text",
+            placeholder: "Digite a descrição",
+            value: `Mensalidade referente ao mês: ${mesAtual}/${anoAtual}`,
+        },
     ];
 
     const handleSubmit = async () => {
@@ -81,11 +91,12 @@ export default function CadastroReceita() {
             data_pagamento: formatarParaISO(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
+            descricao: formData.descricao
         };
 
         try {
             console.log("Payload enviado:", payload);
-            await api.post("/receita", payload);
+            await api.post("/receitas", payload);
             alert("Receita lançada com sucesso!");
             navigate("/lancamentos");
         } catch (error) {

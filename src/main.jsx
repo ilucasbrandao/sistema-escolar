@@ -22,6 +22,7 @@ import CadastroReceita from "./pages/Gestao/Receita.jsx";
 import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
 import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
+import { Dashboard } from "./pages/Dashboard/index.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -78,7 +79,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: ":alunoId/receita/:mensalidadeId",
+        path: ":alunoId/receitas/:receitaId",
         element: (
           <ProtectedRoute>
             <VisualizarReceita />
@@ -160,6 +161,19 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+    ],
+  },
+  {
+    path: "/dashboard",
+    children: [
+      {
+        path: "",
+        element: (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ),
+      }
     ],
   },
 ]);
