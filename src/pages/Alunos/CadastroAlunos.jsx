@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Paragraph, Title } from "../../components/Container";
+import { Container, Title } from "../../components/Container";
 import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
-import { formatarParaISO, formatarDataLegivel } from "../../utils/date";
+import { formatarParaISO } from "../../utils/date";
+import { formatarParaBRL } from "../../utils/format";
+
 
 export default function CadastroAlunos() {
     const navigate = useNavigate();
@@ -19,6 +21,7 @@ export default function CadastroAlunos() {
         data_matricula: hoje,
         valor_mensalidade: "",
         serie: "",
+        turno: "",
         observacao: "",
         status: "ativo",
     });
@@ -62,10 +65,20 @@ export default function CadastroAlunos() {
             label: "Série",
             type: "select",
             options: [
-                { label: "", value: "" },
+                { label: "Selecione a serie", value: "" },
                 { label: "Infantil I", value: "Infantil I" },
                 { label: "Infantil II", value: "Infantil II" },
                 { label: "Fundamental", value: "Fundamental" },
+            ],
+        },
+        {
+            name: "turno",
+            label: "Turno",
+            type: "select",
+            options: [
+                { label: "Selecione o turno", value: "" },
+                { label: "Manhã", value: "Manha" },
+                { label: "Tarde", value: "Tarde" },
             ],
         },
         {
@@ -95,6 +108,7 @@ export default function CadastroAlunos() {
             "data_matricula",
             "valor_mensalidade",
             "serie",
+            "turno",
         ];
 
         for (let campo of obrigatorios) {
@@ -110,7 +124,7 @@ export default function CadastroAlunos() {
             data_matricula: formatarParaISO(data.data_matricula),
             // Converter valor_mensalidade
             valor_mensalidade: data.valor_mensalidade?.trim() !== ""
-                ? parseFloat(data.valor_mensalidade)
+                ? formatarParaBRL(data.valor_mensalidade)
                 : null,
             // se estiver vazio envia null
         };

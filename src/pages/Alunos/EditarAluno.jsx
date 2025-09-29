@@ -70,7 +70,7 @@ export function EditarAluno() {
                         name: "valor_mensalidade",
                         label: "Mensalidade",
                         type: "number",
-                        value: parseMensalidade(data.valor_mensalidade),
+                        value: (data.valor_mensalidade),
                         step: "0.01",
                         min: "0",
                     },
@@ -84,6 +84,17 @@ export function EditarAluno() {
                             { label: "Fundamental", value: "Fundamental" },
                         ],
                         value: data.serie,
+                    },
+                    {
+                        name: "turno",
+                        label: "Turno",
+                        type: "select",
+                        options: [
+                            { label: "", value: "" },
+                            { label: "Manhã", value: "Manha" },
+                            { label: "Tarde", value: "Tarde" },
+                        ],
+                        value: data.turno
                     },
                     {
                         name: "observacao",

@@ -97,12 +97,18 @@ export default function VisualizarDados() {
                     <span className="text-sm sm:text-base text-gray-800">
                         {formatarDataLegivel(student.data_matricula)}
                     </span>
-                    <label className="font-semibold text-gray-700">Mensalidade (R$):</label>
+                    <label className="font-semibold text-gray-700">
+                        Mensalidade (R$):
+                    </label>
                     <span>{formatarParaBRL(student.valor_mensalidade)}</span>
 
                     <label className="font-semibold text-gray-700">Série:</label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {student.serie}
+                    </span>
+                    <label className="font-semibold text-gray-700">Turno:</label>
+                    <span className="text-sm sm:text-base text-gray-800">
+                        {student.turno}
                     </span>
 
                     <label className="font-semibold text-gray-700">Observação:</label>
@@ -113,8 +119,8 @@ export default function VisualizarDados() {
                     <label className="font-semibold text-gray-700">Status:</label>
                     <span
                         className={`font-semibold ${student.status === "ativo"
-                            ? "text-sm sm:text-base text-green-600"
-                            : "text-sm sm:text-base text-red-600"
+                                ? "text-sm sm:text-base text-green-600"
+                                : "text-sm sm:text-base text-red-600"
                             }`}
                     >
                         {student.status}
