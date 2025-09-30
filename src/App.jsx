@@ -55,14 +55,14 @@ export default function App() {
         <Title level={2}>Ações Rápidas</Title>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
           <ActionCard
-            icon={<CircleDollarSign className="w-6 h-6 text-green-600" />}
+            icon={<CircleDollarSign className="w-6 h-6 text-green-500" />}
             label="Lançar Mensalidade"
             onClick={() =>
               navigate("lancamentos/receitas", { state: { tipo: "entrada" } })
             }
           />
           <ActionCard
-            icon={<BanknoteArrowDown className="w-6 h-6 text-red-600" />}
+            icon={<BanknoteArrowDown className="w-6 h-6 text-red-500" />}
             label="Lançar Despesa"
             onClick={() =>
               navigate("/lancamentos/despesas", { state: { tipo: "saida" } })
@@ -106,7 +106,7 @@ export default function App() {
               icon="🎂"
               value={dados.aniversariantes.map(a => (
                 <span key={a.nome}>
-                  {a.nome} - {new Date(a.data_nascimento).toLocaleDateString()}
+                  <p>{a.nome} - {new Date(a.data_nascimento).toLocaleDateString()}</p>
                 </span>
               ))}
             />
@@ -114,7 +114,7 @@ export default function App() {
               title="Alunos por Turno"
               icon="🕒"
               value={Object.entries(dados.alunos_por_turno).map(([turno, qtd]) => (
-                <span key={turno}>{turno}: {qtd} ||</span>
+                <p key={turno}>{turno}: {qtd} </p>
               ))}
             />
             <InfoCard

@@ -10,18 +10,19 @@ import {
     Trash,
     UserRoundPlus,
 } from "lucide-react";
-import { formatarParaBRL } from "../../utils/format";
 
 export function Professores() {
     const navigate = useNavigate();
-    const [teacher, setTeacher] = useState([]);
+    const [teachers, setTeachers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [onlyActive, setOnlyActive] = useState(false);
+    let filteredTeachers = teachers;
 
     useEffect(() => {
         async function getTeacher() {
             try {
                 const { data } = await api.get("/professores");
-                setTeacher(data);
+                setTeachers(data);
             } catch (error) {
                 console.error("Erro ao buscar professores:", error.message);
                 alert("Erro ao carregar professores.");
@@ -30,13 +31,19 @@ export function Professores() {
         getTeacher();
     }, []);
 
-    const filteredTeachers = teacher.filter((t) =>
-        t.nome.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
+    if (searchTerm) {
+        filteredTeachers = teachers.filter((t) =>
+            t.nome.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }
+    if (onlyActive) {
+        filteredTeachers = filteredTeachers.filter((t) => t.status === 'ativo')
+    }
     async function handleDelete(id) {
         const senha = prompt("Digite a senha para excluir o professor(a):");
-        if (senha !== "JulianneKelly2025") {
+        const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
+
+        if (senha !== senhaCorreta) {
             alert("Senha incorreta. Exclusão cancelada.");
             return;
         }
@@ -45,7 +52,7 @@ export function Professores() {
 
         try {
             await api.delete(`/professores/${id}`);
-            setTeacher((prev) => prev.filter((t) => t.id !== id));
+            setTeachers((prev) => prev.filter((t) => t.id !== id));
             alert("Professor(a) excluído com sucesso!");
         } catch (error) {
             console.error("Erro ao excluir professor(a):", error.message);
@@ -83,6 +90,15 @@ export function Professores() {
                     className="w-full sm:w-72 p-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 />
             </div>
+            <label className="flex items-center gap-2 text-sm mb-4">
+                <input
+                    type="checkbox"
+                    checked={onlyActive}
+                    onChange={(e) => setOnlyActive(e.target.checked)}
+                    className="w-4 h-4"
+                />
+                Mostrar apenas professores ativos
+            </label>
 
             {/* Tabela */}
             <div className="overflow-x-auto">
@@ -105,7 +121,9 @@ export function Professores() {
                         >
                             <span className="text-slate-500">{t.id}</span>
                             <span className="font-medium text-slate-800">{t.nome}</span>
-                            <span className="text-slate-700 font-semibold">{formatarParaBRL(t.salario)}</span>
+                            <span className="text-slate-700 font-semibold">
+                                {t.salario}
+                            </span>
                             <span className="font-medium text-slate-800">{t.turno}</span>
                             <span className={`font-semibold ${t.status === "ativo" ? "text-green-600" : "text-red-600"}`}>
                                 {t.status}

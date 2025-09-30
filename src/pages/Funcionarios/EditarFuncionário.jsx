@@ -79,18 +79,18 @@ export function EditarFuncionario() {
                         name: "turno",
                         label: "Turno",
                         type: "select",
+                        value: data.turno,
                         options: [
                             { label: "", value: "" },
                             { label: "Manhã", value: "Manha" },
                             { label: "Tarde", value: "Tarde" },
                         ],
-                        value: data.turno
                     },
                     {
                         name: "salario",
                         label: "Salário",
                         type: "number",
-                        value: (data.salario),
+                        value: parseSalario(data.salario),
                         step: "0.01",
                         min: "0",
                     },
@@ -123,6 +123,7 @@ export function EditarFuncionario() {
             endereco: formData.endereco,
             data_contratacao: formData.data_contratacao,
             nivel_ensino: formData.nivel_ensino,
+            turno: formData.turno,
             salario: parseFloat(formData.salario),
             status: formData.status,
         };

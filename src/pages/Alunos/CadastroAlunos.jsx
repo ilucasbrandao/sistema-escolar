@@ -7,7 +7,6 @@ import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import { formatarParaISO } from "../../utils/date";
 
-
 export default function CadastroAlunos() {
     const navigate = useNavigate();
     const hoje = new Date().toISOString().split("T")[0];
@@ -57,7 +56,7 @@ export default function CadastroAlunos() {
             type: "number",
             placeholder: "Digite o valor da mensalidade",
             step: "0.01", // permite casas decimais
-            min: "0",     // evita valores negativos
+            min: "0", // evita valores negativos
         },
         {
             name: "serie",
@@ -121,13 +120,11 @@ export default function CadastroAlunos() {
             ...data,
             data_nascimento: formatarParaISO(data.data_nascimento),
             data_matricula: formatarParaISO(data.data_matricula),
-            // Converter valor_mensalidade
-            valor_mensalidade: data.valor_mensalidade?.trim() !== ""
-                ? parseFloat(data.valor_mensalidade)
-                : null,
-            // se estiver vazio envia null
+            valor_mensalidade:
+                data.valor_mensalidade !== "" && data.valor_mensalidade !== null
+                    ? Number(data.valor_mensalidade)
+                    : null,
         };
-
 
         try {
             await api.post("/alunos", payload);
@@ -142,7 +139,8 @@ export default function CadastroAlunos() {
     return (
         <Container>
             <Button
-                variant="primary" size="md"
+                variant="primary"
+                size="md"
                 onClick={() => navigate("/alunos")}
                 className="mb-4 flex items-center gap-2"
             >
@@ -150,7 +148,9 @@ export default function CadastroAlunos() {
                 Voltar
             </Button>
 
-            <Title level={1} className="text-center mb-8">Cadastrar Aluno</Title>
+            <Title level={1} className="text-center mb-8">
+                Cadastrar Aluno
+            </Title>
 
             <Form
                 fields={fields}
@@ -159,7 +159,6 @@ export default function CadastroAlunos() {
                 onSubmit={handleSubmit}
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
-
         </Container>
     );
 }

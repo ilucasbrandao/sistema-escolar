@@ -70,7 +70,7 @@ export function EditarAluno() {
                         name: "valor_mensalidade",
                         label: "Mensalidade",
                         type: "number",
-                        value: (data.valor_mensalidade),
+                        value: data.valor_mensalidade,
                         step: "0.01",
                         min: "0",
                     },
@@ -89,12 +89,12 @@ export function EditarAluno() {
                         name: "turno",
                         label: "Turno",
                         type: "select",
+                        value: data.turno,
                         options: [
                             { label: "", value: "" },
                             { label: "Manhã", value: "Manha" },
                             { label: "Tarde", value: "Tarde" },
                         ],
-                        value: data.turno
                     },
                     {
                         name: "observacao",
@@ -131,19 +131,22 @@ export function EditarAluno() {
             responsavel: formData.responsavel,
             telefone: formData.telefone,
             data_matricula: formData.data_matricula,
-            mensalidade: parseFloat(formData.valor_mensalidade),
+            valor_mensalidade: parseFloat(formData.valor_mensalidade),
             serie: formData.serie,
             observacao: formData.observacao,
             status: formData.status,
         };
 
         try {
-            console.log(payload)
+            console.log(payload);
             await api.put(`/alunos/${id}`, payload);
             alert("Aluno atualizado com sucesso!");
             navigate("/alunos");
         } catch (error) {
-            console.error("Erro ao atualizar aluno:", error.response?.data || error.message);
+            console.error(
+                "Erro ao atualizar aluno:",
+                error.response?.data || error.message
+            );
             alert("Erro ao atualizar aluno.");
         }
     }
@@ -158,10 +161,10 @@ export function EditarAluno() {
             >
                 <ChevronLeftIcon className="w-5 h-5" />
             </Button>
-
-            <Title level={1}>Editar Aluno</Title>
-            <Title level={3}>Mat: {id}</Title>
-
+            <div className="text-center">
+                <Title level={1}>Editar Aluno</Title>
+                <Title level={3}>Mat: {id}</Title>
+            </div>
             <Form
                 fields={fields}
                 onSubmit={handleSubmit}

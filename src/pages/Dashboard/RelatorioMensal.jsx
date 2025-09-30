@@ -11,7 +11,6 @@ export default function RelatorioMensal() {
     const ano = params.get("ano");
     const [dados, setDados] = useState(null);
 
-
     useEffect(() => {
         async function carregarRelatorio() {
             try {
@@ -30,14 +29,26 @@ export default function RelatorioMensal() {
 
     return (
         <Container>
-            <Title level={1}>Relatório de {dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}</Title>
+            <Title level={1}>
+                Relatório de {dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}
+            </Title>
 
             <section className="mt-4 space-y-2 text-sm text-slate-700">
-                <p><strong>Receitas:</strong> {formatarParaBRL(dados.total_receitas)}</p>
-                <p><strong>Despesas:</strong> {formatarParaBRL(dados.total_despesas)}</p>
-                <p><strong>Saldo Final:</strong> {formatarParaBRL(dados.saldo)}</p>
-                <p><strong>Alunos Ativos:</strong> {dados.alunos_ativos}</p>
-                <p><strong>Professores Ativos:</strong> {dados.professores_ativos}</p>
+                <p>
+                    <strong>Receitas:</strong> {formatarParaBRL(dados.total_receitas)}
+                </p>
+                <p>
+                    <strong>Despesas:</strong> {formatarParaBRL(dados.total_despesas)}
+                </p>
+                <p>
+                    <strong>Saldo Final:</strong> {formatarParaBRL(dados.saldo)}
+                </p>
+                <p>
+                    <strong>Alunos Ativos:</strong> {dados.alunos_ativos}
+                </p>
+                <p>
+                    <strong>Professores Ativos:</strong> {dados.professores_ativos}
+                </p>
             </section>
         </Container>
     );

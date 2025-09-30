@@ -56,8 +56,8 @@ export function Lancamentos() {
     };
 
     const filteredLancamentos = lancamentos.filter((l) =>
-        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => b.origem_id - a.origem_id)
+        ;
 
     const gerarDescricao = (l) => {
         if (l.descricao) return l.descricao;
@@ -93,13 +93,7 @@ export function Lancamentos() {
                     <Button onClick={() => alterarMes(1)}>Próximo mês →</Button>
                 </div>
                 <div className="mb-4 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 flex-wrap">
-                    <input
-                        type="text"
-                        placeholder="Descrição..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full sm:w-64 p-2 border border-slate-300 rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
-                    />
+
                     <input
                         type="date"
                         value={inicio}
@@ -152,8 +146,8 @@ export function Lancamentos() {
                         <tr className="bg-slate-100 text-slate-600 font-medium">
                             <th className="border px-2 py-1">Tipo</th>
                             <th className="border px-2 py-1">Descrição</th>
-                            <th className="border px-2 py-1">Aluno</th>
-                            <th className="border px-2 py-1">Professor</th>
+                            <th className="border px-2 py-1">Entrada</th>
+                            <th className="border px-2 py-1">Saída</th>
                             <th className="border px-2 py-1">Valor</th>
                             <th className="border px-2 py-1">Data</th>
                             <th className="border px-2 py-1">Status</th>

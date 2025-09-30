@@ -17,8 +17,6 @@ export function Dashboard() {
     const navigate = useNavigate();
     const [dados, setDados] = useState(null);
 
-
-
     const carregarDashboard = async () => {
         try {
             const { data } = await api.get("/dashboard", {
@@ -49,7 +47,9 @@ export function Dashboard() {
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" />
                 </Button>
-                <Title level={1} className="text-2xl font-bold text-slate-800">Dashboard</Title>
+                <Title level={1} className="text-2xl font-bold text-slate-800">
+                    Dashboard
+                </Title>
                 <Button onClick={() => navigate("/alunos/cadastrar")}>
                     <UserRoundPlus className="w-5 h-5" />
                 </Button>
@@ -86,7 +86,8 @@ export function Dashboard() {
                             });
 
                             alert(
-                                `✅ Mês fechado com sucesso!\nUsuário: ${data.fechamento.usuario}\nSaldo final: ${formatarParaBRL(data.fechamento.saldo_final)}`
+                                `✅ Mês fechado com sucesso!\nUsuário: ${data.fechamento.usuario
+                                }\nSaldo final: ${formatarParaBRL(data.fechamento.saldo_final)}`
                             );
                             carregarDashboard();
                         } catch (error) {
@@ -109,9 +110,15 @@ export function Dashboard() {
             {/* Indicadores Gerais */}
             <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                 <InfoCard title="Alunos Ativos" value={dados.alunos_ativos} icon="👨‍🎓" />
-                <InfoCard title="Professores Ativos" value={dados.professores_ativos} icon="👩‍🏫" />
                 <InfoCard
-                    title={`Saldo de Caixa: ${dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}`}
+                    title="Professores Ativos"
+                    value={dados.professores_ativos}
+                    icon="👩‍🏫"
+                />
+                <InfoCard
+                    title={`Saldo de Caixa: ${dayjs(`${ano}-${mes}-01`).format(
+                        "MMMM [de] YYYY"
+                    )}`}
                     value={formatarParaBRL(dados.saldo_caixa)}
                     icon="💰"
                     highlight
@@ -121,7 +128,9 @@ export function Dashboard() {
             {/* Dados Operacionais */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
                 <div className="bg-white rounded-md shadow-sm p-3">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Alunos por Turno</h4>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                        Alunos por Turno
+                    </h4>
                     <ul className="divide-y divide-slate-200 text-sm text-slate-600">
                         {Object.entries(dados.alunos_por_turno).map(([turno, qtd]) => (
                             <li key={turno} className="flex justify-between py-1">
@@ -134,10 +143,7 @@ export function Dashboard() {
             </section>
 
             {/* Botão para fechamento do caixa */}
-            <div className="mb-6 space-y-2">
-
-            </div>
-
+            <div className="mb-6 space-y-2"></div>
 
             {/* Previsões Financeiras */}
             <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
@@ -154,7 +160,12 @@ export function Dashboard() {
                     icon="📉"
                     color="red"
                 />
+                <InfoCard
+                    title="Novos Matriculados no Mês"
+                    value={dados.matriculados_mes_atual}
+                    icon="📝"
+                />
             </section>
-        </Container >
+        </Container>
     );
 }
