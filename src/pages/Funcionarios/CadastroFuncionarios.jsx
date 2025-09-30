@@ -41,7 +41,7 @@ export default function CadastroProfessor() {
         },
         {
             name: "endereco",
-            label: "Endereço",
+            label: "Endereço, Número, Bairro",
             placeholder: "Rua, Número, Bairro",
             type: "text",
         },
@@ -56,7 +56,7 @@ export default function CadastroProfessor() {
             label: "Nível de Ensino",
             type: "select",
             options: [
-                { label: "", value: "" },
+                { label: "Nível do Ensino", value: "" },
                 { label: "Infantil", value: "Infantil" },
                 { label: "Fundamental", value: "Fundamental" },
             ],
@@ -66,7 +66,7 @@ export default function CadastroProfessor() {
             label: "Turno",
             type: "select",
             options: [
-                { label: "", value: "" },
+                { label: "Selecione o turno", value: "" },
                 { label: "Manhã", value: "Manha" },
                 { label: "Tarde", value: "Tarde" },
             ],
@@ -126,19 +126,21 @@ export default function CadastroProfessor() {
     return (
         <Container>
             <Button
+                variant="primary" size="md"
                 onClick={() => navigate("/professores")}
                 className="mb-4 flex items-center gap-2"
             >
                 <ChevronLeftIcon className="w-5 h-5" />
+                Voltar
             </Button>
 
-            <Title level={1}>Cadastrar Professor(a)</Title>
+            <Title level={1} className="text-center mb-8">Cadastrar Professor(a)</Title>
 
             <Form
                 fields={fields}
-                onSubmit={handleSubmit}
                 values={formData}
                 onChange={setFormData}
+                onSubmit={handleSubmit}
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
 

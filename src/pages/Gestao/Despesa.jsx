@@ -1,37 +1,48 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 import { formatarParaISO } from "../../utils/date";
 import { Container, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { Form } from "../../components/Form";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, Dock } from "lucide-react";
 import api from "../../services/api";
 
 export default function CadastroDespesa() {
     const navigate = useNavigate();
-    const hoje = new Date().toISOString().split("T")[0];
+    const hoje = dayjs().format("YYYY-MM-DD");
+    const mesAtual = dayjs().month() + 1;
+    const anoAtual = dayjs().year();
 
     const [professor, setProfessor] = useState([]);
     const [formData, setFormData] = useState({
         id_professor: "",
         valor: "",
         data_pagamento: hoje,
-        mes_referencia: new Date().getMonth() + 1,
-        ano_referencia: new Date().getFullYear(),
+        mes_referencia: mesAtual,
+        ano_referencia: anoAtual,
+        descricao: `Despesa referente ao mês: ${mesAtual}/${anoAtual}`,
     });
 
     useEffect(() => {
         async function carregarProfessores() {
             try {
                 const res = await api.get("/professores");
-                setProfessor(res.data)
+                setProfessor(res.data);
             } catch (error) {
                 console.error("Erro ao carregar professores:", error.message);
             }
-
         }
         carregarProfessores();
     }, []);
+
+    // Atualiza descrição automaticamente quando mês ou ano mudam
+    useEffect(() => {
+        setFormData((prev) => ({
+            ...prev,
+            descricao: `Despesa referente ao mês: ${prev.mes_referencia}/${prev.ano_referencia}`,
+        }));
+    }, [formData.mes_referencia, formData.ano_referencia])
 
     const campos = [
         {
@@ -42,8 +53,7 @@ export default function CadastroDespesa() {
                 { label: "Selecionar professor", value: "" },
                 ...professor.map((a) => ({ label: a.nome, value: String(a.id) })),
             ],
-        }
-        ,
+        },
         {
             name: "valor",
             label: "Valor",
@@ -72,6 +82,12 @@ export default function CadastroDespesa() {
             min: 2000,
             max: 2100,
         },
+        {
+            name: "descricao",
+            label: "Descrição",
+            type: "text",
+            placeholder: "Digite a descrição",
+        },
     ];
 
     const handleSubmit = async () => {
@@ -80,16 +96,17 @@ export default function CadastroDespesa() {
             valor: Number(formData.valor),
             data_pagamento: formatarParaISO(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
-            ano_referencia: Number(formData.ano_referencia)
-        }
+            ano_referencia: Number(formData.ano_referencia),
+            descricao: formData.descricao,
+        };
+
         try {
-            console.log("Payload enviado:", payload)
             await api.post("/despesa", payload);
-            alert("Despesa lançada com sucesso!")
+            alert("Despesa lançada com sucesso!");
             navigate("/lancamentos");
         } catch (error) {
             console.error("Erro ao salvar Despesa:", error?.response?.data || error);
-            alert("Erro ao salvar. Verifique os dados e tente novamente.")
+            alert("Erro ao salvar. Verifique os dados e tente novamente.");
         }
     };
 
@@ -99,11 +116,11 @@ export default function CadastroDespesa() {
                 onClick={() => navigate("/lancamentos")}
                 className="mb-4 flex items-center gap-2"
             >
-                <ChevronLeftIcon className="w-5 h-5" />
-                Voltar
+                <Dock className="w-5 h-5" />
+                Lançamentos
             </Button>
 
-            <Title level={1}>Lançar Despesa</Title>
+            <Title className="text-center" level={1}>Lançar Despesa</Title>
 
             <Form
                 fields={campos}
@@ -113,5 +130,5 @@ export default function CadastroDespesa() {
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
         </Container>
-    )
+    );
 }

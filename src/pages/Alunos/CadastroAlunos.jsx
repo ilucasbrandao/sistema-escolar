@@ -6,7 +6,6 @@ import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import { formatarParaISO } from "../../utils/date";
-import { formatarParaBRL } from "../../utils/format";
 
 
 export default function CadastroAlunos() {
@@ -124,7 +123,7 @@ export default function CadastroAlunos() {
             data_matricula: formatarParaISO(data.data_matricula),
             // Converter valor_mensalidade
             valor_mensalidade: data.valor_mensalidade?.trim() !== ""
-                ? formatarParaBRL(data.valor_mensalidade)
+                ? parseFloat(data.valor_mensalidade)
                 : null,
             // se estiver vazio envia null
         };
@@ -151,7 +150,7 @@ export default function CadastroAlunos() {
                 Voltar
             </Button>
 
-            <Title level={1}>Cadastrar Aluno</Title>
+            <Title level={1} className="text-center mb-8">Cadastrar Aluno</Title>
 
             <Form
                 fields={fields}

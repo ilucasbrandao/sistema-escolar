@@ -15,7 +15,6 @@ const maxWidths = {
 
 export function Container({
     children,
-    maxWidth = "xl",
     padded = true,
     className,
     ...props
@@ -23,15 +22,14 @@ export function Container({
     return (
         <div
             className={clsx(
-                "min-h-screen w-full bg-slate-50 overflow-y-auto flex justify-center",
+                "min-h-screen w-full bg-slate-50 overflow-y-auto",
                 className
             )}
             {...props}
         >
             <div
                 className={clsx(
-                    "w-full mx-auto bg-white rounded-lg shadow-md border border-slate-200",
-                    maxWidths[maxWidth],
+                    "w-full bg-white",
                     padded && "p-6 sm:p-8 lg:p-10"
                 )}
             >
@@ -40,6 +38,7 @@ export function Container({
         </div>
     );
 }
+
 
 Container.propTypes = {
     children: PropTypes.node.isRequired,

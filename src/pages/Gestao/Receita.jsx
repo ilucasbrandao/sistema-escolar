@@ -3,15 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Container, Title } from "../../components/Container";
 import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
-import { ChevronLeftIcon } from "lucide-react";
+import { ChevronLeftIcon, Dock } from "lucide-react";
 import api from "../../services/api";
 import { formatarParaISO } from "../../utils/date";
+import dayjs from "dayjs";
 
 export default function CadastroReceita() {
     const navigate = useNavigate();
-    const hoje = new Date().toISOString().split("T")[0];
-    const mesAtual = new Date().getMonth() + 1;
-    const anoAtual = new Date().getFullYear();
+    const hoje = dayjs().format("YYYY-MM-DD");
+    const mesAtual = dayjs().month() + 1;
+    const anoAtual = dayjs().year();
 
     const [alunos, setAlunos] = useState([]);
     const [formData, setFormData] = useState({
@@ -35,6 +36,14 @@ export default function CadastroReceita() {
         carregarAlunos();
     }, []);
 
+    // Atualiza descrição automaticamente quando mês ou ano mudam
+    useEffect(() => {
+        setFormData((prev) => ({
+            ...prev,
+            descricao: `Mensalidade referente ao mês: ${prev.mes_referencia}/${prev.ano_referencia}`,
+        }));
+    }, [formData.mes_referencia, formData.ano_referencia]);
+
     const campos = [
         {
             name: "id_aluno",
@@ -44,8 +53,7 @@ export default function CadastroReceita() {
                 { label: "Selecionar aluno", value: "" },
                 ...alunos.map((a) => ({ label: a.nome, value: String(a.id) })),
             ],
-        }
-        ,
+        },
         {
             name: "valor",
             label: "Valor",
@@ -79,23 +87,20 @@ export default function CadastroReceita() {
             label: "Descrição",
             type: "text",
             placeholder: "Digite a descrição",
-            value: `Mensalidade referente ao mês: ${mesAtual}/${anoAtual}`,
         },
     ];
 
     const handleSubmit = async () => {
-
         const payload = {
             id_aluno: Number(formData.id_aluno),
             valor: Number(formData.valor),
             data_pagamento: formatarParaISO(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
-            descricao: formData.descricao
+            descricao: formData.descricao,
         };
 
         try {
-            console.log("Payload enviado:", payload);
             await api.post("/receitas", payload);
             alert("Receita lançada com sucesso!");
             navigate("/lancamentos");
@@ -111,11 +116,11 @@ export default function CadastroReceita() {
                 onClick={() => navigate("/lancamentos")}
                 className="mb-4 flex items-center gap-2"
             >
-                <ChevronLeftIcon className="w-5 h-5" />
-                Voltar
+                <Dock className="w-5 h-5" />
+                Lançamentos
             </Button>
 
-            <Title level={1}>Lançar Receitas</Title>
+            <Title className="text-center" level={1}>Lançar Receita</Title>
 
             <Form
                 fields={campos}

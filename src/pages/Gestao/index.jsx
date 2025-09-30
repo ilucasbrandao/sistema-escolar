@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import dayjs from "dayjs";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { Container, Paragraph, Title } from "../../components/Container";
-import { ChevronLeftIcon, UserRoundPlus } from "lucide-react";
+import { ChevronLeftIcon, LayoutDashboard, UserRoundPlus } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format";
 import { formatarDataLegivel } from "../../utils/date";
 
@@ -16,7 +17,21 @@ export function Lancamentos() {
     const [fim, setFim] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Carregar lançamentos e resumo do backend
+    // Define mês atual ao carregar
+    useEffect(() => {
+        const hoje = dayjs();
+        const inicioMes = hoje.startOf("month").format("YYYY-MM-DD");
+        const fimMes = hoje.endOf("month").format("YYYY-MM-DD");
+
+        setInicio(inicioMes);
+        setFim(fimMes);
+    }, []);
+
+    // Carrega lançamentos sempre que datas mudam
+    useEffect(() => {
+        carregarLancamentos();
+    }, [inicio, fim]);
+
     const carregarLancamentos = async () => {
         setLoading(true);
         try {
@@ -34,15 +49,14 @@ export function Lancamentos() {
         }
     };
 
-    useEffect(() => {
-        carregarLancamentos();
-    }, []);
+    const alterarMes = (delta) => {
+        const novoMes = dayjs(inicio).add(delta, "month");
+        setInicio(novoMes.startOf("month").format("YYYY-MM-DD"));
+        setFim(novoMes.endOf("month").format("YYYY-MM-DD"));
+    };
 
-    // Filtrar por descrição apenas (datas já filtradas no backend)
     const filteredLancamentos = lancamentos.filter((l) =>
-        (l.descricao || l.tipo || "")
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
+        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     const gerarDescricao = (l) => {
@@ -55,106 +69,117 @@ export function Lancamentos() {
     return (
         <Container>
             {/* Botões */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
                 <Button onClick={() => navigate("/")}>
-                    <ChevronLeftIcon className="w-5 h-5" />
+                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
-                <Button onClick={() => navigate("/lancamentos/cadastrar")}>
-                    <UserRoundPlus className="w-5 h-5" />
-                </Button>
+                <Title level={1} className="text-xl font-bold text-slate-800">Lançamentos</Title>
+                <div className="flex gap-2">
+
+                    <Button variant="pastelGreen" onClick={() => navigate("/dashboard")}>
+                        <LayoutDashboard className="w-5 h-5" />Dashboard
+                    </Button>
+                </div>
             </div>
 
-            <div className="text-center">
-                <Title level={1}>Histórico de Lançamentos</Title>
-                <Paragraph muted className="mt-4">
-                    Informações sobre os lançamentos serão exibidas aqui:
-                </Paragraph>
+            <Paragraph muted className="text-sm text-slate-600 mb-4">
+                Visualize os lançamentos financeiros por mês.
+            </Paragraph>
 
-                {/* Filtros */}
-                <div className="mt-6 mb-4 flex justify-end gap-2 flex-wrap">
+            {/* Filtros */}
+            <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 flex-wrap">
+                <div className="flex gap-2">
+                    <Button onClick={() => alterarMes(-1)}>← Mês anterior</Button>
+                    <Button onClick={() => alterarMes(1)}>Próximo mês →</Button>
+                </div>
+                <div className="mb-4 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 flex-wrap">
                     <input
                         type="text"
-                        placeholder="Pesquisar por descrição..."
+                        placeholder="Descrição..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="max-w-md w-72 p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-right"
+                        className="w-full sm:w-64 p-2 border border-slate-300 rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                         type="date"
                         value={inicio}
                         onChange={(e) => setInicio(e.target.value)}
-                        className="p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="p-2 border rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
                     />
                     <input
                         type="date"
                         value={fim}
                         onChange={(e) => setFim(e.target.value)}
-                        className="p-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="p-2 border rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
                     />
-                    <Button onClick={carregarLancamentos}>Filtrar</Button>
+                    <Button onClick={carregarLancamentos} className="text-sm">Filtrar</Button>
                 </div>
-
-                {/* Resumo do período */}
-                <div className="mb-6 p-4 bg-gray-100 rounded-md shadow-sm flex justify-around">
-                    <div>
-                        <h3 className="font-semibold">Receitas</h3>
-                        <p className="text-green-600">{formatarParaBRL(resumo.total_receitas)}</p>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Despesas</h3>
-                        <p className="text-red-600">{formatarParaBRL(resumo.total_despesas)}</p>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold">Saldo</h3>
-                        <p className={`${resumo.saldo >= 0 ? "text-green-600" : "text-red-600"}`}>
-                            {formatarParaBRL(resumo.saldo)}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Tabela de lançamentos */}
-                {loading ? (
-                    <Paragraph muted>Carregando lançamentos...</Paragraph>
-                ) : filteredLancamentos.length === 0 ? (
-                    <Paragraph muted>Nenhum lançamento encontrado.</Paragraph>
-                ) : (
-                    <table className="w-full border-collapse border mb-4">
-                        <thead>
-                            <tr className="bg-gray-200">
-                                <th className="border px-2 py-1">Tipo</th>
-                                <th className="border px-2 py-1">Descrição</th>
-                                <th className="border px-2 py-1">Aluno</th>
-                                <th className="border px-2 py-1">Professor</th>
-                                <th className="border px-2 py-1">Valor</th>
-                                <th className="border px-2 py-1">Data</th>
-                                <th className="border px-2 py-1">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredLancamentos.map((l) => (
-                                <tr
-                                    key={l.lancamento_id}
-                                    className="cursor-pointer hover:bg-gray-100"
-                                    onClick={() => navigate(`/lancamentos/${l.origem_id}`)}
-                                >
-                                    <td
-                                        className={`border px-2 py-1 font-semibold ${l.tipo === "receita" ? "text-green-600" : "text-red-600"
-                                            }`}
-                                    >
-                                        {l.tipo}
-                                    </td>
-                                    <td className="border px-2 py-1">{gerarDescricao(l)}</td>
-                                    <td className="border px-2 py-1">{l.nome_aluno || "-"}</td>
-                                    <td className="border px-2 py-1">{l.nome_professor || "-"}</td>
-                                    <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
-                                    <td className="border px-2 py-1">{l.data ? formatarDataLegivel(l.data) : "-"}</td>
-                                    <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
+                <input
+                    type="text"
+                    placeholder="Pesquisar por descrição..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-64 p-2 border border-slate-300 rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
+                />
             </div>
+
+            {/* Resumo */}
+            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-md shadow-sm text-sm text-center">
+                <div>
+                    <h3 className="font-medium text-slate-700">Receitas</h3>
+                    <p className="text-green-600 font-semibold">{formatarParaBRL(resumo.total_receitas)}</p>
+                </div>
+                <div>
+                    <h3 className="font-medium text-slate-700">Despesas</h3>
+                    <p className="text-red-600 font-semibold">{formatarParaBRL(resumo.total_despesas)}</p>
+                </div>
+                <div>
+                    <h3 className="font-medium text-slate-700">Saldo</h3>
+                    <p className={`${resumo.saldo >= 0 ? "text-green-600" : "text-red-600"} font-semibold`}>
+                        {formatarParaBRL(resumo.saldo)}
+                    </p>
+                </div>
+            </div>
+
+            {/* Tabela */}
+            {loading ? (
+                <Paragraph muted>Carregando lançamentos...</Paragraph>
+            ) : filteredLancamentos.length === 0 ? (
+                <Paragraph muted>Nenhum lançamento encontrado.</Paragraph>
+            ) : (
+                <table className="w-full border-collapse text-sm mb-4">
+                    <thead>
+                        <tr className="bg-slate-100 text-slate-600 font-medium">
+                            <th className="border px-2 py-1">Tipo</th>
+                            <th className="border px-2 py-1">Descrição</th>
+                            <th className="border px-2 py-1">Aluno</th>
+                            <th className="border px-2 py-1">Professor</th>
+                            <th className="border px-2 py-1">Valor</th>
+                            <th className="border px-2 py-1">Data</th>
+                            <th className="border px-2 py-1">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredLancamentos.map((l) => (
+                            <tr
+                                key={l.lancamento_id}
+                                className="hover:bg-slate-50 cursor-pointer"
+                                onClick={() => navigate(`/lancamentos/${l.origem_id}`)}
+                            >
+                                <td className={`border px-2 py-1 font-semibold ${l.tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
+                                    {l.tipo}
+                                </td>
+                                <td className="border px-2 py-1">{gerarDescricao(l)}</td>
+                                <td className="border px-2 py-1">{l.nome_aluno || "-"}</td>
+                                <td className="border px-2 py-1">{l.nome_professor || "-"}</td>
+                                <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
+                                <td className="border px-2 py-1">{l.data ? formatarDataLegivel(l.data) : "-"}</td>
+                                <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            )}
         </Container>
     );
 }

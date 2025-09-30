@@ -1,6 +1,7 @@
 import clsx from "clsx";
 
 export function Select({
+    id,
     label,
     value,
     onChange,
@@ -12,28 +13,34 @@ export function Select({
     className = "",
     ...props
 }) {
+    const selectId = id || `select-${label?.toLowerCase().replace(/\s+/g, "-")}`;
+    const errorId = error ? `${selectId}-error` : undefined;
+
     return (
         <div className={clsx("mb-4", fullWidth && "w-full", className)}>
             {label && (
-                <label className="block text-slate-700 font-semibold text-sm mb-2">
+                <label
+                    htmlFor={selectId}
+                    className="block text-slate-700 font-medium text-sm mb-2"
+                >
                     {label}
                 </label>
             )}
 
             <select
+                id={selectId}
                 value={value}
                 onChange={onChange}
                 disabled={disabled}
+                aria-invalid={!!error}
+                aria-describedby={errorId}
                 {...props}
                 className={clsx(
-                    "border rounded px-3 py-2 text-slate-800",
-                    "focus:outline-none focus:ring-2 focus:ring-blue-500",
-                    "transition-colors duration-200",
-                    disabled
-                        ? "bg-slate-100 cursor-not-allowed text-slate-500"
-                        : "bg-white",
-                    error ? "border-red-500" : "border-gray-300",
-                    fullWidth && "w-full"
+                    "block w-full bg-white text-slate-800 border rounded-md px-3 py-2",
+                    "transition-all duration-200 ease-out",
+                    "focus:outline-none focus:ring-2 focus:ring-blue-400",
+                    disabled && "bg-slate-100 cursor-not-allowed text-slate-500",
+                    error ? "border-red-500" : "border-slate-300"
                 )}
             >
                 {placeholder && (
@@ -49,7 +56,11 @@ export function Select({
                 ))}
             </select>
 
-            {error && <p className="mt-1 text-sm text-red-500">{error}</p>}
+            {error && (
+                <p id={errorId} className="mt-1 text-sm text-red-500">
+                    {error}
+                </p>
+            )}
         </div>
     );
 }

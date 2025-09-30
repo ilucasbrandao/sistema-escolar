@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 
-function BaseInputStyle({ className, ...props }) {
+function getInputClasses({ className, disabled }) {
     return clsx(
-        `block w-full bg-white text-slate-800 
-     border border-slate-300 rounded-md 
-     py-2.5 px-3 leading-relaxed
-     focus:outline-none focus:ring-2 focus:ring-blue-400 
-     transition-colors duration-200`,
-        props.disabled && "bg-slate-100 cursor-not-allowed",
+        "block w-full bg-white text-slate-800 border border-slate-300 rounded-md",
+        "py-2.5 px-3 leading-relaxed transition-colors duration-200",
+        "focus:outline-none focus:ring-2 focus:ring-blue-400",
+        disabled && "bg-slate-100 cursor-not-allowed",
         className
     );
 }
@@ -24,6 +22,16 @@ export function Input({
     ...props
 }) {
     const inputId = id || `input-${label?.toLowerCase().replace(/\s+/g, "-")}`;
+    const errorId = error ? `${inputId}-error` : undefined;
+
+    const commonProps = {
+        id: inputId,
+        placeholder,
+        disabled,
+        "aria-invalid": !!error,
+        "aria-describedby": errorId,
+        ...props,
+    };
 
     return (
         <div className="w-full">
@@ -38,18 +46,13 @@ export function Input({
 
             {type === "textarea" ? (
                 <textarea
-                    id={inputId}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    {...props}
-                    className={BaseInputStyle({ className: "resize-none", disabled })}
+                    {...commonProps}
+                    className={getInputClasses({ className: "resize-none", disabled })}
                 />
             ) : type === "select" ? (
                 <select
-                    id={inputId}
-                    disabled={disabled}
-                    {...props}
-                    className={BaseInputStyle({ disabled })}
+                    {...commonProps}
+                    className={getInputClasses({ disabled })}
                 >
                     {options.map((opt, idx) => (
                         <option key={idx} value={opt.value}>
@@ -59,17 +62,16 @@ export function Input({
                 </select>
             ) : (
                 <input
-                    id={inputId}
                     type={type}
-                    placeholder={placeholder}
-                    disabled={disabled}
-                    {...props}
-                    className={BaseInputStyle({ disabled })}
+                    {...commonProps}
+                    className={getInputClasses({ disabled })}
                 />
             )}
 
             {error && (
-                <p className="text-sm text-red-500 mt-1">{error}</p>
+                <p id={errorId} className="text-sm text-red-500 mt-1">
+                    {error}
+                </p>
             )}
         </div>
     );
@@ -101,17 +103,14 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
                 e.preventDefault();
                 onSubmit && onSubmit(currentValues);
             }}
-            className="w-full max-w-2xl mx-auto mt-8 bg-white p-6 sm:p-8 rounded-lg shadow-md border border-slate-200"
+            className="w-full max-w-3xl mx-auto mt-8 bg-white p-6 sm:p-8 rounded-xl shadow-md border border-slate-200"
         >
-            <div className="flex flex-wrap gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-6">
                 {fields.map((field, idx) => {
                     if (field.showIf && !field.showIf(currentValues)) return null;
 
                     return (
-                        <div
-                            key={idx}
-                            className={`w-full ${field.fullWidth ? "" : "md:w-[48%]"}`}
-                        >
+                        <div key={idx} className={field.fullWidth ? "col-span-2" : ""}>
                             <Input
                                 label={field.label}
                                 placeholder={field.placeholder}
@@ -131,14 +130,7 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
             <div className="flex justify-end">
                 <button
                     type="submit"
-                    className="
-            px-6 py-2.5 
-            rounded-md bg-gray-600 text-white 
-            text-sm font-medium 
-            shadow-sm hover:bg-gray-700 
-            active:scale-95 transition-all
-            focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500
-          "
+                    className="px-6 py-2.5 rounded-md bg-blue-500 text-white text-sm font-medium shadow-sm hover:bg-blue-600 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400"
                 >
                     Salvar
                 </button>
@@ -146,3 +138,4 @@ export function Form({ fields = [], values, onChange, onSubmit }) {
         </form>
     );
 }
+

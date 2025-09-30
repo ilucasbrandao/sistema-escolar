@@ -62,8 +62,10 @@ export default function VisualizarDados() {
             </div>
 
             {/* Informações */}
-            <div className="max-w-xl mx-auto bg-white shadow-md rounded-lg p-4 sm:p-6 space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="max-w-xl mx-auto bg-white shadow-sm rounded-md p-4 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+
+
                     <label className="font-semibold text-gray-700">ID:</label>
                     <span className="text-sm sm:text-base text-gray-800">
                         {student.id}
@@ -100,7 +102,10 @@ export default function VisualizarDados() {
                     <label className="font-semibold text-gray-700">
                         Mensalidade (R$):
                     </label>
-                    <span>{formatarParaBRL(student.valor_mensalidade)}</span>
+                    <span className="text-sm sm:text-base text-blue-700 font-semibold">
+                        {formatarParaBRL(student.valor_mensalidade)}
+                    </span>
+
 
                     <label className="font-semibold text-gray-700">Série:</label>
                     <span className="text-sm sm:text-base text-gray-800">
@@ -119,8 +124,8 @@ export default function VisualizarDados() {
                     <label className="font-semibold text-gray-700">Status:</label>
                     <span
                         className={`font-semibold ${student.status === "ativo"
-                                ? "text-sm sm:text-base text-green-600"
-                                : "text-sm sm:text-base text-red-600"
+                            ? "text-sm sm:text-base text-green-600"
+                            : "text-sm sm:text-base text-red-600"
                             }`}
                     >
                         {student.status}
@@ -138,28 +143,29 @@ export default function VisualizarDados() {
                     </Paragraph>
                 ) : (
                     <ul className="space-y-2">
-                        {movimentacoes.map((mov, i) => (
+                        {movimentacoes.map((mov) => (
                             <li
                                 key={mov.id_mensalidade}
-                                className="bg-gray-50 p-3 rounded shadow-sm"
+                                className="bg-slate-50 p-3 rounded-md shadow-sm flex justify-between items-center"
                             >
-                                <Paragraph muted className="">
-                                    <strong>Mês Referente: </strong> {mov.mes_referencia}
-                                    <strong>Valor: </strong> {mov.valor}
-                                    <button
-                                        onClick={() =>
-                                            navigate(
-                                                `/alunos/${student.id}/receitas/${mov.id_mensalidade}`
-                                            )
-                                        }
-                                        className="p-1.5 rounded-md hover:bg-slate-200 transition"
-                                    >
-                                        <Eye className="w-4 h-4 text-slate-600" />
-                                    </button>
-                                </Paragraph>
+                                <div className="text-sm text-slate-700">
+                                    <p><strong>Mês:</strong> {mov.mes_referencia}</p>
+                                    <p><strong>Valor:</strong> {formatarParaBRL(mov.valor)}</p>
+                                </div>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() =>
+                                        navigate(`/alunos/${student.id}/receitas/${mov.id_mensalidade}`)
+                                    }
+                                    className="p-1.5 rounded hover:bg-slate-200"
+                                >
+                                    <Eye className="w-4 h-4 text-slate-600" />
+                                </Button>
                             </li>
                         ))}
                     </ul>
+
                 )}
             </div>
         </Container>

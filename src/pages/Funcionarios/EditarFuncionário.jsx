@@ -90,7 +90,7 @@ export function EditarFuncionario() {
                         name: "salario",
                         label: "Salário",
                         type: "number",
-                        value: parseSalario(data.salario),
+                        value: (data.salario),
                         step: "0.01",
                         min: "0",
                     },
@@ -141,21 +141,29 @@ export function EditarFuncionario() {
 
     return (
         <Container>
-            <Button
-                onClick={() => navigate("/professores")}
-                className="mb-4 flex items-center gap-2"
-            >
-                <ChevronLeftIcon className="w-5 h-5" />
-            </Button>
+            {/* Botão voltar */}
+            <div className="mb-4 flex justify-start">
+                <Button onClick={() => navigate("/professores")} className="flex items-center gap-2">
+                    <ChevronLeftIcon className="w-5 h-5" />
+                    <span className="text-sm">Voltar</span>
+                </Button>
+            </div>
 
-            <Title level={1}>Editar Professor(a)</Title>
-            <Title level={3}>Mat: {id}</Title>
+            {/* Título */}
+            <div className="mb-6 text-center">
+                <Title level={1} className="text-xl font-bold text-slate-800">Editar Professor(a)</Title>
+                <p className="text-sm text-slate-600 mt-1">Matrícula: {id}</p>
+            </div>
 
-            <Form
-                fields={fields}
-                onSubmit={handleSubmit}
-                className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
-            />
+            {/* Formulário */}
+            <div className="max-w-2xl mx-auto">
+                <Form
+                    fields={fields}
+                    onSubmit={handleSubmit}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm"
+                />
+            </div>
         </Container>
+
     );
 }

@@ -5,8 +5,10 @@ import Footer from "./components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import api from "./services/api";
+import { ActionCard, InfoCard } from "./components/ActionCard";
 
 export default function App() {
+  const [dados, setDados] = useState(null);
   const testar = async () => {
     try {
       const res = await api.get("/ping");
@@ -15,6 +17,19 @@ export default function App() {
       alert("Erro ao conectar com a API");
     }
   };
+
+  const carregarDashboard = async () => {
+    try {
+      const { data } = await api.get("/dashboard");
+      setDados(data);
+    } catch (error) {
+      console.error("Erro ao carregar dashboard:", error);
+    }
+  };
+
+  useEffect(() => {
+    carregarDashboard();
+  }, []);
 
   const navigate = useNavigate();
 
@@ -27,61 +42,102 @@ export default function App() {
 
   return (
     <Container>
-      {/* Botão de Logout */}
-      <div className="flex mb-6 alie">
-        <Button variant="secondary" size="sm" onClick={handleLogout}>
-          <LogOutIcon className="w-5 h-5" />
+      {/* Header */}
+      <div className="flex justify-between items-center mb-8 ">
+        <Title level={1} className="text-center">Reforço Escolar Tia Juh</Title>
+        <Button variant="outline" size="md" onClick={handleLogout}>
+          <LogOutIcon className="w-4 h-4" /> Sair
         </Button>
       </div>
-      <Title level={1}>Reforço Escolar Tia Jeane</Title>
-      <div>
-        <Title level={3}>Dashboard</Title>
-      </div>
-      <div className="mt-10">
-        <Title level={3}>Lançamentos Rápidos</Title>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6">
-          <Button
+
+      {/* Ações rápidas */}
+      <section className="mb-12">
+        <Title level={2}>Ações Rápidas</Title>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+          <ActionCard
+            icon={<CircleDollarSign className="w-6 h-6 text-green-600" />}
+            label="Lançar Mensalidade"
             onClick={() =>
               navigate("lancamentos/receitas", { state: { tipo: "entrada" } })
             }
-            className="flex items-center justify-center gap-2 px-6 py-4 text-lg font-semibold bg-green-500 hover:bg-green-600 rounded-lg shadow-md"
-          >
-            <CircleDollarSign className="w-5 h-5" /> Lançar Mensalidade
-          </Button>
-
-          <Button
+          />
+          <ActionCard
+            icon={<BanknoteArrowDown className="w-6 h-6 text-red-600" />}
+            label="Lançar Despesa"
             onClick={() =>
               navigate("/lancamentos/despesas", { state: { tipo: "saida" } })
             }
-            className="flex items-center justify-center gap-2 px-6 py-4 text-lg font-semibold bg-red-500 hover:bg-red-600 rounded-lg shadow-md"
-          >
-            <BanknoteArrowDown className="w-5 h-5" /> Lançar Despesa
-          </Button>
+          />
         </div>
-      </div>
+      </section>
 
-      <div>
-        <Title level={3}>Campos de Navegação</Title>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-          <Button variant="blue" onClick={() => handleClick("alunos")}>
-            Alunos
-          </Button>
-          <Button variant="green" onClick={() => handleClick("professores")}>
-            Professores
-          </Button>
-          <Button variant="purple" onClick={() => handleClick("lancamentos")}>
-            Gestão Financeira
-          </Button>
-          <Button variant="yellow" onClick={() => handleClick("notificacoes")}>
-            Notificações
-          </Button>
-          <Button variant="pink" onClick={() => handleClick("dashboard")}>
-            Gerar Relatório
-          </Button>
+      {/* Navegação compacta */}
+      <section className="mb-8">
+        <Title level={2} className=" flex text-center">Gestão Escolar</Title>
+        <div className="flex flex-wrap gap-2 mt-4">
+          {[
+            { label: "Alunos", path: "alunos" },
+            { label: "Professores", path: "professores" },
+            { label: "Financeiro", path: "lancamentos" },
+            { label: "Notificações", path: "notificacoes" },
+            { label: "Dashboard", path: "dashboard" },
+          ].map(({ label, path }) => (
+            <Button
+              key={label}
+              variant="pastelBlue"
+              size="sm"
+              className="rounded-full px-4 py-2 text-xs sm:text-sm"
+              onClick={() => handleClick(path)}
+            >
+              {label}
+            </Button>
+          ))}
         </div>
+
+      </section>
+
+      {/* Cards informativos */}
+      {dados && (
+        <section className="mb-12">
+          <Title level={2}>Resumo do Mês</Title>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+            <InfoCard
+              title="Aniversariantes"
+              icon="🎂"
+              value={dados.aniversariantes.map(a => (
+                <span key={a.nome}>
+                  {a.nome} - {new Date(a.data_nascimento).toLocaleDateString()}
+                </span>
+              ))}
+            />
+            <InfoCard
+              title="Alunos por Turno"
+              icon="🕒"
+              value={Object.entries(dados.alunos_por_turno).map(([turno, qtd]) => (
+                <span key={turno}>{turno}: {qtd} ||</span>
+              ))}
+            />
+            <InfoCard
+              title="Alunos Ativos"
+              icon="👨‍🎓"
+              value={<span className="font-bold text-xl">{dados.alunos_ativos}</span>}
+            />
+            <InfoCard
+              title="Professores"
+              icon="👩‍🏫"
+              value={<span className="font-bold text-xl">{dados.professores_ativos}</span>}
+            />
+          </div>
+        </section>
+      )}
+
+
+      {/* Teste de conexão */}
+      <div className="text-center my-6">
+        <Button variant="ghost" onClick={testar}>
+          Testar conexão com servidor
+        </Button>
       </div>
-      <button onClick={testar}>Testar conexão</button>
 
       <Footer
         appName="ERP Escolar"
@@ -90,5 +146,6 @@ export default function App() {
         authorLink="https://github.com/ilucasbrandao"
       />
     </Container>
+
   );
 }
