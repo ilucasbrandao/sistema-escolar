@@ -1,1 +1,15 @@
 @import "tailwindcss";
+
+@media print {
+    .print\:hidden {
+        display: none !important;
+    }
+
+    .print\:shadow-none {
+        box-shadow: none !important;
+    }
+
+    .print\:p-0 {
+        padding: 0 !important;
+    }
+}

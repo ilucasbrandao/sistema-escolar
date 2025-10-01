@@ -25,7 +25,6 @@ export function Professores() {
                 setTeachers(data);
             } catch (error) {
                 console.error("Erro ao buscar professores:", error.message);
-                alert("Erro ao carregar professores.");
             }
         }
         getTeacher();

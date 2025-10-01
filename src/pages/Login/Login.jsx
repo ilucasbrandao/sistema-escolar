@@ -19,19 +19,23 @@ export default function Login() {
     }
 
     try {
-      // ✅ Correção aqui
       const res = await login.post("/login", {
         email,
         password: senha,
       });
 
-      localStorage.setItem("token", res.data.token);
-      localStorage.setItem("userEmail", res.data.usuario.email);
+      // Pega o que o backend realmente manda
+      const { token, usuario } = res.data;
 
-      navigate("/"); // Página home
+      // Salva o token e dados básicos do usuário
+      localStorage.setItem("token", token);
+      localStorage.setItem("userEmail", usuario.email);
+
+      navigate("/"); // Redireciona para home/dashboard
     } catch (err) {
       setMsg(err.response?.data?.message || "Erro no login");
     }
+
   };
 
   return (

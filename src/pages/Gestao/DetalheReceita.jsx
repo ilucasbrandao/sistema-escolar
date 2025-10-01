@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Paragraph } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { Trash, ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import dayjs from "dayjs";
+import { Button } from "../../components/Button";
 
-// Função para formatar data ISO → DD/MM/YYYY
 function formatarDataLegivel(dataISO) {
     if (!dataISO || !dayjs(dataISO).isValid()) return "—";
     return dayjs(dataISO).format("DD/MM/YYYY");
@@ -19,7 +19,9 @@ export default function VisualizarReceita() {
     useEffect(() => {
         async function carregarMensalidade() {
             try {
-                const response = await api.get(`/receitas/aluno/${alunoId}/${receitaId}`);
+                const response = await api.get(
+                    `/receitas/aluno/${alunoId}/${receitaId}`
+                );
                 setReceita(response.data);
             } catch (error) {
                 console.error("Erro ao buscar mensalidade:", error);
@@ -36,13 +38,15 @@ export default function VisualizarReceita() {
             return;
         }
 
-        const confirm = window.confirm("Tem certeza que deseja excluir esta mensalidade?");
+        const confirm = window.confirm(
+            "Tem certeza que deseja excluir esta mensalidade?"
+        );
         if (!confirm) return;
 
         try {
             await api.delete(`/receitas/${receitaId}`);
             alert("Mensalidade excluída com sucesso!");
-            navigate(`/alunos/${alunoId}`); // volta para histórico do aluno
+            navigate(`/alunos/${alunoId}`);
         } catch (error) {
             console.error("Erro ao excluir mensalidade:", error);
             alert("Erro ao excluir mensalidade.");
@@ -52,48 +56,45 @@ export default function VisualizarReceita() {
     if (!receita) {
         return (
             <Container className="flex justify-center items-center h-full">
-                <p>Carregando mensalidade...</p>
+                <Paragraph muted>Carregando mensalidade...</Paragraph>
             </Container>
         );
     }
 
     return (
         <Container>
-            {/* Botão voltar */}
-            <div className="mb-6">
-                <button
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <Button
                     onClick={() => navigate(`/alunos/${alunoId}`)}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-gray-200"
+                    variant="neutral"
                 >
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
-                </button>
-            </div>
-
-            {/* Dados da mensalidade */}
-            <Container className="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
-                <div className="flex flex-col gap-1">
-                    <Paragraph>
-                        <strong>Valor: </strong> R$ {receita.valor}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Data de Pagamento: </strong> {formatarDataLegivel(receita.data_pagamento)}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Mês Referente: </strong> {receita.mes_referencia}/{receita.ano_referencia}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Status: </strong> {receita.status}
-                    </Paragraph >
-                </div>
-
-                <button
+                </Button>
+                <Title level={2}>Mensalidade</Title>
+                <Button
                     onClick={handleDelete}
-                    className="flex items-center justify-center p-2 rounded-md hover:bg-red-100 transition"
+                    variant="danger"
                     title="Excluir Mensalidade"
                 >
-                    <Trash className="w-5 h-5 text-red-600" />
-                </button>
-            </Container>
+                    <Trash className="w-5 h-5" />
+                </Button>
+            </div>
+
+            {/* Card de dados */}
+            <div className="bg-white rounded-md shadow-sm p-4 space-y-2 text-sm text-slate-700">
+                <Paragraph>
+                    <strong>Valor:</strong> R$ {receita.valor}
+                </Paragraph>
+                <Paragraph>
+                    <strong>Data de Pagamento:</strong>{" "}
+                    {formatarDataLegivel(receita.data_pagamento)}
+                </Paragraph>
+                <Paragraph>
+                    <strong>Mês Referente:</strong> {receita.mes_referencia}/
+                    {receita.ano_referencia}
+                </Paragraph>
+            </div>
         </Container>
     );
 }

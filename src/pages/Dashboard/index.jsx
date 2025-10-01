@@ -105,6 +105,7 @@ export function Dashboard() {
                 >
                     Ver Relatório de {dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}
                 </Button>
+
             </div>
 
             {/* Indicadores Gerais */}

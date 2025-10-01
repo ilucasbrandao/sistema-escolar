@@ -2,13 +2,15 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
-import { Container, Paragraph } from "../../components/Container";
+import { Container, Paragraph, Title } from "../../components/Container";
 import { ChevronLeftIcon, Trash } from "lucide-react";
+import { Button } from "../../components/Button";
 
 function formatarDataLegivel(dataISO) {
     if (!dataISO || !dayjs(dataISO).isValid()) return "—";
     return dayjs(dataISO).format("DD/MM/YYYY");
 }
+
 export default function VisualizarDespesa() {
     const navigate = useNavigate();
     const { professorId, despesaId } = useParams();
@@ -17,9 +19,7 @@ export default function VisualizarDespesa() {
     useEffect(() => {
         async function carregarDespesas() {
             try {
-                const response = await api.get(
-                    `/despesa/professor/${professorId}/${despesaId}`
-                );
+                const response = await api.get(`/despesa/professor/${professorId}/${despesaId}`);
                 setDespesa(response.data);
             } catch (error) {
                 console.error("Erro ao buscar despesa:", error);
@@ -29,15 +29,14 @@ export default function VisualizarDespesa() {
     }, [professorId, despesaId]);
 
     async function handleDelete() {
-        const senha = prompt("Digite a senha para excluir esta mensalidade:");
+        const senha = prompt("Digite a senha para excluir esta despesa:");
         const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
         if (senha !== senhaCorreta) {
             alert("Senha incorreta. Exclusão cancelada.");
             return;
         }
-        const confirm = window.confirm(
-            "Tem certeza que deseja excluir esta mensalidade?"
-        );
+
+        const confirm = window.confirm("Tem certeza que deseja excluir esta despesa?");
         if (!confirm) return;
 
         try {
@@ -53,50 +52,37 @@ export default function VisualizarDespesa() {
     if (!despesa) {
         return (
             <Container className="flex justify-center items-center h-full">
-                <p>Carregando mensalidade...</p>
+                <Paragraph muted>Carregando despesa...</Paragraph>
             </Container>
         );
     }
 
     return (
         <Container>
-            {/* Botão voltar */}
-            <div className="mb-6">
-                <button
-                    onClick={() => navigate(`/professores/${professorId}`)}
-                    className="flex items-center gap-2 p-2 rounded hover:bg-gray-200"
-                >
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <Button onClick={() => navigate(`/professores/${professorId}`)} variant="neutral">
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
-                </button>
+                </Button>
+                <Title level={2}>Despesa</Title>
+                <Button onClick={handleDelete} variant="danger" title="Excluir Despesa">
+                    <Trash className="w-5 h-5" />
+                </Button>
             </div>
 
-            {/* Dados da mensalidade */}
-            <Container className="bg-white p-4 rounded-lg shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-3">
-                <div className="flex flex-col gap-1">
-                    <Paragraph>
-                        <strong>Valor: </strong> R$ {despesa.valor}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Data de Pagamento: </strong>{" "}
-                        {formatarDataLegivel(despesa.data_pagamento)}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Mês Referente: </strong> {despesa.mes_referencia}/
-                        {despesa.ano_referencia}
-                    </Paragraph>
-                    <Paragraph>
-                        <strong>Status: </strong> {despesa.status}
-                    </Paragraph>
-                </div>
+            {/* Card de dados */}
+            <div className="bg-white rounded-md shadow-sm p-4 space-y-2 text-sm text-slate-700">
+                <Paragraph>
+                    <strong>Valor:</strong> R$ {despesa.valor}
+                </Paragraph>
+                <Paragraph>
+                    <strong>Data de Pagamento:</strong> {formatarDataLegivel(despesa.data_pagamento)}
+                </Paragraph>
+                <Paragraph>
+                    <strong>Mês Referente:</strong> {despesa.mes_referencia}/{despesa.ano_referencia}
+                </Paragraph>
 
-                <button
-                    onClick={handleDelete}
-                    className="flex items-center justify-center p-2 rounded-md hover:bg-red-100 transition"
-                    title="Excluir Mensalidade"
-                >
-                    <Trash className="w-5 h-5 text-red-600" />
-                </button>
-            </Container>
+            </div>
         </Container>
     );
 }

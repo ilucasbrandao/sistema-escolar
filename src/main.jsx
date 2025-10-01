@@ -23,6 +23,7 @@ import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
 import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
 import { Dashboard } from "./pages/Dashboard/index.jsx";
+import RelatorioMensal from "./pages/Dashboard/RelatorioMensal.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -175,6 +176,14 @@ const router = createBrowserRouter([
         ),
       }
     ],
+  },
+  {
+    path: "/relatorio",
+    element: (
+      <ProtectedRoute>
+        <RelatorioMensal />
+      </ProtectedRoute>
+    ),
   },
 ]);
 

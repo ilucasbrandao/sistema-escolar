@@ -30,7 +30,6 @@ export function Alunos() {
                 setStudents(data);
             } catch (error) {
                 console.error("Erro ao buscar alunos:", error.message);
-                alert("Erro ao carregar alunos.");
             }
         }
         getStudents();
@@ -160,8 +159,8 @@ export function Alunos() {
                                 </span>
                                 <span
                                     className={`col-span-1 font-semibold ${student.status === "ativo"
-                                            ? "text-green-600"
-                                            : "text-red-600"
+                                        ? "text-green-600"
+                                        : "text-red-600"
                                         }`}
                                 >
                                     {student.status}
