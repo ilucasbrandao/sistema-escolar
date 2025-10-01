@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:3000", // seu backend escolar
+  baseURL: "https://back-end-reforco.railway.internal", // seu backend escolar
 });
 
 api.interceptors.request.use((config) => {
