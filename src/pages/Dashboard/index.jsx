@@ -128,10 +128,26 @@ export function Dashboard() {
 
             {/* Dados Operacionais */}
             <section className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-8">
+                {/* Aniversariantes */}
                 <div className="bg-white rounded-md shadow-sm p-3">
-                    <h4 className="text-sm font-semibold text-slate-700 mb-2">
-                        Alunos por Turno
-                    </h4>
+                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Aniversariantes do Mês 🎂</h4>
+                    <ul className="divide-y divide-slate-200 text-sm text-slate-600">
+                        {dados.aniversariantes.length === 0 ? (
+                            <li className="py-2 text-slate-500 italic">Nenhum aniversariante este mês.</li>
+                        ) : (
+                            dados.aniversariantes.map((a) => (
+                                <li key={a.nome} className="flex justify-between py-1">
+                                    <span>{a.nome}</span>
+                                    <span className="font-semibold">{dayjs(a.data_nascimento).format("DD/MM")}</span>
+                                </li>
+                            ))
+                        )}
+                    </ul>
+                </div>
+
+                {/* Alunos por Turno */}
+                <div className="bg-white rounded-md shadow-sm p-3">
+                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Alunos por Turno</h4>
                     <ul className="divide-y divide-slate-200 text-sm text-slate-600">
                         {Object.entries(dados.alunos_por_turno).map(([turno, qtd]) => (
                             <li key={turno} className="flex justify-between py-1">
@@ -142,6 +158,7 @@ export function Dashboard() {
                     </ul>
                 </div>
             </section>
+
 
             {/* Botão para fechamento do caixa */}
             <div className="mb-6 space-y-2"></div>

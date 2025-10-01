@@ -32,7 +32,7 @@ export function InfoCard({ title, value, icon, highlight = false, color = "blue"
                 <h3 className="text-sm font-semibold text-slate-700">{title}</h3>
                 <span className="text-xl">{icon}</span>
             </div>
-            <p className="text-2xl font-bold text-slate-800">{value}</p>
+            <span className="text-2xl font-bold text-slate-800">{value}</span>
         </div>
     );
 }

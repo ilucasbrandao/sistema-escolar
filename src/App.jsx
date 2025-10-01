@@ -132,13 +132,13 @@ export default function App() {
       )}
 
 
-      {/* Teste de conexão */}
+      {/* Teste de conexão 
       <div className="text-center my-6">
         <Button variant="ghost" onClick={testar}>
           Testar conexão com servidor
         </Button>
       </div>
-
+      */}
       <Footer
         appName="ERP Escolar"
         year={2025}
