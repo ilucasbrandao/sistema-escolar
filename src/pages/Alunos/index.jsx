@@ -91,7 +91,7 @@ export function Alunos() {
             {/* Botões nos extremos */}
             <div className="flex justify-between items-center mb-6">
                 <Button onClick={() => navigate("/")}>
-                    <ChevronLeftIcon className="w-5 h-5" />
+                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
                 <Button onClick={() => navigate("/alunos/cadastrar")}>
                     <UserRoundPlus className="w-5 h-5" />

@@ -50,7 +50,7 @@ export function Lancamentos() {
     };
 
     const alterarMes = (delta) => {
-        const novoMes = dayjs(inicio).add(delta, "month");
+        const novoMes = dayjs(inicio).startOf("month").add(delta, "month");
         setInicio(novoMes.startOf("month").format("YYYY-MM-DD"));
         setFim(novoMes.endOf("month").format("YYYY-MM-DD"));
     };
@@ -155,11 +155,7 @@ export function Lancamentos() {
                     </thead>
                     <tbody>
                         {filteredLancamentos.map((l) => (
-                            <tr
-                                key={l.lancamento_id}
-                                className="hover:bg-slate-50 cursor-pointer"
-                                onClick={() => navigate(`/lancamentos/${l.origem_id}`)}
-                            >
+                            <tr key={l.lancamento_id} className="hover:bg-slate-50">
                                 <td className={`border px-2 py-1 font-semibold ${l.tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
                                     {l.tipo}
                                 </td>

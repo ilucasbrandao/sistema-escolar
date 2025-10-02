@@ -10,6 +10,7 @@ import {
     Trash,
     UserRoundPlus,
 } from "lucide-react";
+import { formatarParaBRL } from "../../utils/format.js";
 
 export function Professores() {
     const navigate = useNavigate();
@@ -64,7 +65,7 @@ export function Professores() {
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
                 <Button onClick={() => navigate("/")}>
-                    <ChevronLeftIcon className="w-5 h-5" />
+                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
                 <Title level={1} className="text-2xl font-bold text-slate-800">Professores</Title>
                 <div className="flex gap-2">
@@ -120,10 +121,10 @@ export function Professores() {
                         >
                             <span className="text-slate-500">{t.id}</span>
                             <span className="font-medium text-slate-800">{t.nome}</span>
-                            <span className="text-slate-700 font-semibold">
-                                {t.salario}
+                            <span className="text-slate-500 ">
+                                {formatarParaBRL(t.salario)}
                             </span>
-                            <span className="font-medium text-slate-800">{t.turno}</span>
+                            <span className="font-medium text-slate-500">{t.turno}</span>
                             <span className={`font-semibold ${t.status === "ativo" ? "text-green-600" : "text-red-600"}`}>
                                 {t.status}
                             </span>

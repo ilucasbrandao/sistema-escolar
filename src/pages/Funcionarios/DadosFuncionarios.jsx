@@ -68,7 +68,7 @@ export default function VisualizarDadosFuncionario() {
                     <span>{formatarDataLegivel(teacher.data_nascimento)}</span>
 
                     <label className="font-medium">Salário:</label>
-                    <span className="font-semibold text-blue-700">{teacher.salario}</span>
+                    <span className="font-semibold text-blue-700">{formatarParaBRL(teacher.salario)}</span>
 
                     <label className="font-medium">Telefone:</label>
                     <span>{teacher.telefone}</span>

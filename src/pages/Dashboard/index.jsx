@@ -45,7 +45,7 @@ export function Dashboard() {
             {/* Header */}
             <div className="flex justify-between items-center mb-4">
                 <Button onClick={() => navigate("/")}>
-                    <ChevronLeftIcon className="w-5 h-5" />
+                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
                 <Title level={1} className="text-2xl font-bold text-slate-800">
                     Dashboard

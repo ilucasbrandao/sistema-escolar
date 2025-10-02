@@ -106,7 +106,13 @@ export default function App() {
               icon="🎂"
               value={dados.aniversariantes.map(a => (
                 <span key={a.nome}>
-                  <p>{a.nome} - {new Date(a.data_nascimento).toLocaleDateString()}</p>
+                  <p className="text-sm">
+                    {a.nome} -{" "}
+                    {new Date(a.data_nascimento).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "2-digit",
+                    })}
+                  </p>
                 </span>
               ))}
             />
