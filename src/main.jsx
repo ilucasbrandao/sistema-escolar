@@ -24,6 +24,7 @@ import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
 import { Dashboard } from "./pages/Dashboard/index.jsx";
 import RelatorioMensal from "./pages/Dashboard/RelatorioMensal.jsx";
+import { Notificacoes } from "./pages/Notificacao/Notificacoes.jsx";
 
 // Middleware de proteção de rota
 const ProtectedRoute = ({ children }) => {
@@ -182,6 +183,14 @@ const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <RelatorioMensal />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/notificacoes",
+    element: (
+      <ProtectedRoute>
+        <Notificacoes />
       </ProtectedRoute>
     ),
   },

@@ -164,25 +164,51 @@ export function Dashboard() {
             <div className="mb-6 space-y-2"></div>
 
             {/* Previsões Financeiras */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-3 mb-6">
+
                 <InfoCard
-                    title="Mensalidades Previstas"
-                    value={formatarParaBRL(dados.saldo_previsto_mensalidades)}
-                    icon="📈"
-                    color="green"
+                    title="Previsão Financeira"
+                    value={
+                        <>
+                            <div className="text-sm text-green-700">
+                                📈 Mensalidades: {formatarParaBRL(dados.saldo_previsto_mensalidades)}
+                            </div>
+                            <div className="text-sm text-red-700">
+                                📉 Salários: {formatarParaBRL(dados.saldo_previsto_salarios)}
+                            </div>
+                        </>
+                    }
+                    icon="📊"
                     highlight
                 />
-                <InfoCard
-                    title="Salários Previstos"
-                    value={formatarParaBRL(dados.saldo_previsto_salarios)}
-                    icon="📉"
-                    color="red"
-                />
+
                 <InfoCard
                     title="Novos Matriculados no Mês"
                     value={dados.matriculados_mes_atual}
                     icon="📝"
                 />
+            </section>
+            {/* Inadimplentes do mês */}
+            <section className="bg-white rounded-md shadow-sm p-4 mb-6">
+                <h4 className="text-sm font-semibold text-slate-700 mb-2">
+                    Alunos Inadimplentes no Mês 📌
+                </h4>
+                <ul className="divide-y divide-slate-200 text-sm text-slate-600">
+                    {dados.inadimplentes.length === 0 ? (
+                        <li className="py-2 text-slate-500 italic">
+                            Todos os alunos estão em dia 🎉
+                        </li>
+                    ) : (
+                        dados.inadimplentes.map((aluno) => (
+                            <li key={aluno.id} className="flex justify-between py-1">
+                                <span>{aluno.nome}</span>
+                                <span className="font-semibold">
+                                    {formatarParaBRL(aluno.valor_mensalidade)}
+                                </span>
+                            </li>
+                        ))
+                    )}
+                </ul>
             </section>
         </Container>
     );
