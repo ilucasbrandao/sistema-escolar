@@ -8,10 +8,12 @@ import { Form } from "../../components/Form";
 import dayjs from "dayjs";
 
 // Função para converter DD/MM/YYYY → ISO
-function formatDateToISO(dateString) {
-    if (!dateString || !dayjs(dateString, "DD/MM/YYYY").isValid()) return null;
-    return dayjs(dateString, "DD/MM/YYYY").toISOString();
+function formatDateForInputSafe(dateISO) {
+    if (!dateISO) return "";
+    const [ano, mes, dia] = dateISO.split("T")[0].split("-");
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
 }
+
 
 // Remove formatação monetária e converte para número
 function parseMensalidade(valor) {
@@ -45,7 +47,7 @@ export function EditarAluno() {
                         name: "data_nascimento",
                         label: "Data de Nascimento",
                         type: "date",
-                        value: formatDateForInput(data.data_nascimento),
+                        value: formatDateForInputSafe(data.data_nascimento),
                         disabled: true,
                     },
                     {
@@ -64,7 +66,7 @@ export function EditarAluno() {
                         name: "data_matricula",
                         label: "Data de Matrícula",
                         type: "date",
-                        value: formatDateForInput(data.data_matricula),
+                        value: formatDateForInputSafe(data.data_matricula),
                     },
                     {
                         name: "valor_mensalidade",

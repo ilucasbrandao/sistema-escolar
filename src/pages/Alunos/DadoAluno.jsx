@@ -9,9 +9,20 @@ import { formatarParaBRL } from "../../utils/format";
 
 // Função para formatar data ISO → DD/MM/YYYY
 function formatarDataLegivel(dataISO) {
-    if (!dataISO || !dayjs(dataISO).isValid()) return "—";
-    return dayjs(dataISO).format("DD/MM/YYYY");
+    if (!dataISO) return "—";
+    // Se vier "2025-10-03T00:00:00.000Z", pega só a parte do ano-mês-dia
+    const diaMesAno = dataISO.split("T")[0] || dataISO;
+    const [ano, mes, dia] = diaMesAno.split("-");
+    return `${dia}/${mes}/${ano}`;
 }
+
+function idadeEmAnos(dataNascimentoISO) {
+    if (!dataNascimentoISO) return "-";
+    const nascimento = dayjs(dataNascimentoISO);
+    const hoje = dayjs();
+    return hoje.diff(nascimento, 'year');
+}
+
 
 export default function VisualizarDados() {
     const navigate = useNavigate();
@@ -78,7 +89,7 @@ export default function VisualizarDados() {
                         Data de Nascimento:
                     </label>
                     <span className="text-sm sm:text-base text-gray-800">
-                        {formatarDataLegivel(student.data_nascimento)}
+                        {formatarDataLegivel(student.data_nascimento)} - {idadeEmAnos(student.data_nascimento) + " anos"}
                     </span>
 
                     <label className="font-semibold text-gray-700">Responsável:</label>
@@ -121,8 +132,8 @@ export default function VisualizarDados() {
                     <label className="font-semibold text-gray-700">Status:</label>
                     <span
                         className={`font-semibold ${student.status === "ativo"
-                                ? "text-sm sm:text-base text-green-600"
-                                : "text-sm sm:text-base text-red-600"
+                            ? "text-sm sm:text-base text-green-600"
+                            : "text-sm sm:text-base text-red-600"
                             }`}
                     >
                         {student.status}

@@ -20,18 +20,3 @@ export function formatarParaBRL(valor) {
 
   return numero.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
-
-/**
- * Formata uma data no padrão DD/MM/YYYY
- * @param {string|Date} data
- * @returns {string}
- */
-export function formatarParaData(data) {
-  if (!data) return "-";
-  const d = new Date(data);
-  if (isNaN(d.getTime())) return "-";
-  const dia = String(d.getDate()).padStart(2, "0");
-  const mes = String(d.getMonth() + 1).padStart(2, "0");
-  const ano = d.getFullYear();
-  return `${dia}/${mes}/${ano}`;
-}

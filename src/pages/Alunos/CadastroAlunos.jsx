@@ -5,11 +5,11 @@ import { Form } from "../../components/Form";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
-import { formatarParaISO } from "../../utils/date";
 
 export default function CadastroAlunos() {
     const navigate = useNavigate();
-    const hoje = new Date().toISOString().split("T")[0];
+    const hoje = new Date().toLocaleDateString("en-CA"); // Formato YYYY-MM-DD no fuso local
+
 
     const [formData, setFormData] = useState({
         nome: "",
@@ -75,7 +75,7 @@ export default function CadastroAlunos() {
             type: "select",
             options: [
                 { label: "Selecione o turno", value: "" },
-                { label: "Manhã", value: "Manha" },
+                { label: "Manhã", value: "Manhã" },
                 { label: "Tarde", value: "Tarde" },
             ],
         },
@@ -118,8 +118,8 @@ export default function CadastroAlunos() {
 
         const payload = {
             ...data,
-            data_nascimento: formatarParaISO(data.data_nascimento),
-            data_matricula: formatarParaISO(data.data_matricula),
+            data_nascimento: data.data_nascimento,
+            data_matricula: data.data_matricula,
             valor_mensalidade:
                 data.valor_mensalidade !== "" && data.valor_mensalidade !== null
                     ? Number(data.valor_mensalidade)
