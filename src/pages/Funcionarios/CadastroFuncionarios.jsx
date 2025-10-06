@@ -10,8 +10,7 @@ import { Form } from "../../components/Form";
 
 export default function CadastroProfessor() {
     const navigate = useNavigate();
-    const hoje = new Date().toISOString().split("T")[0];
-
+    const hoje = new Date().toLocaleDateString("en-CA"); // Formato YYYY-MM-DD no fuso local
 
     const [formData, setFormData] = useState({
         nome: "",
@@ -67,8 +66,9 @@ export default function CadastroProfessor() {
             type: "select",
             options: [
                 { label: "Selecione o turno", value: "" },
-                { label: "Manhã", value: "Manha" },
+                { label: "Manhã", value: "Manhã" },
                 { label: "Tarde", value: "Tarde" },
+                { label: "Integral", value: "Integral" },
             ],
         },
         {
@@ -84,7 +84,7 @@ export default function CadastroProfessor() {
             label: "Status",
             type: "select",
             options: [
-                { label: "", value: "" },
+                { label: "Selecione...", value: "", disabled: true },
                 { label: "Ativo", value: "ativo" },
                 { label: "Inativo", value: "inativo" },
             ],
@@ -108,8 +108,9 @@ export default function CadastroProfessor() {
         }
         const payload = {
             ...data,
-            data_nascimento: formatarParaISO(data.data_nascimento),
-            data_contratacao: formatarParaISO(data.data_contratacao),
+            data_nascimento: data.data_nascimento,
+            data_contratacao: data.data_contratacao,
+            salario: parseFloat(data.salario),
         };
 
         try {

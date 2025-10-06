@@ -64,9 +64,11 @@ export default function CadastroAlunos() {
             type: "select",
             options: [
                 { label: "Selecione a serie", value: "" },
-                { label: "Infantil I", value: "Infantil I" },
-                { label: "Infantil II", value: "Infantil II" },
-                { label: "Fundamental", value: "Fundamental" },
+                { label: "Infantil III", value: "Infantil III" },
+                { label: "Infantil IV", value: "Infantil IV" },
+                { label: "Infantil V", value: "Infantil V" },
+                { label: "Fundamental 1", value: "Fundamental1" },
+                { label: "Fundamental 2", value: "Fundamental2" },
             ],
         },
         {
