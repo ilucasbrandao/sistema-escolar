@@ -10,6 +10,7 @@ import { formatarParaBRL } from "../../utils/format";
 function formatarDataLegivel(data) {
     return data ? dayjs(data).format("DD/MM/YYYY") : "-";
 }
+
 export function Lancamentos() {
     const navigate = useNavigate();
     const [lancamentos, setLancamentos] = useState([]);
