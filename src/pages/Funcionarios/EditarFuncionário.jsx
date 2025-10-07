@@ -7,15 +7,11 @@ import { Button } from "../../components/Button";
 import { ChevronLeftIcon } from "lucide-react";
 import { Form } from "../../components/Form";
 
-// Converte "DD/MM/YYYY" para ISO
-function formatDateToISO(dateString) {
-    if (!dateString || !dayjs(dateString, "DD/MM/YYYY").isValid()) return null;
-    return dayjs(dateString, "DD/MM/YYYY").toISOString();
-}
-
-// Converte ISO para "YYYY-MM-DD" (para input type="date")
-function formatDateForInput(dateISO) {
-    return dayjs(dateISO).format("YYYY-MM-DD");
+// Função para converter DD/MM/YYYY → ISO
+function formatDateForInputSafe(dateISO) {
+    if (!dateISO) return "";
+    const [ano, mes, dia] = dateISO.split("T")[0].split("-");
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
 }
 
 // Remove formatação monetária e converte para número
@@ -44,7 +40,7 @@ export function EditarFuncionario() {
                         name: "data_nascimento",
                         label: "Data de Nascimento",
                         type: "date",
-                        value: formatDateForInput(data.data_nascimento),
+                        value: formatDateForInputSafe(data.data_nascimento),
                         disabled: true,
                     },
                     {
@@ -63,7 +59,7 @@ export function EditarFuncionario() {
                         name: "data_contratacao",
                         label: "Data de Contratação",
                         type: "date",
-                        value: formatDateForInput(data.data_contratacao),
+                        value: formatDateForInputSafe(data.data_contratacao),
                     },
                     {
                         name: "nivel_ensino",
@@ -82,7 +78,7 @@ export function EditarFuncionario() {
                         value: data.turno,
                         options: [
                             { label: "", value: "" },
-                            { label: "Manhã", value: "Manha" },
+                            { label: "Manhã", value: "Manhã" },
                             { label: "Tarde", value: "Tarde" },
                         ],
                     },

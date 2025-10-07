@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
-import { formatarParaISO } from "../../utils/date";
 import { Container, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { Form } from "../../components/Form";
-import { ChevronLeftIcon, Dock } from "lucide-react";
+import { Dock } from "lucide-react";
 import api from "../../services/api";
+
+// ✅ Função para formatar datas sem timezone
+function formatDateForInputSafe(dateISO) {
+    if (!dateISO) return "";
+    const [ano, mes, dia] = dateISO.split("T")[0].split("-");
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
+}
 
 export default function CadastroDespesa() {
     const navigate = useNavigate();
@@ -94,7 +100,7 @@ export default function CadastroDespesa() {
         const payload = {
             id_professor: Number(formData.id_professor),
             valor: Number(formData.valor),
-            data_pagamento: formatarParaISO(formData.data_pagamento),
+            data_pagamento: formatDateForInputSafe(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
             descricao: formData.descricao,

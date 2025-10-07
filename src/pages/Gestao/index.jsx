@@ -56,8 +56,8 @@ export function Lancamentos() {
     };
 
     const filteredLancamentos = lancamentos.filter((l) =>
-        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => b.origem_id - a.origem_id)
-        ;
+        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => (b.origem_id || 0) - (a.origem_id || 0));
+
 
     const gerarDescricao = (l) => {
         if (l.descricao) return l.descricao;
@@ -163,8 +163,9 @@ export function Lancamentos() {
                                 <td className="border px-2 py-1">{l.nome_aluno || "-"}</td>
                                 <td className="border px-2 py-1">{l.nome_professor || "-"}</td>
                                 <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
-                                <td className="border px-2 py-1">{l.data ? formatarDataLegivel(l.data) : "-"}</td>
+                                <td className="border px-2 py-1">{l.data_pagamento ? formatarDataLegivel(l.data_pagamento) : "-"}</td>
                                 <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
+
                             </tr>
                         ))}
                     </tbody>

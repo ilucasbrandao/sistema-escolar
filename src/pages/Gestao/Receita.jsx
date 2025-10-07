@@ -8,9 +8,16 @@ import api from "../../services/api";
 import { formatarParaISO } from "../../utils/date";
 import dayjs from "dayjs";
 
+// ✅ Função para formatar datas sem timezone
+function formatDateForInputSafe(dateISO) {
+    if (!dateISO) return "";
+    const [ano, mes, dia] = dateISO.split("T")[0].split("-");
+    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
+}
+
 export default function CadastroReceita() {
     const navigate = useNavigate();
-    const hoje = dayjs().format("YYYY-MM-DD");
+    const hojeISO = dayjs().format("YYYY-MM-DD"); // para o input date
     const mesAtual = dayjs().month() + 1;
     const anoAtual = dayjs().year();
 
@@ -18,7 +25,7 @@ export default function CadastroReceita() {
     const [formData, setFormData] = useState({
         id_aluno: "",
         valor: "",
-        data_pagamento: hoje,
+        data_pagamento: hojeISO,
         mes_referencia: mesAtual,
         ano_referencia: anoAtual,
         descricao: `Mensalidade referente ao mês: ${mesAtual}/${anoAtual}`,
@@ -66,7 +73,8 @@ export default function CadastroReceita() {
             name: "data_pagamento",
             label: "Data de Pagamento",
             type: "date",
-            max: hoje,
+            max: hojeISO,
+            value: formatDateForInputSafe(formData.data_pagamento),
         },
         {
             name: "mes_referencia",
@@ -94,13 +102,15 @@ export default function CadastroReceita() {
         const payload = {
             id_aluno: Number(formData.id_aluno),
             valor: Number(formData.valor),
-            data_pagamento: formatarParaISO(formData.data_pagamento),
+            // ✅ Garante que enviamos "YYYY-MM-DD" sem shift de timezone
+            data_pagamento: formatDateForInputSafe(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
             descricao: formData.descricao,
         };
 
         try {
+            console.log(payload)
             await api.post("/receitas", payload);
             alert("Receita lançada com sucesso!");
             navigate("/lancamentos");
@@ -120,7 +130,9 @@ export default function CadastroReceita() {
                 Lançamentos
             </Button>
 
-            <Title className="text-center" level={1}>Lançar Receita</Title>
+            <Title className="text-center" level={1}>
+                Lançar Receita
+            </Title>
 
             <Form
                 fields={campos}

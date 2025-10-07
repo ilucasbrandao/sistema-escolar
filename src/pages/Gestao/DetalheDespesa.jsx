@@ -7,9 +7,11 @@ import { ChevronLeftIcon, Trash } from "lucide-react";
 import { Button } from "../../components/Button";
 
 function formatarDataLegivel(dataISO) {
-    if (!dataISO || !dayjs(dataISO).isValid()) return "—";
-    return dayjs(dataISO).format("DD/MM/YYYY");
+    if (!dataISO) return "—";
+    const [ano, mes, dia] = dataISO.split("T")[0].split("-");
+    return `${dia}/${mes}/${ano}`;
 }
+
 
 export default function VisualizarDespesa() {
     const navigate = useNavigate();
@@ -40,7 +42,7 @@ export default function VisualizarDespesa() {
         if (!confirm) return;
 
         try {
-            await api.delete(`/despesa/${despesaId}`);
+            await api.delete(`/despesa/professor/${professorId}/${despesaId}`);
             alert("Despesa excluída com sucesso!");
             navigate(`/professores/${professorId}`);
         } catch (error) {
@@ -73,8 +75,9 @@ export default function VisualizarDespesa() {
             {/* Card de dados */}
             <div className="bg-white rounded-md shadow-sm p-4 space-y-2 text-sm text-slate-700">
                 <Paragraph>
-                    <strong>Valor:</strong> R$ {despesa.valor}
+                    <strong>Valor:</strong> R$ {despesa.valor.toFixed(2).replace('.', ',')}
                 </Paragraph>
+
                 <Paragraph>
                     <strong>Data de Pagamento:</strong> {formatarDataLegivel(despesa.data_pagamento)}
                 </Paragraph>
