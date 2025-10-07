@@ -6,8 +6,10 @@ import { Button } from "../../components/Button";
 import { Container, Paragraph, Title } from "../../components/Container";
 import { ChevronLeftIcon, LayoutDashboard, UserRoundPlus } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format";
-import { formatarDataLegivel } from "../../utils/date";
 
+function formatarDataLegivel(data) {
+    return data ? dayjs(data).format("DD/MM/YYYY") : "-";
+}
 export function Lancamentos() {
     const navigate = useNavigate();
     const [lancamentos, setLancamentos] = useState([]);
@@ -56,8 +58,8 @@ export function Lancamentos() {
     };
 
     const filteredLancamentos = lancamentos.filter((l) =>
-        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => (b.origem_id || 0) - (a.origem_id || 0));
-
+        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => b.origem_id - a.origem_id)
+        ;
 
     const gerarDescricao = (l) => {
         if (l.descricao) return l.descricao;
@@ -163,7 +165,7 @@ export function Lancamentos() {
                                 <td className="border px-2 py-1">{l.nome_aluno || "-"}</td>
                                 <td className="border px-2 py-1">{l.nome_professor || "-"}</td>
                                 <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
-                                <td className="border px-2 py-1">{l.data_pagamento ? formatarDataLegivel(l.data_pagamento) : "-"}</td>
+                                <td className="border px-2 py-1">{l.data ? formatarDataLegivel(l.data) : "-"}</td>
                                 <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
                             </tr>
                         ))}

@@ -7,11 +7,10 @@ import { Form } from "../../components/Form";
 import { Dock } from "lucide-react";
 import api from "../../services/api";
 
-// ✅ Função para formatar datas sem timezone
 function formatDateForInputSafe(dateISO) {
     if (!dateISO) return "";
     const [ano, mes, dia] = dateISO.split("T")[0].split("-");
-    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
+    return `${ano}-${mes}-${dia}`;
 }
 
 export default function CadastroDespesa() {
@@ -28,7 +27,20 @@ export default function CadastroDespesa() {
         mes_referencia: mesAtual,
         ano_referencia: anoAtual,
         descricao: `Despesa referente ao mês: ${mesAtual}/${anoAtual}`,
+        categoria: "", // novo campo
     });
+
+    const categorias = [
+        { label: "Selecionar categoria", value: "" },
+        { label: "Salários", value: "salarios" },
+        { label: "Cartão", value: "cartao" },
+        { label: "Água", value: "agua" },
+        { label: "Internet", value: "internet" },
+        { label: "Energia", value: "energia" },
+        { label: "Manutenção", value: "manutencao" },
+        { label: "Reposição", value: "reposicao" },
+        { label: "Outros", value: "outros" },
+    ];
 
     useEffect(() => {
         async function carregarProfessores() {
@@ -42,13 +54,15 @@ export default function CadastroDespesa() {
         carregarProfessores();
     }, []);
 
-    // Atualiza descrição automaticamente quando mês ou ano mudam
     useEffect(() => {
         setFormData((prev) => ({
             ...prev,
-            descricao: `Despesa referente ao mês: ${prev.mes_referencia}/${prev.ano_referencia}`,
+            descricao: prev.categoria
+                ? `Despesa de ${categorias.find(c => c.value === prev.categoria)?.label || ""} referente ao mês: ${prev.mes_referencia}/${prev.ano_referencia}`
+                : `Despesa referente ao mês: ${prev.mes_referencia}/${prev.ano_referencia}`,
         }));
-    }, [formData.mes_referencia, formData.ano_referencia])
+    }, [formData.categoria, formData.mes_referencia, formData.ano_referencia]);
+
 
     const campos = [
         {
@@ -67,6 +81,12 @@ export default function CadastroDespesa() {
             placeholder: "Digite o valor da despesa",
             step: "0.01",
             min: "0",
+        },
+        {
+            name: "categoria",
+            label: "Categoria",
+            type: "select",
+            options: categorias,
         },
         {
             name: "data_pagamento",
@@ -98,8 +118,9 @@ export default function CadastroDespesa() {
 
     const handleSubmit = async () => {
         const payload = {
-            id_professor: Number(formData.id_professor),
+            id_professor: Number(formData.id_professor) || null,
             valor: Number(formData.valor),
+            categoria: formData.categoria,
             data_pagamento: formatDateForInputSafe(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
@@ -108,9 +129,11 @@ export default function CadastroDespesa() {
 
         try {
             await api.post("/despesa", payload);
+            console.log(payload)
             alert("Despesa lançada com sucesso!");
             navigate("/lancamentos");
         } catch (error) {
+            console.log(payload)
             console.error("Erro ao salvar Despesa:", error?.response?.data || error);
             alert("Erro ao salvar. Verifique os dados e tente novamente.");
         }
