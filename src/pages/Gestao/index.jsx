@@ -165,7 +165,6 @@ export function Lancamentos() {
                                 <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
                                 <td className="border px-2 py-1">{l.data_pagamento ? formatarDataLegivel(l.data_pagamento) : "-"}</td>
                                 <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
-
                             </tr>
                         ))}
                     </tbody>
