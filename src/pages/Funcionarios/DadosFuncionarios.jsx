@@ -82,7 +82,7 @@ export default function VisualizarDadosFuncionario() {
                     <span>{teacher.nome}</span>
 
                     <label className="font-medium">Data de Nascimento:</label>
-                    <span>{formatarDataLegivel(teacher.data_nascimento)}</span>
+                    <span>{formatarDataLegivel(teacher.data_nascimento)} - {idadeEmAnos(teacher.data_nascimento) + " anos"}</span>
 
                     <label className="font-medium">Salário:</label>
                     <span className="font-semibold text-blue-700">
@@ -104,8 +104,8 @@ export default function VisualizarDadosFuncionario() {
                     <label className="font-medium">Status:</label>
                     <span
                         className={`font-semibold ${teacher.status === "ativo"
-                                ? "text-sm sm:text-base text-green-600"
-                                : "text-sm sm:text-base text-red-600"
+                            ? "text-sm sm:text-base text-green-600"
+                            : "text-sm sm:text-base text-red-600"
                             }`}
                     >
                         {teacher.status}
