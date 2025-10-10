@@ -7,9 +7,14 @@ import { useNavigate } from "react-router-dom";
 import { InfoCard } from "../../components/Cards";
 import { formatarParaBRL } from "../../utils/format";
 import dayjs from "dayjs";
-import "dayjs/locale/pt-br";
 
-dayjs.locale("pt-br");
+function formatarDataLegivel(dataISO) {
+    if (!dataISO) return "—";
+    // Se vier "2025-10-03T00:00:00.000Z", pega só a parte do ano-mês-dia
+    const diaMesAno = dataISO.split("T")[0] || dataISO;
+    const [ano, mes, dia] = diaMesAno.split("-");
+    return `${dia}/${mes}/${ano}`;
+}
 
 export function Dashboard() {
     const [ano, setAno] = useState(dayjs().year());
@@ -47,7 +52,7 @@ export function Dashboard() {
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
-                <Title level={1} className="text-2xl font-bold text-slate-800">
+                <Title level={1} className="text-2xl font-bold">
                     Dashboard
                 </Title>
                 <Button onClick={() => navigate("/alunos/cadastrar")}>
@@ -57,9 +62,9 @@ export function Dashboard() {
 
             {/* Mês atual + navegação */}
             <div className="text-center">
-                <Paragraph muted className="text-sm text-slate-600">
+                <Title level={3} muted className="text-sm text-slate-600">
                     Relatório de {dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}
-                </Paragraph>
+                </Title>
             </div>
             <div className="flex justify-between items-center mb-4">
                 <div className="flex gap-2">
@@ -138,7 +143,7 @@ export function Dashboard() {
                             dados.aniversariantes.map((a) => (
                                 <li key={a.nome} className="flex justify-between py-1">
                                     <span>{a.nome}</span>
-                                    <span className="font-semibold">{dayjs(a.data_nascimento).format("DD/MM")}</span>
+                                    <span className="font-semibold">{formatarDataLegivel(a.data_nascimento)}</span>
                                 </li>
                             ))
                         )}

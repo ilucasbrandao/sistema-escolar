@@ -67,7 +67,7 @@ export function Professores() {
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
-                <Title level={1} className="text-2xl font-bold text-slate-800">Professores</Title>
+                <Title level={1} className="text-2xl font-bold">Professores</Title>
                 <div className="flex gap-2">
 
                     <Button onClick={() => navigate("/professores/cadastrar")}>

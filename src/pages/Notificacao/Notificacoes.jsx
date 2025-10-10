@@ -43,13 +43,14 @@ export function Notificacoes() {
             <Button onClick={() => navigate("/")}>
                 <ChevronLeftIcon className="w-5 h-5" /> Voltar
             </Button>
-
-            <Title level={1} className="text-2xl font-bold text-slate-800 mb-4">
-                Notificações
-            </Title>
+            <div className="flex justify-center items-center mb-6">
+                <Title level={1} className="text-2xl font-bold mb-4">
+                    Notificações
+                </Title>
+            </div>
 
             {/* Filtros de mês/ano */}
-            <div className="flex gap-2 mb-4 flex-wrap">
+            <div className="flex justify-center gap-2 mb-4 flex-wrap">
                 <select
                     value={mes}
                     onChange={(e) => setMes(Number(e.target.value))}
@@ -75,7 +76,7 @@ export function Notificacoes() {
                 </select>
             </div>
 
-            <Title level={2}>
+            <Title level={3}>
                 Alunos Inadimplentes - {dayjs(`${ano}-${mes}-01`).format("MMMM [de] YYYY")}
             </Title>
 

@@ -28,7 +28,7 @@ export function InfoCard({ title, value, icon }) {
                 <span className="text-2xl">{icon}</span>
                 <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
             </div>
-            <span className="text-gray-600 text-base">{value}</span>
+            <span className="text-gray-600 text-sm">{value}</span>
         </div>
     );
 }

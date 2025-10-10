@@ -14,16 +14,6 @@ function formatDateForInputSafe(dateISO) {
     return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
 }
 
-// Remove formatação monetária e converte para número
-function parseSalario(valor) {
-    if (typeof valor === "string") {
-        return parseFloat(
-            valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
-        );
-    }
-    return valor;
-}
-
 export function EditarFuncionario() {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -86,7 +76,7 @@ export function EditarFuncionario() {
                         name: "salario",
                         label: "Salário",
                         type: "number",
-                        value: parseSalario(data.salario),
+                        value: (data.salario),
                         step: "0.01",
                         min: "0",
                     },

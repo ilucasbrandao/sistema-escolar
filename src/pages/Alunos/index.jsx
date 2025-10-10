@@ -93,6 +93,9 @@ export function Alunos() {
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
+                <Title level={1} className="text-center">
+                    Alunos
+                </Title>
                 <Button onClick={() => navigate("/alunos/cadastrar")}>
                     <UserRoundPlus className="w-5 h-5" />
                 </Button>
@@ -100,9 +103,7 @@ export function Alunos() {
 
             {/* Título e parágrafo centralizados */}
             <div className="mb-8">
-                <Title level={1} className="text-center">
-                    Alunos
-                </Title>
+
                 <Paragraph muted className="text-center mt-2">
                     Informações sobre os alunos serão exibidas aqui:
                 </Paragraph>

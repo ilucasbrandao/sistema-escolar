@@ -35,7 +35,13 @@ export default function CadastroReceita() {
         async function carregarAlunos() {
             try {
                 const res = await api.get("/alunos");
-                setAlunos(res.data);
+
+                // Ordena por nome (case-insensitive)
+                const alunosOrdenados = res.data.sort((a, b) =>
+                    a.nome.localeCompare(b.nome, "pt-BR", { sensitivity: "base" })
+                );
+
+                setAlunos(alunosOrdenados);
             } catch (error) {
                 console.error("Erro ao carregar alunos:", error.message);
             }
@@ -102,7 +108,6 @@ export default function CadastroReceita() {
         const payload = {
             id_aluno: Number(formData.id_aluno),
             valor: Number(formData.valor),
-            // ✅ Garante que enviamos "YYYY-MM-DD" sem shift de timezone
             data_pagamento: formatDateForInputSafe(formData.data_pagamento),
             mes_referencia: Number(formData.mes_referencia),
             ano_referencia: Number(formData.ano_referencia),
@@ -110,13 +115,24 @@ export default function CadastroReceita() {
         };
 
         try {
-            console.log(payload)
             await api.post("/receitas", payload);
-            alert("Receita lançada com sucesso!");
+            alert("✅ Receita lançada com sucesso!");
             navigate("/lancamentos");
         } catch (error) {
-            console.error("Erro ao salvar Receita:", error?.response?.data || error);
-            alert("Erro ao salvar. Verifique os dados e tente novamente.");
+            const status = error.response?.status;
+            const message =
+                error.response?.data?.message || "Erro ao salvar receita.";
+
+            if (status === 409) {
+                // 🚫 Já existe lançamento no mesmo mês/ano
+                alert(`⚠️ ${message}`);
+            } else if (status === 400) {
+                // Erros de validação (ex: campos vazios)
+                alert(`❌ ${message}`);
+            } else {
+                console.error("Erro ao salvar Receita:", error);
+                alert("❌ Ocorreu um erro inesperado. Tente novamente.");
+            }
         }
     };
 

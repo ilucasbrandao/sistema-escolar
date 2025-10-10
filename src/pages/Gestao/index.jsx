@@ -4,7 +4,7 @@ import dayjs from "dayjs";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { Container, Paragraph, Title } from "../../components/Container";
-import { ChevronLeftIcon, LayoutDashboard, UserRoundPlus } from "lucide-react";
+import { ChevronLeftIcon, CircleDollarSign, LayoutDashboard, UserRoundPlus } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format";
 
 function formatarDataLegivel(data) {
@@ -76,18 +76,16 @@ export function Lancamentos() {
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
-                <Title level={1} className="text-xl font-bold text-slate-800">Lançamentos</Title>
+                <Title level={1} className="text-xl font-bold">Lançamentos</Title>
                 <div className="flex gap-2">
 
-                    <Button variant="pastelGreen" onClick={() => navigate("/dashboard")}>
-                        <LayoutDashboard className="w-5 h-5" />Dashboard
+                    <Button variant="pastelGreen" onClick={() =>
+                        navigate("receitas", { state: { tipo: "entrada" } })
+                    }>
+                        <CircleDollarSign className="w-5 h-5" />Lançar Mensalidade
                     </Button>
                 </div>
             </div>
-
-            <Paragraph muted className="text-sm text-slate-600 mb-4">
-                Visualize os lançamentos financeiros por mês.
-            </Paragraph>
 
             {/* Filtros */}
             <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 flex-wrap">

@@ -1,5 +1,6 @@
 import logoBrandao from "../assets/1.png";
 import logoBrandao2 from "../assets/2.png";
+import logoEspaco from "../assets/3.png"
 
 export function TopBackground() {
     return (
@@ -23,4 +24,16 @@ export function TopBackground2() {
             />
         </div>
     );
+}
+
+export function Logo() {
+    return (
+        <div className="max-w-40 rounded-3xl  flex items-center justify-center">
+            <img
+                src={logoEspaco}
+                alt="Logo Espaço"
+                className="max-w-full max-h-full rounded-3xl object-cover transition-transform duration-300 hover:scale-102"
+            />
+        </div >
+    )
 }
