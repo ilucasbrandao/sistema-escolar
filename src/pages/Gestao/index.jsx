@@ -58,10 +58,15 @@ export function Lancamentos() {
         setFim(novoMes.endOf("month").format("YYYY-MM-DD"));
     };
 
-    const filteredLancamentos = lancamentos.filter((l) =>
-        (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())).sort((a, b) => b.origem_id - a.origem_id)
-        ;
-
+    const filteredLancamentos = lancamentos
+        .filter((l) =>
+            (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .sort((a, b) => {
+            const dataA = dayjs(a.data);
+            const dataB = dayjs(b.data);
+            return dataB - dataA; // mais recentes primeiro
+        });
     const gerarDescricao = (l) => {
         if (l.descricao) return l.descricao;
         if (l.tipo === "receita") return "Mensalidade";
