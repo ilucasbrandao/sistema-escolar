@@ -1,17 +1,32 @@
 import dayjs from "dayjs";
-import api from "../../services/api.js";
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import api from "../../services/api.js";
 import { Container, Paragraph, Title } from "../../components/Container";
 import { Button } from "../../components/Button";
 import { ChevronLeftIcon, Eye } from "lucide-react";
 import { formatarParaBRL } from "../../utils/format.js";
 
+function formatarMesAno(mes, ano) {
+    if (!mes) return "—";
+    const strMes = String(mes).padStart(2, "0");
+    if (!ano) return `${strMes}/—`;
+    return `${strMes}/${ano}`;
+}
+
 function formatarDataLegivel(dataISO) {
     if (!dataISO) return "—";
-    // Se vier "2025-10-03T00:00:00.000Z", pega só a parte do ano-mês-dia
-    const diaMesAno = dataISO.split("T")[0] || dataISO;
-    const [ano, mes, dia] = diaMesAno.split("-");
+    let dataStr = "";
+
+    if (typeof dataISO === "string") dataStr = dataISO.split("T")[0];
+    else if (dataISO instanceof Date) dataStr = dataISO.toISOString().split("T")[0];
+    else {
+        const d = new Date(dataISO);
+        if (!isNaN(d.getTime())) dataStr = d.toISOString().split("T")[0];
+        else return "—";
+    }
+
+    const [ano, mes, dia] = dataStr.split("-");
     return `${dia}/${mes}/${ano}`;
 }
 
@@ -34,9 +49,8 @@ export default function VisualizarDadosFuncionario() {
                 const { data } = await api.get(`/professores/${id}`);
                 setTeacher(data);
                 setMovimentacoes(data.movimentacoes || []);
-            } catch (error) {
+            } catch {
                 alert("Não foi possível carregar os dados do professor(a).");
-                console.error("Erro ao buscar professor(a):", error);
             }
         }
         getTeacherById();
@@ -45,34 +59,25 @@ export default function VisualizarDadosFuncionario() {
     if (!teacher) {
         return (
             <Container className="flex justify-center items-center min-h-screen">
-                <p className="text-slate-500 text-sm">
-                    Carregando dados do professor(a)...
-                </p>
+                <p className="text-slate-500 text-sm">Carregando dados do professor(a)...</p>
             </Container>
         );
     }
 
     return (
         <Container>
-            {/* Botão voltar */}
             <div className="mb-4">
-                <Button
-                    onClick={() => navigate("/professores")}
-                    className="flex items-center gap-2"
-                >
+                <Button onClick={() => navigate("/professores")} className="flex items-center gap-2">
                     <ChevronLeftIcon className="w-5 h-5" />
+                    Voltar
                 </Button>
             </div>
 
-            {/* Título */}
             <div className="mb-6 text-center">
                 <Title level={1}>Dados do Professor(a)</Title>
-                <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mt-2">
-                    {teacher.nome}
-                </h2>
+                <h2 className="text-xl sm:text-2xl font-semibold text-blue-700 mt-2">{teacher.nome}</h2>
             </div>
 
-            {/* Informações */}
             <div className="max-w-xl mx-auto bg-white shadow-sm rounded-md p-4 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm text-slate-700">
                     <label className="font-medium">ID:</label>
@@ -82,12 +87,12 @@ export default function VisualizarDadosFuncionario() {
                     <span>{teacher.nome}</span>
 
                     <label className="font-medium">Data de Nascimento:</label>
-                    <span>{formatarDataLegivel(teacher.data_nascimento)} - {idadeEmAnos(teacher.data_nascimento) + " anos"}</span>
+                    <span>
+                        {formatarDataLegivel(teacher.data_nascimento)} - {idadeEmAnos(teacher.data_nascimento)} anos
+                    </span>
 
                     <label className="font-medium">Salário:</label>
-                    <span className="font-semibold text-blue-700">
-                        {formatarParaBRL(teacher.salario)}
-                    </span>
+                    <span className="font-semibold text-blue-700">{formatarParaBRL(teacher.salario)}</span>
 
                     <label className="font-medium">Telefone:</label>
                     <span>{teacher.telefone}</span>
@@ -103,9 +108,7 @@ export default function VisualizarDadosFuncionario() {
 
                     <label className="font-medium">Status:</label>
                     <span
-                        className={`font-semibold ${teacher.status === "ativo"
-                            ? "text-sm sm:text-base text-green-600"
-                            : "text-sm sm:text-base text-red-600"
+                        className={`font-semibold ${teacher.status === "ativo" ? "text-green-600" : "text-red-600"
                             }`}
                     >
                         {teacher.status}
@@ -113,15 +116,12 @@ export default function VisualizarDadosFuncionario() {
                 </div>
             </div>
 
-            {/* Histórico de pagamentos */}
             <div className="max-w-xl mx-auto mt-8">
                 <Title level={2} className="text-lg font-semibold text-slate-800 mb-4">
                     Histórico de Pagamentos
                 </Title>
                 {movimentacoes.length === 0 ? (
-                    <Paragraph muted className="text-sm text-slate-600">
-                        Nenhuma movimentação registrada.
-                    </Paragraph>
+                    <Paragraph muted className="text-sm text-slate-600">Nenhuma movimentação registrada.</Paragraph>
                 ) : (
                     <ul className="space-y-2">
                         {movimentacoes.map((mov) => (
@@ -131,9 +131,9 @@ export default function VisualizarDadosFuncionario() {
                             >
                                 <div className="text-sm text-slate-700">
                                     <p>
-                                        <strong>Mês:</strong>{" "}
-                                        {formatarDataLegivel(mov.mes_referencia)}
+                                        <strong>Mês:</strong> {formatarMesAno(mov.mes_referencia, mov.ano_referencia)}
                                     </p>
+
                                     <p>
                                         <strong>Valor:</strong> {formatarParaBRL(mov.valor)}
                                     </p>
@@ -141,11 +141,7 @@ export default function VisualizarDadosFuncionario() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() =>
-                                        navigate(
-                                            `/professores/${teacher.id}/despesas/${mov.id_despesa}`
-                                        )
-                                    }
+                                    onClick={() => navigate(`/professores/${teacher.id}/despesas/${mov.id_despesa}`)}
                                     className="p-2 rounded hover:bg-slate-200"
                                 >
                                     <Eye className="w-4 h-4 text-slate-600" />

@@ -61,6 +61,7 @@ export default function VisualizarDados() {
                     className="flex items-center gap-2"
                 >
                     <ChevronLeftIcon className="w-5 h-5" />
+                    Voltar
                 </Button>
             </div>
 

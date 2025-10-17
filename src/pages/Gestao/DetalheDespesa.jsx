@@ -75,8 +75,12 @@ export default function VisualizarDespesa() {
             {/* Card de dados */}
             <div className="bg-white rounded-md shadow-sm p-4 space-y-2 text-sm text-slate-700">
                 <Paragraph>
-                    <strong>Valor:</strong> R$ {despesa.valor.toFixed(2).replace('.', ',')}
+                    <strong>Valor:</strong>{" "}
+                    {!despesa.valor
+                        ? "R$ —"
+                        : `R$ ${Number(despesa.valor).toFixed(2).replace(".", ",")}`}
                 </Paragraph>
+
 
                 <Paragraph>
                     <strong>Data de Pagamento:</strong> {formatarDataLegivel(despesa.data_pagamento)}
