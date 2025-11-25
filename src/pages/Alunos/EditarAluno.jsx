@@ -1,179 +1,199 @@
-import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { Container, Title } from "../../components/Container";
+import { Form } from "../../components/Form"; // Assumindo que ele aceita 'values' separado
 import { ChevronLeftIcon } from "lucide-react";
-import { Form } from "../../components/Form";
 import dayjs from "dayjs";
+import { toast } from 'react-toastify';
 
-// Função para converter DD/MM/YYYY → ISO
-function formatDateForInputSafe(dateISO) {
-    if (!dateISO) return "";
-    const [ano, mes, dia] = dateISO.split("T")[0].split("-");
-    return `${ano}-${mes}-${dia}`; // YYYY-MM-DD
-}
+// Função de máscara (Idealmente estaria em utils/masks.js)
+const maskPhone = (value) => {
+    if (!value) return "";
+    return value
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2")
+        .replace(/(-\d{4})\d+?$/, "$1");
+};
 
-
-// Remove formatação monetária e converte para número
-function parseMensalidade(valor) {
-    if (typeof valor === "string") {
-        return parseFloat(
-            valor.replace("R$", "").replace(/\./g, "").replace(",", ".").trim()
-        );
-    }
-    return valor;
-}
-
-// Função para converter ISO → YYYY-MM-DD (para input type="date")
-function formatDateForInput(dateISO) {
-    return dayjs(dateISO).format("YYYY-MM-DD");
-}
+// Formata data ISO (2023-10-25T00:00:00Z) para input date (2023-10-25)
+const formatToInputDate = (isoString) => {
+    if (!isoString) return "";
+    return dayjs(isoString).format("YYYY-MM-DD");
+};
 
 export function EditarAluno() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [fields, setFields] = useState([]);
-    const [loading, setLoading] = useState(true);
 
+    // Loading de tela vs Loading de salvamento
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Estado APENAS dos dados
+    const [formData, setFormData] = useState({
+        nome: "",
+        data_nascimento: "",
+        responsavel: "",
+        telefone: "",
+        data_matricula: "",
+        valor_mensalidade: "",
+        serie: "",
+        turno: "",
+        observacao: "",
+        status: "",
+    });
+
+    // Configuração dos Campos (Constante - não precisa ser State)
+    const fields = [
+        { name: "nome", label: "Nome", type: "text" },
+        {
+            name: "data_nascimento",
+            label: "Data de Nascimento",
+            type: "date",
+            disabled: true,
+        },
+        { name: "responsavel", label: "Responsável", type: "text" },
+        { name: "telefone", label: "Telefone", type: "tel", maxLength: 15 },
+        { name: "data_matricula", label: "Data de Matrícula", type: "date" },
+        {
+            name: "valor_mensalidade",
+            label: "Mensalidade",
+            type: "number",
+            step: "0.01",
+            min: "0"
+        },
+        {
+            name: "serie",
+            label: "Série",
+            type: "select",
+            options: [
+                { label: "Selecione a série", value: "" },
+                { label: "Infantil III", value: "Infantil III" },
+                { label: "Infantil IV", value: "Infantil IV" },
+                { label: "Infantil V", value: "Infantil V" },
+                { label: "Fundamental 1", value: "Fundamental1" },
+                { label: "Fundamental 2", value: "Fundamental2" },
+            ],
+        },
+        {
+            name: "turno",
+            label: "Turno",
+            type: "select",
+            options: [
+                { label: "Selecione o turno", value: "" },
+                { label: "Manhã", value: "Manhã" },
+                { label: "Tarde", value: "Tarde" },
+            ],
+        },
+        {
+            name: "observacao",
+            label: "Observações",
+            type: "textarea",
+        },
+        {
+            name: "status",
+            label: "Status",
+            type: "select",
+            options: [
+                { label: "Ativo", value: "ativo" },
+                { label: "Inativo", value: "inativo" },
+            ],
+        },
+    ];
+
+    // Busca de Dados
     useEffect(() => {
         async function fetchAluno() {
             try {
                 const { data } = await api.get(`/alunos/${id}`);
 
-                setFields([
-                    { name: "nome", label: "Nome", type: "text", value: data.nome },
-                    {
-                        name: "data_nascimento",
-                        label: "Data de Nascimento",
-                        type: "date",
-                        value: formatDateForInputSafe(data.data_nascimento),
-                        disabled: true,
-                    },
-                    {
-                        name: "responsavel",
-                        label: "Responsável",
-                        type: "text",
-                        value: data.responsavel,
-                    },
-                    {
-                        name: "telefone",
-                        label: "Telefone",
-                        type: "tel",
-                        value: data.telefone,
-                    },
-                    {
-                        name: "data_matricula",
-                        label: "Data de Matrícula",
-                        type: "date",
-                        value: formatDateForInputSafe(data.data_matricula),
-                    },
-                    {
-                        name: "valor_mensalidade",
-                        label: "Mensalidade",
-                        type: "number",
-                        value: data.valor_mensalidade,
-                        step: "0.01",
-                        min: "0",
-                    },
-                    {
-                        name: "serie",
-                        label: "Série",
-                        type: "select",
-                        value: data.serie,
-                        options: [
-                            { label: "Infantil III", value: "Infantil III" },
-                            { label: "Infantil IV", value: "Infantil IV" },
-                            { label: "Infantil V", value: "Infantil V" },
-                            { label: "Fundamental 1", value: "Fundamental1" },
-                            { label: "Fundamental 2", value: "Fundamental2" }
-                        ],
-                    },
-                    {
-                        name: "turno",
-                        label: "Turno",
-                        type: "select",
-                        value: data.turno,
-                        options: [
-                            { label: "", value: "" },
-                            { label: "Manhã", value: "Manha" },
-                            { label: "Tarde", value: "Tarde" },
-                        ],
-                    },
-                    {
-                        name: "observacao",
-                        label: "Observações",
-                        type: "textarea",
-                        value: data.observacao,
-                    },
-                    {
-                        name: "status",
-                        label: "Status",
-                        type: "select",
-                        options: [
-                            { label: "Ativo", value: "ativo" },
-                            { label: "Inativo", value: "inativo" },
-                        ],
-                        value: data.status,
-                    },
-                ]);
+                setFormData({
+                    ...data,
+                    data_nascimento: formatToInputDate(data.data_nascimento),
+                    data_matricula: formatToInputDate(data.data_matricula),
+                    telefone: maskPhone(data.telefone || ""),
+                });
+
             } catch (error) {
-                console.error("Erro ao carregar aluno:", error.message);
-                alert("Erro ao carregar dados do aluno.");
+                console.error("Erro:", error);
+                toast.error("Erro ao carregar dados do aluno.");
+                navigate("/alunos");
             } finally {
-                setLoading(false);
+                setIsLoadingData(false);
             }
         }
-
         fetchAluno();
-    }, [id]);
+    }, [id, navigate]);
 
-    async function handleSubmit(formData) {
+    // Interceptador para Máscaras (Igual ao Cadastro)
+    const handleFormChange = (newValues) => {
+        if (newValues.telefone !== formData.telefone) {
+            newValues.telefone = maskPhone(newValues.telefone);
+        }
+        setFormData(newValues);
+    };
+
+    const handleSubmit = async (data) => {
+        // Validação básica
+        if (!data.nome || !data.responsavel) {
+            toast.error("Por favor, preencha os campos obrigatórios.");
+            return;
+        }
+
         const payload = {
-            nome: formData.nome,
-            data_nascimento: formData.data_nascimento,
-            responsavel: formData.responsavel,
-            telefone: formData.telefone,
-            data_matricula: formData.data_matricula,
-            valor_mensalidade: parseFloat(formData.valor_mensalidade),
-            serie: formData.serie,
-            observacao: formData.observacao,
-            status: formData.status,
+            ...data,
+            valor_mensalidade: Number(data.valor_mensalidade),
+
         };
 
         try {
-            console.log(payload);
+            setIsSaving(true);
             await api.put(`/alunos/${id}`, payload);
-            alert("Aluno atualizado com sucesso!");
+            toast.success("Dados atualizados!");
             navigate("/alunos");
         } catch (error) {
-            console.error(
-                "Erro ao atualizar aluno:",
-                error.response?.data || error.message
-            );
-            alert("Erro ao atualizar aluno.");
+            console.error(error);
+            toast.error("Erro ao salvar alterações.");
+        } finally {
+            setIsSaving(false);
         }
-    }
+    };
 
-    if (loading) return <p className="text-center mt-6">Carregando dados...</p>;
+    if (isLoadingData) {
+        return <div className="text-center mt-10">Carregando dados...</div>;
+    }
 
     return (
         <Container>
-            <Button
-                onClick={() => navigate("/alunos")}
-                className="mb-4 flex items-center gap-2"
-            >
-                <ChevronLeftIcon className="w-5 h-5" />
-            </Button>
-            <div className="text-center">
-                <Title level={1}>Editar Aluno</Title>
-                <Title level={3}>Mat: {id}</Title>
+            <div className="flex justify-between items-center mb-6">
+                <Button
+                    onClick={() => navigate("/alunos")}
+                    className="flex items-center gap-2"
+                    disabled={isSaving}
+                >
+                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
+                </Button>
+
+                <div className="text-center">
+                    <Title level={1}>Editar Aluno</Title>
+                    <p className="text-gray-500 text-sm">Matrícula #{id}</p>
+                </div>
+
+                <div className="w-20"></div>
             </div>
+
             <Form
                 fields={fields}
+                values={formData}
+                onChange={handleFormChange}
                 onSubmit={handleSubmit}
                 className="w-full sm:w-auto px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-base"
             />
+
+            {isSaving && <p className="text-center text-blue-600 mt-4">Salvando...</p>}
         </Container>
     );
 }

@@ -1,181 +1,269 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import dayjs from "dayjs";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
-import { Container, Paragraph, Title } from "../../components/Container";
-import { ChevronLeftIcon, CircleDollarSign, LayoutDashboard, UserRoundPlus } from "lucide-react";
+import { Container, Title } from "../../components/Container";
+import {
+    ChevronLeftIcon,
+    CircleDollarSign,
+    ArrowUpCircle,
+    ArrowDownCircle,
+    Wallet,
+    Calendar,
+    Search,
+    Filter,
+    ArrowRightLeft
+} from "lucide-react";
 import { formatarParaBRL } from "../../utils/format";
 
-function formatarDataLegivel(data) {
-    return data ? dayjs(data).format("DD/MM/YYYY") : "-";
-}
+// Subcomponente para os Cards do Topo
+const SummaryCard = ({ title, value, type, icon: Icon }) => {
+    // Definição de cores baseada no tipo
+    const styles = {
+        receita: "bg-green-50 text-green-700 border-green-100",
+        despesa: "bg-red-50 text-red-700 border-red-100",
+        saldo: value >= 0 ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-red-50 text-red-700 border-red-100"
+    };
+
+    const currentStyle = styles[type] || styles.saldo;
+
+    return (
+        <div className={`p-4 rounded-xl border shadow-sm flex items-center justify-between ${currentStyle}`}>
+            <div>
+                <p className="text-xs font-bold uppercase tracking-wider opacity-70 mb-1">{title}</p>
+                <h3 className="text-2xl font-bold">{formatarParaBRL(value)}</h3>
+            </div>
+            <div className="p-3 bg-white/50 rounded-full">
+                <Icon className="w-6 h-6" />
+            </div>
+        </div>
+    );
+};
 
 export function Lancamentos() {
     const navigate = useNavigate();
     const [lancamentos, setLancamentos] = useState([]);
     const [resumo, setResumo] = useState({ total_receitas: 0, total_despesas: 0, saldo: 0 });
     const [searchTerm, setSearchTerm] = useState("");
+
+    // Estados de datas
     const [inicio, setInicio] = useState("");
     const [fim, setFim] = useState("");
     const [loading, setLoading] = useState(true);
 
-    // Define mês atual ao carregar
+    // Inicialização
     useEffect(() => {
         const hoje = dayjs();
-        const inicioMes = hoje.startOf("month").format("YYYY-MM-DD");
-        const fimMes = hoje.endOf("month").format("YYYY-MM-DD");
-
-        setInicio(inicioMes);
-        setFim(fimMes);
+        setInicio(hoje.startOf("month").format("YYYY-MM-DD"));
+        setFim(hoje.endOf("month").format("YYYY-MM-DD"));
     }, []);
 
-    // Carrega lançamentos sempre que datas mudam
+    // Busca de dados
     useEffect(() => {
-        carregarLancamentos();
+        if (inicio && fim) carregarLancamentos();
     }, [inicio, fim]);
 
     const carregarLancamentos = async () => {
         setLoading(true);
         try {
-            const params = {};
-            if (inicio) params.inicio = inicio;
-            if (fim) params.fim = fim;
-
-            const { data } = await api.get("/lancamentos", { params });
+            const { data } = await api.get("/lancamentos", { params: { inicio, fim } });
             setLancamentos(data.lancamentos);
             setResumo(data.resumo);
         } catch (error) {
-            console.error("Erro ao carregar lançamentos:", error);
+            console.error("Erro:", error);
         } finally {
             setLoading(false);
         }
     };
 
     const alterarMes = (delta) => {
-        const novoMes = dayjs(inicio).startOf("month").add(delta, "month");
+        const novoMes = dayjs(inicio).add(delta, "month");
         setInicio(novoMes.startOf("month").format("YYYY-MM-DD"));
         setFim(novoMes.endOf("month").format("YYYY-MM-DD"));
     };
 
-    const filteredLancamentos = lancamentos
-        .filter((l) =>
-            (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase())
-        )
-        .sort((a, b) => {
-            const dataA = dayjs(a.data);
-            const dataB = dayjs(b.data);
-            return dataB - dataA; // mais recentes primeiro
-        });
-    const gerarDescricao = (l) => {
-        if (l.descricao) return l.descricao;
-        if (l.tipo === "receita") return "Mensalidade";
-        if (l.tipo === "despesa") return "Despesa";
+    // Uso de useMemo para performance na filtragem
+    const filteredLancamentos = useMemo(() => {
+        return lancamentos
+            .filter((l) =>
+                (l.descricao || l.tipo || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (l.nome_aluno || "").toLowerCase().includes(searchTerm.toLowerCase())
+            )
+            .sort((a, b) => dayjs(b.data).diff(dayjs(a.data))); // Mais recentes primeiro
+    }, [lancamentos, searchTerm]);
+
+    // Função auxiliar para decidir quem mostrar na tabela
+    const getParticipante = (l) => {
+        if (l.tipo === "receita") return l.nome_aluno || "Aluno não identificado";
+        if (l.tipo === "despesa") return l.nome_professor || "Despesa Geral";
         return "-";
     };
 
     return (
         <Container>
-            {/* Botões */}
-            <div className="flex justify-between items-center mb-4">
-                <Button onClick={() => navigate("/")}>
-                    <ChevronLeftIcon className="w-5 h-5" /> Voltar
-                </Button>
-                <Title level={1} className="text-xl font-bold">Lançamentos</Title>
-                <div className="flex gap-2">
+            {/* Cabeçalho */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <Button onClick={() => navigate("/")} variant="ghost" className="pl-0 text-slate-500 hover:text-slate-800 mb-2">
+                        <ChevronLeftIcon className="w-5 h-5 mr-1" /> Voltar
+                    </Button>
+                    <Title level={1}>Gestão Financeira</Title>
+                    <p className="text-slate-500 text-sm">Acompanhe o fluxo de caixa da escola</p>
+                </div>
 
-                    <Button variant="pastelGreen" onClick={() =>
-                        navigate("receitas", { state: { tipo: "entrada" } })
-                    }>
-                        <CircleDollarSign className="w-5 h-5" />Lançar Mensalidade
+                <div className="flex gap-2">
+                    {/* Botão de Atalho para Receita */}
+                    <Button
+                        onClick={() => navigate("receitas")}
+                        className="bg-green-600 hover:bg-green-700 text-white shadow-md shadow-green-200"
+                    >
+                        <ArrowUpCircle className="w-5 h-5 mr-2" />
+                        Nova Receita
+                    </Button>
+                    {/* Botão de Atalho para Despesa */}
+                    <Button
+                        onClick={() => navigate("despesas")}
+                        className="bg-red-600 hover:bg-red-700 text-white shadow-md shadow-red-200"
+                    >
+                        <ArrowDownCircle className="w-5 h-5 mr-2" />
+                        Nova Despesa
                     </Button>
                 </div>
             </div>
 
-            {/* Filtros */}
-            <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 flex-wrap">
-                <div className="flex gap-2">
-                    <Button onClick={() => alterarMes(-1)}>← Mês anterior</Button>
-                    <Button onClick={() => alterarMes(1)}>Próximo mês →</Button>
-                </div>
-                <div className="mb-4 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 flex-wrap">
-
-                    <input
-                        type="date"
-                        value={inicio}
-                        onChange={(e) => setInicio(e.target.value)}
-                        className="p-2 border rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                        type="date"
-                        value={fim}
-                        onChange={(e) => setFim(e.target.value)}
-                        className="p-2 border rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
-                    />
-                    <Button onClick={carregarLancamentos} className="text-sm">Filtrar</Button>
-                </div>
-                <input
-                    type="text"
-                    placeholder="Pesquisar por descrição..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full sm:w-64 p-2 border border-slate-300 rounded-md shadow-sm text-sm focus:ring-2 focus:ring-blue-500"
+            {/* Painel de Resumo (Cards) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                <SummaryCard
+                    title="Entradas"
+                    value={resumo.total_receitas}
+                    type="receita"
+                    icon={ArrowUpCircle}
+                />
+                <SummaryCard
+                    title="Saídas"
+                    value={resumo.total_despesas}
+                    type="despesa"
+                    icon={ArrowDownCircle}
+                />
+                <SummaryCard
+                    title="Saldo Atual"
+                    value={resumo.saldo}
+                    type="saldo"
+                    icon={Wallet}
                 />
             </div>
 
-            {/* Resumo */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-md shadow-sm text-sm text-center">
-                <div>
-                    <h3 className="font-medium text-slate-700">Receitas</h3>
-                    <p className="text-green-600 font-semibold">{formatarParaBRL(resumo.total_receitas)}</p>
+            {/* Barra de Ferramentas (Filtros e Busca) */}
+            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+
+                {/* Navegação de Mês */}
+                <div className="flex items-center bg-slate-100 rounded-lg p-1">
+                    <button onClick={() => alterarMes(-1)} className="p-2 hover:bg-white rounded-md text-slate-600 transition shadow-sm">
+                        <ChevronLeftIcon className="w-4 h-4" />
+                    </button>
+                    <span className="px-4 text-sm font-semibold text-slate-700 min-w-[140px] text-center capitalize">
+                        {dayjs(inicio).format("MMMM YYYY")}
+                    </span>
+                    <button onClick={() => alterarMes(1)} className="p-2 hover:bg-white rounded-md text-slate-600 transition shadow-sm">
+                        <ChevronLeftIcon className="w-4 h-4 rotate-180" />
+                    </button>
                 </div>
-                <div>
-                    <h3 className="font-medium text-slate-700">Despesas</h3>
-                    <p className="text-red-600 font-semibold">{formatarParaBRL(resumo.total_despesas)}</p>
-                </div>
-                <div>
-                    <h3 className="font-medium text-slate-700">Saldo</h3>
-                    <p className={`${resumo.saldo >= 0 ? "text-green-600" : "text-red-600"} font-semibold`}>
-                        {formatarParaBRL(resumo.saldo)}
-                    </p>
+
+                {/* Filtro de Data Personalizada e Busca */}
+                <div className="flex flex-1 w-full md:w-auto gap-3 flex-col md:flex-row">
+                    <div className="flex items-center bg-white border border-slate-200 rounded-lg px-3 py-1.5 shadow-sm gap-2 focus-within:ring-2 focus-within:ring-blue-100 transition-all w-fit">
+                        <Calendar className="w-4 h-4 text-slate-400 shrink-0" />
+
+                        <div className="flex items-center gap-1">
+                            <input
+                                type="date"
+                                value={inicio}
+                                onChange={e => setInicio(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm font-medium text-slate-600 outline-none cursor-pointer p-0 border-none focus:ring-0"
+                                required
+                            />
+                            <span className="text-slate-300 text-xs px-1">até</span>
+                            <input
+                                type="date"
+                                value={fim}
+                                onChange={e => setFim(e.target.value)}
+                                className="bg-transparent text-xs sm:text-sm font-medium text-slate-600 outline-none cursor-pointer p-0 border-none focus:ring-0"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Buscar lançamento..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-9 pr-4 py-1.5 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-100 text-sm transition shadow-sm"
+                        />
+                    </div>
                 </div>
             </div>
 
-            {/* Tabela */}
-            {loading ? (
-                <Paragraph muted>Carregando lançamentos...</Paragraph>
-            ) : filteredLancamentos.length === 0 ? (
-                <Paragraph muted>Nenhum lançamento encontrado.</Paragraph>
-            ) : (
-                <table className="w-full border-collapse text-sm mb-4">
-                    <thead>
-                        <tr className="bg-slate-100 text-slate-600 font-medium">
-                            <th className="border px-2 py-1">Tipo</th>
-                            <th className="border px-2 py-1">Descrição</th>
-                            <th className="border px-2 py-1">Entrada</th>
-                            <th className="border px-2 py-1">Saída</th>
-                            <th className="border px-2 py-1">Valor</th>
-                            <th className="border px-2 py-1">Data</th>
-                            <th className="border px-2 py-1">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredLancamentos.map((l) => (
-                            <tr key={l.lancamento_id} className="hover:bg-slate-50">
-                                <td className={`border px-2 py-1 font-semibold ${l.tipo === "receita" ? "text-green-600" : "text-red-600"}`}>
-                                    {l.tipo}
-                                </td>
-                                <td className="border px-2 py-1">{gerarDescricao(l)}</td>
-                                <td className="border px-2 py-1">{l.nome_aluno || "-"}</td>
-                                <td className="border px-2 py-1">{l.nome_professor || "-"}</td>
-                                <td className="border px-2 py-1">{formatarParaBRL(l.valor)}</td>
-                                <td className="border px-2 py-1">{l.data ? formatarDataLegivel(l.data) : "-"}</td>
-                                <td className="border px-2 py-1">{l.status || "Finalizada"}</td>
+            {/* Tabela Profissional */}
+            <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-xs">
+                            <tr>
+                                <th className="px-6 py-4">Data</th>
+                                <th className="px-6 py-4">Descrição</th>
+                                <th className="px-6 py-4">Origem / Destino</th>
+                                <th className="px-6 py-4">Valor</th>
+                                <th className="px-6 py-4 text-center">Tipo</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {loading ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-400">
+                                        Carregando movimentações...
+                                    </td>
+                                </tr>
+                            ) : filteredLancamentos.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-8 text-center text-slate-500 flex flex-col items-center justify-center gap-2">
+                                        <Filter className="w-8 h-8 text-slate-300" />
+                                        <span>Nenhum lançamento encontrado neste período.</span>
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredLancamentos.map((l) => (
+                                    <tr key={l.lancamento_id} className="hover:bg-slate-50 transition duration-150">
+                                        <td className="px-6 py-4 font-medium text-slate-600 whitespace-nowrap">
+                                            {dayjs(l.data).format("DD/MM/YYYY")}
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-800">
+                                            {l.descricao || "Sem descrição"}
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-500">
+                                            {getParticipante(l)}
+                                        </td>
+                                        <td className={`px-6 py-4 font-bold whitespace-nowrap ${l.tipo === "receita" ? "text-green-600" : "text-red-600"
+                                            }`}>
+                                            {l.tipo === "receita" ? "+ " : "- "}
+                                            {formatarParaBRL(l.valor)}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide
+                                                ${l.tipo === "receita" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+                                                {l.tipo}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </Container>
     );
 }

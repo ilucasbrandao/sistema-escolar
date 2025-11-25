@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://back-end-reforco-production.up.railway.app", // seu backend escolar
+  baseURL: import.meta.env.VITE_API_URL, // seu backend escolar
 });
 
 api.interceptors.request.use((config) => {
