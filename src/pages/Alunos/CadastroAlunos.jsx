@@ -191,7 +191,6 @@ export default function CadastroAlunos() {
 
         } catch (error) {
             console.error("Erro:", error);
-            console.log("Dados recebidos: ", payload)
             const msgErro = error.response?.data?.message || error.response?.data?.error || "Erro desconhecido ao salvar.";
             toast.error(`Falha: ${msgErro}`);
         } finally {
