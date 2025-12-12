@@ -3,12 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { Container, Title } from "../../components/Container";
-import { Form } from "../../components/Form"; // Assumindo que ele aceita 'values' separado
+import { Form } from "../../components/Form";
 import { ChevronLeftIcon } from "lucide-react";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
 
-// Função de máscara (Idealmente estaria em utils/masks.js)
+// Função de máscara
 const maskPhone = (value) => {
     if (!value) return "";
     return value
@@ -18,7 +18,7 @@ const maskPhone = (value) => {
         .replace(/(-\d{4})\d+?$/, "$1");
 };
 
-// Formata data ISO (2023-10-25T00:00:00Z) para input date (2023-10-25)
+// Formata data ISO para input date
 const formatToInputDate = (isoString) => {
     if (!isoString) return "";
     return dayjs(isoString).format("YYYY-MM-DD");
@@ -28,11 +28,10 @@ export function EditarAluno() {
     const { id } = useParams();
     const navigate = useNavigate();
 
-    // Loading de tela vs Loading de salvamento
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-    // Estado APENAS dos dados
+    // 1. ESTADO INICIAL ATUALIZADO (Inclui plano e email)
     const [formData, setFormData] = useState({
         nome: "",
         data_nascimento: "",
@@ -44,18 +43,41 @@ export function EditarAluno() {
         turno: "",
         observacao: "",
         status: "",
+        plano: "basico",       // <--- Novo
+        email_responsavel: ""  // <--- Novo
     });
 
-    // Configuração dos Campos (Constante - não precisa ser State)
+    // 2. DEFINIÇÃO DOS CAMPOS (Agora dentro do componente para ser dinâmica)
     const fields = [
         { name: "nome", label: "Nome", type: "text" },
         {
             name: "data_nascimento",
             label: "Data de Nascimento",
             type: "date",
-            disabled: true,
+            disabled: true, // Geralmente não se muda data de nascimento fácil
         },
         { name: "responsavel", label: "Responsável", type: "text" },
+
+        // --- BLOCO NOVO: PLANO E EMAIL ---
+        {
+            name: "plano",
+            label: "Tipo de Plano (Acesso App)",
+            type: "select",
+            options: [
+                { label: "Básico (Sem App)", value: "basico" },
+                { label: "Premium (Com App)", value: "premium" },
+            ],
+        },
+        // Condicional: Só mostra Email se for Premium
+        ...(formData.plano === 'premium' ? [{
+            name: "email_responsavel",
+            label: "Email do Responsável (Login)",
+            type: "email",
+            placeholder: "email@exemplo.com",
+            fullWidth: true
+        }] : []),
+        // ---------------------------------
+
         { name: "telefone", label: "Telefone", type: "tel", maxLength: 15 },
         { name: "data_matricula", label: "Data de Matrícula", type: "date" },
         {
@@ -104,7 +126,7 @@ export function EditarAluno() {
         },
     ];
 
-    // Busca de Dados
+    // 3. BUSCA DE DADOS (Carrega o que vem do Backend)
     useEffect(() => {
         async function fetchAluno() {
             try {
@@ -115,6 +137,9 @@ export function EditarAluno() {
                     data_nascimento: formatToInputDate(data.data_nascimento),
                     data_matricula: formatToInputDate(data.data_matricula),
                     telefone: maskPhone(data.telefone || ""),
+                    // Garante que o plano venha correto, se vier null assume basico
+                    plano: data.plano || "basico",
+                    email_responsavel: data.email_responsavel || ""
                 });
 
             } catch (error) {
@@ -128,7 +153,6 @@ export function EditarAluno() {
         fetchAluno();
     }, [id, navigate]);
 
-    // Interceptador para Máscaras (Igual ao Cadastro)
     const handleFormChange = (newValues) => {
         if (newValues.telefone !== formData.telefone) {
             newValues.telefone = maskPhone(newValues.telefone);
@@ -143,16 +167,23 @@ export function EditarAluno() {
             return;
         }
 
+        // 4. VALIDAÇÃO DO PREMIUM NA EDIÇÃO
+        if (data.plano === 'premium' && !data.email_responsavel) {
+            toast.error("Para mudar para Premium, o Email do Responsável é obrigatório!");
+            return;
+        }
+
         const payload = {
             ...data,
             valor_mensalidade: Number(data.valor_mensalidade),
-
+            // Se for básico, limpamos o email do payload para garantir consistência
+            email_responsavel: data.plano === 'basico' ? null : data.email_responsavel
         };
 
         try {
             setIsSaving(true);
             await api.put(`/alunos/${id}`, payload);
-            toast.success("Dados atualizados!");
+            toast.success("Dados atualizados com sucesso!");
             navigate("/alunos");
         } catch (error) {
             console.error(error);

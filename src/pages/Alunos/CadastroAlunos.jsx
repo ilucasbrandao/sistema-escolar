@@ -7,26 +7,29 @@ import { ChevronLeftIcon } from "lucide-react";
 import api from "../../services/api";
 import { toast } from 'react-toastify';
 
-// Função utilitária para máscara (pode mover para utils/masks.js depois)
+// Função utilitária para máscara
 const maskPhone = (value) => {
     if (!value) return "";
     return value
-        .replace(/\D/g, "") // Remove tudo que não é dígito
-        .replace(/(\d{2})(\d)/, "($1) $2") // Coloca parênteses no DDD
-        .replace(/(\d{5})(\d)/, "$1-$2") // Coloca o hífen depois do 5º dígito
-        .replace(/(-\d{4})\d+?$/, "$1"); // Impede digitar mais que o necessário
+        .replace(/\D/g, "")
+        .replace(/(\d{2})(\d)/, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2")
+        .replace(/(-\d{4})\d+?$/, "$1");
 };
 
 export default function CadastroAlunos() {
     const navigate = useNavigate();
     const hoje = new Date().toLocaleDateString("en-CA");
 
-    const [isLoading, setIsLoading] = useState(false); // <--- Trava do botão
+    const [isLoading, setIsLoading] = useState(false);
+
+    // 1. ATUALIZAÇÃO NO ESTADO INICIAL
     const [formData, setFormData] = useState({
         nome: "",
         data_nascimento: "",
         responsavel: "",
-        telefone: "",
+        plano: "basico",
+        email_responsavel: "",
         data_matricula: hoje,
         valor_mensalidade: "",
         serie: "",
@@ -35,15 +38,14 @@ export default function CadastroAlunos() {
         status: "ativo",
     });
 
-    // Interceptador de Mudanças (Aqui aplicamos as máscaras)
     const handleFormChange = (newValues) => {
-        // Se o telefone mudou, aplicamos a máscara
         if (newValues.telefone !== formData.telefone) {
             newValues.telefone = maskPhone(newValues.telefone);
         }
         setFormData(newValues);
     };
 
+    // 2. CAMPOS AGORA SÃO DINÂMICOS (Dependem do formData.plano)
     const fields = [
         { name: "nome", label: "Nome Completo", placeholder: "Ex: João da Silva", type: "text" },
         {
@@ -58,12 +60,31 @@ export default function CadastroAlunos() {
             placeholder: "Nome do pai/mãe",
             type: "text",
         },
+        // --- NOVO BLOCO DE PLANOS E EMAIL ---
+        {
+            name: "plano",
+            label: "Tipo de Plano (Acesso ao App)",
+            type: "select",
+            options: [
+                { label: "Básico (Sem App)", value: "basico" },
+                { label: "Premium (Com App)", value: "premium" },
+            ],
+        },
+        // Renderização Condicional: Só mostra Email se for Premium
+        ...(formData.plano === 'premium' ? [{
+            name: "email_responsavel",
+            label: "Email do Responsável (Para Login)",
+            type: "email",
+            placeholder: "email@exemplo.com",
+            fullWidth: true, // Sugestão: Destaque visual
+        }] : []),
+        // ------------------------------------
         {
             name: "telefone",
             label: "WhatsApp / Telefone",
             placeholder: "(99) 99999-9999",
-            type: "tel", // Mantemos tel para mobile
-            maxLength: 15, // Limita caracteres
+            type: "tel",
+            maxLength: 15,
         },
         {
             name: "data_matricula",
@@ -112,12 +133,18 @@ export default function CadastroAlunos() {
     ];
 
     const handleSubmit = async (data) => {
-        // 1. Validação Robusta
+        // 3. VALIDAÇÃO ATUALIZADA
         const erros = [];
 
         if (!data.nome.trim()) erros.push("Nome é obrigatório");
         if (!data.responsavel.trim()) erros.push("Responsável é obrigatório");
-        if (data.telefone.length < 14) erros.push("Telefone inválido (Preencha DDD + número)");
+
+        // Validação específica do Premium
+        if (data.plano === 'premium' && !data.email_responsavel.trim()) {
+            erros.push("Para o plano Premium, o Email do Responsável é obrigatório!");
+        }
+
+        if (data.telefone.length < 11) erros.push("Telefone inválido");
         if (!data.valor_mensalidade || Number(data.valor_mensalidade) < 0) erros.push("Valor da mensalidade inválido");
         if (!data.serie) erros.push("Selecione a série");
         if (!data.turno) erros.push("Selecione o turno");
@@ -127,31 +154,45 @@ export default function CadastroAlunos() {
             return;
         }
 
-        // 2. Preparação do Payload
         const payload = {
             ...data,
-            // Garante que número vá como número (evita "150.00" string)
             valor_mensalidade: Number(data.valor_mensalidade),
-            // Trim remove espaços acidentais no começo/fim
             nome: data.nome.trim(),
             responsavel: data.responsavel.trim(),
+            // Se for básico, garantimos que não vai lixo no email
+            email_responsavel: data.plano === 'basico' ? null : data.email_responsavel.trim()
         };
 
         try {
             setIsLoading(true);
-            await api.post("/alunos", payload);
-            toast.success("Aluno cadastrado com sucesso! 🎉");
+            const response = await api.post("/alunos", payload);
 
-            const desejaNovo = window.confirm("Aluno cadastrado! Deseja cadastrar outro?");
+            // Mensagem Personalizada
+            if (response.data.acesso) {
+                toast.success(`Aluno Cadastrado! Acesso Premium criado para: ${response.data.acesso.email}`);
+                toast.info(`Senha provisória: Data de nascimento (apenas números)`);
+            } else {
+                toast.success("Aluno cadastrado com sucesso! (Plano Básico)");
+            }
+
+            const desejaNovo = window.confirm("Deseja cadastrar outro aluno?");
             if (desejaNovo) {
-                setFormData({ ...formData, nome: "", responsavel: "", telefone: "", valor_mensalidade: "" });
+                setFormData({
+                    ...formData,
+                    nome: "",
+                    responsavel: "",
+                    email_responsavel: "",
+                    telefone: "",
+                    valor_mensalidade: ""
+                });
             } else {
                 navigate("/alunos");
             }
 
         } catch (error) {
             console.error("Erro:", error);
-            const msgErro = error.response?.data?.message || "Erro desconhecido ao salvar.";
+            console.log("Dados recebidos: ", payload)
+            const msgErro = error.response?.data?.message || error.response?.data?.error || "Erro desconhecido ao salvar.";
             toast.error(`Falha: ${msgErro}`);
         } finally {
             setIsLoading(false);
@@ -175,7 +216,6 @@ export default function CadastroAlunos() {
                 Cadastrar Aluno
             </Title>
 
-            {/* Componente Genérico de Form */}
             <Form
                 fields={fields}
                 values={formData}
