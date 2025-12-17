@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL, // seu backend escolar
+  //baseURL: import.meta.env.VITE_API_URL, // seu backend escolar
+  baseURL: "http://localhost:3000",
 });
 
 api.interceptors.request.use((config) => {
@@ -17,7 +18,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login"; // força redirecionamento
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }

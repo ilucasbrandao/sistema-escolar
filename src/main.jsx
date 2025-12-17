@@ -1,5 +1,4 @@
-import { StrictMode } from "react";
-import { useState } from "react";
+import { StrictMode, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import {
@@ -9,52 +8,68 @@ import {
   Outlet
 } from "react-router-dom";
 
-// Importações das páginas (Mantive as suas)
+// --- Importações das páginas ---
 import App from "./App.jsx";
 import Login from "./pages/Login/Login";
+
+// Alunos
 import { Alunos } from "./pages/Alunos/index.jsx";
 import CadastroAlunos from "./pages/Alunos/CadastroAlunos.jsx";
 import VisualizarDados from "./pages/Alunos/DadoAluno.jsx";
 import { EditarAluno } from "./pages/Alunos/EditarAluno.jsx";
+
+// Funcionários
 import { Professores } from "./pages/Funcionarios/index.jsx";
 import CadastroProfessor from "./pages/Funcionarios/CadastroFuncionarios.jsx";
 import VisualizarDadosFuncionario from "./pages/Funcionarios/DadosFuncionarios.jsx";
 import { EditarFuncionario } from "./pages/Funcionarios/EditarFuncionário.jsx";
+
+// Gestão
 import { Lancamentos } from "./pages/Gestao/index.jsx";
 import CadastroReceita from "./pages/Gestao/Receita.jsx";
 import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
 import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
+
+// Dashboard & Notificações
 import { Dashboard } from "./pages/Dashboard/index.jsx";
 import RelatorioMensal from "./pages/Dashboard/RelatorioMensal.jsx";
 import { Notificacoes } from "./pages/Notificacao/Notificacoes.jsx";
 import { NotificationProvider } from "./context/NotificationContext";
 
+// Pais & Diário
+import MeusFilhos from './pages/MeusFilhos';
+import Diario from './pages/Diario';
+
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css'
 import { Sidebar } from "./components/Sidebar.jsx";
 import { MobileHeader } from "./components/MobileHeader.jsx";
+import ListaAlunosDiario from "./pages/Diario/ListaAlunos.jsx";
 
-const PrivateLayout = () => {
-  const token = localStorage.getItem("token");
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Controle do Menu
+// =================================================================
+// 👮‍♂️ O PORTEIRO (Funções de verificação)
+// =================================================================
+const getUser = () => JSON.parse(localStorage.getItem("user") || "{}");
+const isAuthenticated = () => !!localStorage.getItem("token");
 
-  if (!token) {
-    return <Navigate to="/login" replace />;
+// 1. LAYOUT ADMIN & PROFESSORES
+const AdminLayout = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  if (!isAuthenticated()) return <Navigate to="/login" replace />;
+
+  const user = getUser();
+  // 🚫 SE FOR PAI, NÃO PODE ESTAR AQUI! VAI PARA OS FILHOS.
+  if (user.role === 'responsavel') {
+    return <Navigate to="/meus-filhos" replace />;
   }
 
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden">
-
-      <Sidebar
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-      />
-
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
       <div className="flex-1 flex flex-col h-screen w-full md:ml-64 transition-all duration-300">
-
         <MobileHeader onOpenMenu={() => setIsMobileMenuOpen(true)} />
-
         <main className="flex-1 flex flex-col overflow-x-hidden overflow-y-auto bg-slate-50">
           <Outlet />
         </main>
@@ -63,26 +78,50 @@ const PrivateLayout = () => {
   );
 };
 
+// 2. LAYOUT APENAS PAIS
+// Proteção: Se for ADMIN/PROF, é expulso para o Dashboard.
+const ParentLayout = () => {
+  if (!isAuthenticated()) return <Navigate to="/login" replace />;
 
+  const user = getUser();
+  // 🚫 SE NÃO FOR PAI (Ex: Admin clicou num link errado), VOLTA PRO DASHBOARD.
+  if (user.role !== 'responsavel') {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Outlet />; // Renderiza a página limpa
+};
+
+// 3. BLOQUEIO EXTRA: Só ADMIN pode acessar (Para Financeiro/Gestão)
+// Professores não passam aqui.
+const OnlyAdmin = ({ children }) => {
+  const user = getUser();
+  if (user.role !== 'admin') {
+    // Se professor tentar acessar financeiro, volta pra home dele
+    return <Navigate to="/" replace />;
+  }
+  return children;
+};
+
+// =================================================================
+// 🛣️ ROTAS
+// =================================================================
 const router = createBrowserRouter([
-  // Rota Pública
   { path: "/login", element: <Login /> },
 
-  // Rotas Privadas (Todas protegidas pelo PrivateLayout)
+  // --- ÁREA DE STAFF (Admin + Professores) ---
   {
     path: "/",
-    element: <PrivateLayout />,
+    element: <AdminLayout />,
     children: [
       { path: "/", element: <App /> }, // Home
-
-      // Módulo Dashboard
-      { path: "dashboard", element: <Dashboard /> },
-
-      // Módulo Relatórios e Notificações
-      { path: "relatorio", element: <RelatorioMensal /> },
       { path: "notificacoes", element: <Notificacoes /> },
 
-      // Módulo Alunos
+      // Rota COMUM (Admin e Prof podem ver Diário)
+      { path: "diario-classe", element: <ListaAlunosDiario /> },
+      { path: "diario/:id", element: <Diario /> },
+
+      // Módulo Alunos (Admin e Prof acessam)
       {
         path: "alunos",
         children: [
@@ -90,13 +129,21 @@ const router = createBrowserRouter([
           { path: "cadastrar", element: <CadastroAlunos /> },
           { path: ":id", element: <VisualizarDados /> },
           { path: "editar/:id", element: <EditarAluno /> },
-          { path: ":alunoId/receitas/:receitaId", element: <VisualizarReceita /> },
         ],
       },
 
-      // Módulo Professores
+      // --- ÁREAS EXCLUSIVAS DE ADMIN (Protegidas com OnlyAdmin) ---
+      {
+        path: "dashboard",
+        element: <OnlyAdmin><Dashboard /></OnlyAdmin>
+      },
+      {
+        path: "relatorio",
+        element: <OnlyAdmin><RelatorioMensal /></OnlyAdmin>
+      },
       {
         path: "professores",
+        element: <OnlyAdmin><Outlet /></OnlyAdmin>, // Protege todo o bloco
         children: [
           { path: "", element: <Professores /> },
           { path: "cadastrar", element: <CadastroProfessor /> },
@@ -105,10 +152,9 @@ const router = createBrowserRouter([
           { path: ":professorId/despesas/:despesaId", element: <DetalheDespesa /> },
         ],
       },
-
-      // Módulo Lançamentos
       {
         path: "lancamentos",
+        element: <OnlyAdmin><Outlet /></OnlyAdmin>, // Protege todo o bloco
         children: [
           { path: "", element: <Lancamentos /> },
           { path: "receitas", element: <CadastroReceita /> },
@@ -117,24 +163,22 @@ const router = createBrowserRouter([
       },
     ],
   },
+
+  // --- ÁREA DOS PAIS (Sem Sidebar) ---
+  {
+    element: <ParentLayout />,
+    children: [
+      { path: "/meus-filhos", element: <MeusFilhos /> },
+      { path: "/meus-filhos/diario/:id", element: <Diario /> },
+    ]
+  }
 ]);
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <NotificationProvider>
       <RouterProvider router={router} />
-      <ToastContainer
-        position="top-right"
-        autoClose={3000} // Fecha sozinho em 3 segundos
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored" // Fica visualmente mais bonito (verde/vermelho sólido)
-      />
+      <ToastContainer position="top-right" autoClose={3000} theme="colored" />
     </NotificationProvider>
   </StrictMode>
 );

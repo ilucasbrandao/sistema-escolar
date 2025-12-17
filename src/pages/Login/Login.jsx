@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import loginService from "../../services/login.js";
+import api from "../../services/api"; // <--- MUDANÇA 1: Importamos a API centralizada
 import { TopBackground } from "../../components/TopBackground.jsx";
-import { Button } from "../../components/Button.jsx"
+import { Button } from "../../components/Button.jsx";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [msg, setMsg] = useState("");
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -16,42 +16,54 @@ export default function Login() {
     e.preventDefault();
 
     if (!email || !senha) {
-      setMsg("");
+      setMsg("Preencha todos os campos.");
       return;
     }
 
     setIsLoading(true);
+    setMsg("");
 
     try {
-      const res = await loginService.post("/login", {
+      // <--- MUDANÇA 2: Usamos 'api.post' em vez de 'loginService.post'
+      // ATENÇÃO: Verifique se no seu backend (index.js) a rota de auth tem prefixo '/auth'
+      // Se não tiver prefixo, deixe apenas "/login". Se tiver, use "/auth/login".
+      const res = await api.post("/login", {
         email,
-        password: senha,
+        senha,
       });
 
-      // Pega o que o backend realmente manda
-      const { token, usuario } = res.data;
+      const { token, user } = res.data;
 
-      // DICA DE OURO: No futuro, mova isso para um AuthContext
       localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      // Convertendo objeto para string antes de salvar (erro comum salvar [Object object])
-      localStorage.setItem("user", JSON.stringify(usuario));
+      console.log("Login bem-sucedido:", res.data);
+      // Configuração para garantir que futuras requisições já saiam com token sem precisar de reload
+      api.defaults.headers.Authorization = `Bearer ${token}`;
 
-      navigate("/"); // Redireciona para home/dashboard
+      if (user.role === "responsavel") {
+        navigate("/meus-filhos");
+      } else {
+        navigate("/");
+      }
+
     } catch (err) {
-      console.error(err); // Bom para debug
-      // Tratamento robusto de erro
+      console.error(err);
+      console.log("Erro na resposta do servidor:", err.response);
+
       if (!err?.response) {
-        setMsg("Erro ao conectar com o servidor.");
-      } else if (err.response?.status === 401) {
-        setMsg("Email ou senha inválidos.");
+        setMsg("Erro ao conectar com o servidor (Verifique se o backend está rodando).");
+      } else if (err.response.status === 401) {
+        setMsg("E-mail ou senha incorretos.");
+        console.log("Resposta do servidor:", err.response.data);
+      } else if (err.response.status === 403) {
+        setMsg(err.response.data.message); // Ex: "Seu plano é Básico..."
       } else {
         setMsg(err.response?.data?.message || "Ocorreu um erro inesperado.");
       }
     } finally {
-      setIsLoading(false); // <--- Libera o botão (se deu erro)
+      setIsLoading(false);
     }
-
   };
 
   return (
@@ -66,7 +78,7 @@ export default function Login() {
           Acesse sua conta
         </h2>
         <p className="text-sm text-gray-600 text-center">
-          Essas credenciais serão usadas para acessar a plataforma
+          Login centralizado no novo sistema
         </p>
 
         {/* Campo Email */}
@@ -78,6 +90,7 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
             required
+            placeholder="seu@email.com"
           />
         </div>
 
@@ -90,10 +103,10 @@ export default function Login() {
             onChange={(e) => setSenha(e.target.value)}
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-cyan-500 outline-none"
             required
+            placeholder="••••••••"
           />
         </div>
 
-        {/* Botão com Feedback Visual */}
         <Button
           type="submit"
           disabled={isLoading}
