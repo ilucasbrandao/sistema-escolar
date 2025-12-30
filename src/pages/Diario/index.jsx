@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { Container } from "../../components/Container";
+
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { toast } from "react-toastify";
@@ -18,7 +20,7 @@ import {
     FileText,
     UploadCloud,
     Trash2,
-    Pencil // Ícone de Edição
+    Pencil
 } from "lucide-react";
 
 export default function Diario() {
@@ -44,14 +46,18 @@ export default function Diario() {
         pedagogico: {
             leitura: "Em desenvolvimento",
             escrita: "Em desenvolvimento",
-            foco: "Bom",
-            participacao: "Participativo"
+            foco: "Em desenvolvimento",
+            comportamento: "Em desenvolvimento",
+
         },
         psico: {
             atencao_memoria: "",
             interacao_social: "",
             regulacao_emocional: "",
-            parecer_geral: ""
+            parecer_geral: "",
+            habilidades_cognitivas: "",
+            coordenacao_motora: "",
+            raciocinio_logico: ""
         },
         fotos: [], // URLs já salvas no banco
         observacao: ""
@@ -137,7 +143,7 @@ export default function Diario() {
             bimestre: item.bimestre,
             pedagogico: item.avaliacao_pedagogica || initialFormState.pedagogico,
             psico: item.avaliacao_psico || initialFormState.psico,
-            fotos: item.fotos || [], // Carrega as fotos existentes
+            fotos: item.fotos || [],
             observacao: item.observacao || ""
         });
         setArquivosSelecionados([]);
@@ -287,7 +293,8 @@ export default function Diario() {
                                 </div>
 
                                 <div className="p-6 grid md:grid-cols-2 gap-8">
-                                    {/* Conteúdo Pedagógico/Psico (Igual ao anterior) */}
+
+                                    {/* Conteúdo Pedagógico/Psico */}
                                     <div className="space-y-4">
                                         <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-wide flex items-center gap-2 border-b pb-2">
                                             <BookOpen size={16} /> Desempenho Escolar
@@ -427,6 +434,26 @@ export default function Diario() {
                                         <textarea rows="2" className="w-full border rounded p-2 text-sm"
                                             value={form.psico.interacao_social} onChange={e => setForm({ ...form, psico: { ...form.psico, interacao_social: e.target.value } })} />
                                     </div>
+                                    <div>
+                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Habilidades Cognitivas</label>
+                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
+                                            value={form.psico.habilidades_cognitivas} onChange={e => setForm({ ...form, psico: { ...form.psico, habilidades_cognitivas: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Coordenação Motora</label>
+                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
+                                            value={form.psico.coordenacao_motora} onChange={e => setForm({ ...form, psico: { ...form.psico, coordenacao_motora: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Raciocínio Lógico</label>
+                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
+                                            value={form.psico.raciocinio_logico} onChange={e => setForm({ ...form, psico: { ...form.psico, raciocinio_logico: e.target.value } })} />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Regulação Emocional</label>
+                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
+                                            value={form.psico.regulacao_emocional} onChange={e => setForm({ ...form, psico: { ...form.psico, regulacao_emocional: e.target.value } })} />
+                                    </div>
                                 </div>
                             </div>
 
@@ -438,7 +465,7 @@ export default function Diario() {
 
                             {/* --- AREA DE FOTOS (ATUALIZADA) --- */}
                             <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 border-dashed">
-                                <label className="block text-sm font-bold text-indigo-800 mb-2 flex items-center gap-2">
+                                <label className="block text-sm font-bold text-indigo-800 mb-2 items-center gap-2">
                                     <ImageIcon size={18} /> Fotos da Atividade
                                 </label>
 

@@ -1,16 +1,17 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     LayoutDashboard,
-    GraduationCap, // Para Alunos
-    Users,         // Para Professores
+    GraduationCap,
+    Users,
     Wallet,
     Bell,
     LogOut,
     Settings,
     Home,
     X,
-    BookOpen // <--- Ícone do Diário
+    BookOpen
 } from "lucide-react";
+import logo from "../assets/favicon.png";
 import { useNotifications } from "../context/NotificationContext";
 
 export function Sidebar({ isOpen, onClose }) {
@@ -71,9 +72,14 @@ export function Sidebar({ isOpen, onClose }) {
                 <div className="h-24 flex items-center justify-between px-6 border-b border-slate-100">
                     {/* Logo / Nome */}
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm">
-                            E
+                        <div className="w-9 h-9 rounded-full bg-white shadow flex items-center justify-center">
+                            <img
+                                src={logo}
+                                alt="Logo"
+                                className="w-full h-full object-contain"
+                            />
                         </div>
+
                         <div className="flex flex-col">
                             <span className="font-bold text-slate-700 tracking-tight leading-none hidden sm:block">
                                 Espaço

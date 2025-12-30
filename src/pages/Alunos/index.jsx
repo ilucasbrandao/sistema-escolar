@@ -18,7 +18,7 @@ export function Alunos() {
     const navigate = useNavigate();
     const [students, setStudents] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [onlyActive, setOnlyActive] = useState(false);
+    const [showInactive, setShowInactive] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true); // <--- Feedback visual
     const itemsPerPage = 10;
@@ -50,19 +50,26 @@ export function Alunos() {
     // Resetar página quando filtrar
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, onlyActive]);
+    }, [searchTerm, showInactive]);
 
     const filteredStudents = useMemo(() => {
-        const filtered = students.filter((student) => {
-            const matchesSearch =
-                student.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                student.responsavel.toLowerCase().includes(searchTerm.toLowerCase());
+        return students
+            .filter((student) => {
+                const matchesSearch =
+                    student.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    student.responsavel.toLowerCase().includes(searchTerm.toLowerCase());
 
-            const matchesActive = onlyActive ? student.status === "ativo" : true;
-            return matchesSearch && matchesActive;
-        });
-        return filtered.sort((a, b) => a.nome.localeCompare(b.nome));
-    }, [students, searchTerm, onlyActive]);
+                // 🔹 REGRA PRINCIPAL:
+                const matchesStatus = showInactive
+                    ? student.status === "inativo"
+                    : student.status === "ativo";
+
+                return matchesSearch && matchesStatus;
+            })
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+    }, [students, searchTerm, showInactive]);
+
+
 
     const paginatedStudents = paginate(
         filteredStudents,
@@ -116,12 +123,13 @@ export function Alunos() {
                     <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
                         <input
                             type="checkbox"
-                            checked={onlyActive}
-                            onChange={(e) => setOnlyActive(e.target.checked)}
+                            checked={showInactive}
+                            onChange={(e) => setShowInactive(e.target.checked)}
                             className="w-4 h-4 accent-blue-600"
                         />
-                        Apenas ativos
+                        Mostrar apenas inativos
                     </label>
+
                 </div>
 
                 {isLoading ? (
