@@ -13,6 +13,7 @@ import {
     Calendar,
     Phone,
     User,
+    Mail,
     CreditCard,
     X,
     Banknote,
@@ -149,6 +150,7 @@ export default function VisualizarDados() {
 
                         <div className="space-y-4 border-t border-slate-100 pt-6">
                             <InfoRow icon={User} label="Responsável" value={student.responsavel} />
+                            <InfoRow icon={Mail} label="Email" value={student.email_responsavel || "N/A"} />
                             <InfoRow icon={Phone} label="Contato" value={student.telefone} />
                             <InfoRow icon={Calendar} label="Nascimento" value={`${formatarDataLegivel(student.data_nascimento)} (${idadeEmAnos(student.data_nascimento)} anos)`} />
                             <InfoRow icon={Calendar} label="Matrícula" value={formatarDataLegivel(student.data_matricula)} />

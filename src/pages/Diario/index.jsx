@@ -111,15 +111,18 @@ export default function Diario() {
 
         const formData = new FormData();
         arquivosSelecionados.forEach(file => {
-            formData.append("files", file);
+            formData.append("imagens", file);
         });
+
 
         try {
             setUploading(true);
-            const res = await api.post("/upload", formData);
+            const res = await api.post("/feedbacks", formData);
+            console.log("Dados do upload:", res.data);
             return res.data.urls;
         } catch (error) {
             toast.error("Erro ao fazer upload das imagens.");
+            console.log("Erro no upload:", error);
             return [];
         } finally {
             setUploading(false);
@@ -171,35 +174,27 @@ export default function Diario() {
         setSending(true);
 
         try {
-            // A. Upload das NOVAS imagens
-            let urlsNovas = [];
-            if (arquivosSelecionados.length > 0) {
-                urlsNovas = await uploadImages();
-                if (urlsNovas.length === 0 && arquivosSelecionados.length > 0) {
-                    setSending(false);
-                    return;
-                }
-            }
+            const formData = new FormData();
 
-            // B. Combina fotos antigas (que não foram deletadas) com as novas
-            const fotosFinais = [...form.fotos, ...urlsNovas];
+            formData.append("aluno_id", id);
+            formData.append("bimestre", form.bimestre);
+            formData.append("avaliacao_pedagogica", JSON.stringify(form.pedagogico));
+            formData.append("avaliacao_psico", JSON.stringify(form.psico));
+            formData.append("observacao", form.observacao);
 
-            const payload = {
-                aluno_id: id,
-                bimestre: form.bimestre,
-                avaliacao_pedagogica: form.pedagogico,
-                avaliacao_psico: form.psico,
-                fotos: fotosFinais,
-                observacao: form.observacao
-            };
+            arquivosSelecionados.forEach(file => {
+                formData.append("imagens", file);
+            });
 
             if (editingId) {
-                // EDITAR (PUT)
-                await api.put(`/feedbacks/${editingId}`, payload);
+                await api.put(`/feedbacks/${editingId}`, formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
                 toast.success("Relatório atualizado!");
             } else {
-                // CRIAR (POST)
-                await api.post("/feedbacks", payload);
+                await api.post("/feedbacks", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
                 toast.success("Relatório criado!");
             }
 
@@ -367,7 +362,7 @@ export default function Diario() {
                                             </div>
                                         </div>
                                         {!item.lido_pelos_pais && isResponsavel && (
-                                            <Button onClick={() => handleCiente(item.id)} className="bg-indigo-600 h-9 text-xs">Marcar como Lido</Button>
+                                            <Button onClick={() => handleCiente(item.id)} className="bg-indigo-600 h-9 text-xs text-white cursor-pointer">Marcar como Lido</Button>
                                         )}
                                     </div>
                                 </div>

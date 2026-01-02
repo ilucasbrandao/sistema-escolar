@@ -76,7 +76,7 @@ export default function CadastroAlunos() {
             label: "Email do Responsável (Para Login)",
             type: "email",
             placeholder: "email@exemplo.com",
-            fullWidth: true, // Sugestão: Destaque visual
+            fullWidth: true,
         }] : []),
         // ------------------------------------
         {

@@ -13,50 +13,18 @@ import {
   ArrowRight
 } from "lucide-react";
 import { Container } from "./components/Container";
+import NavCard from "./components/NavCard";
+import QuickStat from "./components/QuickStat";
 import Footer from "./components/Footer";
 import dayjs from "dayjs";
 import "dayjs/locale/pt-br";
 
 dayjs.locale("pt-br");
 
-// --- Componentes Visuais ---
-
-const NavCard = ({ title, description, icon: Icon, colorClass, onClick }) => (
-  <button
-    onClick={onClick}
-    className="group relative flex flex-col items-start p-6 bg-white border border-slate-100 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 text-left w-full h-full overflow-hidden"
-  >
-    <div className={`absolute top-0 right-0 p-20 opacity-5 rounded-full -mr-10 -mt-10 transform group-hover:scale-110 transition-transform ${colorClass.replace('text-', 'bg-')}`} />
-
-    <div className={`p-3 rounded-xl ${colorClass} bg-opacity-10 mb-4`}>
-      <Icon className={`w-8 h-8 ${colorClass}`} />
-    </div>
-
-    <h3 className="text-lg font-bold text-slate-800 mb-1 group-hover:text-blue-600 transition-colors">{title}</h3>
-    <p className="text-sm text-slate-500 leading-relaxed">{description}</p>
-
-    <div className="mt-auto pt-4 flex items-center text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-blue-600 transition-colors">
-      Acessar <ChevronRight className="w-4 h-4 ml-1" />
-    </div>
-  </button>
-);
-
-const QuickStat = ({ label, value, icon: Icon }) => (
-  <div className="flex items-center gap-3 bg-white/80 backdrop-blur-sm p-3 rounded-xl border border-slate-200 shadow-sm min-w-[160px]">
-    <div className="p-2 bg-white rounded-lg shadow-sm text-slate-600">
-      <Icon className="w-4 h-4" />
-    </div>
-    <div>
-      <p className="text-xs text-slate-500 font-medium uppercase">{label}</p>
-      <p className="text-lg font-bold text-slate-800 leading-none">{value}</p>
-    </div>
-  </div>
-);
-
 export default function App() {
   const navigate = useNavigate();
   const [resumo, setResumo] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // <--- Estado da Busca
+  const [searchTerm, setSearchTerm] = useState("");
 
   const hora = new Date().getHours();
   const saudacao = hora < 12 ? "Bom dia" : hora < 18 ? "Boa tarde" : "Boa noite";
@@ -92,7 +60,7 @@ export default function App() {
             {dataHoje}
           </p>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">
-            {saudacao}, <span className="text-blue-600">Julianne</span>.
+            {saudacao}, <span className="text-pink-700">Julianne</span>.
           </h1>
           <p className="text-slate-500 mt-2 text-lg">
             Gestão simplificada e eficiente.

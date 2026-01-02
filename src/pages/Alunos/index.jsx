@@ -152,7 +152,10 @@ export function Alunos() {
                                 </li>
                             ) : (
                                 paginatedStudents.map((student) => (
-                                    <li key={student.id} className="grid grid-cols-7 gap-4 p-3 text-sm hover:bg-slate-50 items-center">
+                                    <li key={student.id}
+                                        onClick={() => navigate(`/alunos/${student.id}`)}
+                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition">
+
                                         <span className="col-span-3 font-medium flex flex-col">
                                             {student.nome}
                                             <span className={`text-[10px] w-fit px-2 rounded-full ${student.status === "ativo" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
@@ -167,19 +170,21 @@ export function Alunos() {
                                             <ActionBtn
                                                 icon={Pencil}
                                                 color="text-blue-600"
-                                                onClick={() => navigate(`/alunos/editar/${student.id}`)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/alunos/editar/${student.id}`);
+                                                }}
                                             />
                                             <ActionBtn
                                                 icon={Trash}
                                                 color="text-red-500"
-                                                onClick={() => handleDelete(student.id)}
-                                            />
-                                            <ActionBtn
-                                                icon={Eye}
-                                                color="text-slate-600"
-                                                onClick={() => navigate(`/alunos/${student.id}`)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(student.id);
+                                                }}
                                             />
                                         </div>
+
                                     </li>
                                 ))
                             )}
