@@ -9,10 +9,10 @@ import { Button } from "../../components/Button";
 const EMPRESA = {
     nome: "Espaço ao Pé da Letra",
     endereco: "Rua Major Antonio Rodrigues Teixeira, 808 - Bairro Cruzeiro - Itapipoca/CE",
-    cnpj: "xx.xxx.xxx/xxxx-xx",
+    cnpj: "56.581.926/0001",
     responsavel: "Julianne Kelly da S. L. Brandão",
     telefone: "(88)9 9637-9636",
-    email: "contato@escolaexemplo.com.br"
+    email: "juliannekelly630@gmail.com"
 };
 
 export default function RelatorioMensal() {
