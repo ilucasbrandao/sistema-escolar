@@ -18,7 +18,8 @@ import {
     X,
     Banknote,
     BookOpen,
-    Crown // <--- Importei a Coroa
+    Crown,
+    MessageCircle
 } from "lucide-react";
 
 // --- Subcomponentes ---
@@ -35,9 +36,13 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-// --- Modal de Pagamento ---
-const PaymentModal = ({ isOpen, onClose, data }) => {
+// --- Modal de Pagamento (Atualizado com Ano) ---
+const PaymentModal = ({ isOpen, onClose, data, onSendWhatsapp }) => {
     if (!isOpen || !data) return null;
+
+    // Garante que temos o ano (do campo explícito ou da data)
+    const anoRef = data.ano_referencia || dayjs(data.data_pagamento).format('YYYY');
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in">
@@ -46,10 +51,28 @@ const PaymentModal = ({ isOpen, onClose, data }) => {
                     <button onClick={onClose} className="p-1 hover:bg-slate-200 rounded-full transition"><X className="w-5 h-5 text-slate-500" /></button>
                 </div>
                 <div className="p-6 space-y-4">
-                    <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Mês Referência</span><span className="font-medium">{data.mes_referencia}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Valor Pago</span><span className="font-bold text-green-600">{formatarParaBRL(data.valor)}</span></div>
-                    <div className="flex justify-between border-b pb-2"><span className="text-gray-500">Data Pagamento</span><span className="font-medium">{data.data_pagamento ? dayjs(data.data_pagamento).format("DD/MM/YYYY") : "-"}</span></div>
-                    <div className="pt-4 flex justify-end"><Button onClick={onClose} variant="secondary">Fechar</Button></div>
+                    <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-500">Referência</span>
+                        <span className="font-medium capitalize">{data.mes_referencia} / {anoRef}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-500">Valor Pago</span>
+                        <span className="font-bold text-green-600">{formatarParaBRL(data.valor)}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-2">
+                        <span className="text-gray-500">Data Pagamento</span>
+                        <span className="font-medium">{data.data_pagamento ? dayjs(data.data_pagamento).format("DD/MM/YYYY") : "-"}</span>
+                    </div>
+
+                    <div className="pt-4 flex gap-3">
+                        <Button onClick={onClose} variant="secondary" className="flex-1">Fechar</Button>
+                        <Button
+                            onClick={() => onSendWhatsapp(data)}
+                            className="flex-1 bg-green-500 hover:bg-green-600 text-white border-none"
+                        >
+                            <MessageCircle className="w-4 h-4 mr-2" /> Enviar Recibo
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -68,7 +91,7 @@ function idadeEmAnos(dataNascimentoISO) {
 const InfoRow = ({ icon: Icon, label, value }) => (
     <div className="flex items-start gap-3">
         <div className="p-2 bg-slate-50 rounded-lg text-slate-500"><Icon className="w-4 h-4" /></div>
-        <div><p className="text-xs text-slate-400 font-medium uppercase">{label}</p><p className="text-sm text-slate-700 font-medium">{value || "—"}</p></div>
+        <div><p className="text-xs text-slate-400 font-medium uppercase">{label}</p><p className="text-sm text-slate-700 font-medium break-all">{value || "—"}</p></div>
     </div>
 );
 
@@ -91,9 +114,24 @@ export default function VisualizarDados() {
         getStudentById();
     }, [id]);
 
+    const handleSendReceipt = (payment) => {
+        if (!student.telefone) {
+            alert("O aluno não possui telefone cadastrado.");
+            return;
+        }
+
+        // Recupera o ano também para o recibo ficar correto
+        const anoRef = payment.ano_referencia || dayjs(payment.data_pagamento).format('YYYY');
+        const phone = student.telefone.replace(/\D/g, '');
+
+        const message = `Olá, *${student.responsavel}*! \n\nConfirmamos o recebimento do pagamento referente ao aluno(a) *${student.nome}*.\n\n💰 Valor: *${formatarParaBRL(payment.valor)}*\n📅 Referência: *${payment.mes_referencia}/${anoRef}*\n✅ Status: Pago\n\nAtenciosamente,\n*Espaço Ao Pé da Letra*`;
+
+        const url = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
+    };
+
     if (!student) return <div className="p-8 text-center text-gray-500">Carregando perfil...</div>;
 
-    // Verifica se é Premium
     const isPremium = student.plano === 'premium';
 
     return (
@@ -111,16 +149,11 @@ export default function VisualizarDados() {
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-                {/* COLUNA 1: Cartão do Aluno (Com Lógica Premium) */}
+                {/* COLUNA 1: Cartão do Aluno */}
                 <div className="lg:col-span-1 space-y-6">
-
-                    {/* O Cartão muda de cor se for Premium */}
                     <div className={`bg-white rounded-2xl shadow-sm p-6 relative overflow-hidden ${isPremium ? 'border-2 border-amber-400 ring-4 ring-amber-50' : 'border border-slate-100'}`}>
-
-                        {/* Faixa decorativa: Dourada se Premium, Azul se Padrão */}
                         <div className={`absolute top-0 left-0 w-full h-2 ${isPremium ? 'bg-gradient-to-r from-amber-300 to-yellow-500' : 'bg-gradient-to-r from-blue-500 to-cyan-400'}`}></div>
 
-                        {/* Selo Premium Flutuante */}
                         {isPremium && (
                             <div className="absolute top-4 right-4 animate-pulse">
                                 <Crown className="text-amber-500 fill-amber-100 w-6 h-6" />
@@ -128,7 +161,6 @@ export default function VisualizarDados() {
                         )}
 
                         <div className="flex flex-col items-center text-center mb-6 mt-2">
-                            {/* Avatar */}
                             <div className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold mb-4 border-4 shadow-sm ${isPremium ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-100 text-slate-500 border-white'}`}>
                                 {student.nome.charAt(0)}
                             </div>
@@ -137,7 +169,6 @@ export default function VisualizarDados() {
                                 {student.nome}
                             </h2>
 
-                            {/* Badge do Plano */}
                             {isPremium && (
                                 <span className="mt-1 mb-2 px-3 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-wider border border-amber-200 flex items-center gap-1">
                                     <Crown size={10} className="fill-current" /> Aluno Premium
@@ -156,7 +187,6 @@ export default function VisualizarDados() {
                             <InfoRow icon={Calendar} label="Matrícula" value={formatarDataLegivel(student.data_matricula)} />
                         </div>
 
-                        {/* Botão do Diário */}
                         <div className="w-full mt-6 pt-6 border-t border-slate-100">
                             <Button
                                 onClick={() => navigate(`/diario/${id}`)}
@@ -171,23 +201,22 @@ export default function VisualizarDados() {
                         </div>
                     </div>
 
-                    {/* Resumo Financeiro */}
                     <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 text-white shadow-lg">
                         <div className="flex items-center gap-3 mb-2 opacity-80">
                             <CreditCard className="w-5 h-5" />
                             <span className="text-sm font-medium uppercase tracking-wider">Plano {isPremium ? "Premium" : "Mensal"}</span>
                         </div>
                         <p className="text-3xl font-bold">{formatarParaBRL(student.valor_mensalidade)}</p>
-                        <p className="text-sm text-slate-400 mt-1">Vencimento todo dia 05</p>
+                        <p className="text-sm text-slate-400 mt-1">Vencimento todo dia {student.dia_vencimento || '05'}</p>
                     </div>
                 </div>
 
-                {/* COLUNA 2: Histórico (Mantive igual) */}
+                {/* COLUNA 2: Histórico */}
                 <div className="lg:col-span-2">
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 min-h-[500px]">
-                        <div className="flex justify-between items-center mb-6">
-                            <Title level={3}>Histórico de Pagamentos</Title>
-                            <Button onClick={() => navigate(`/lancamentos/receitas?alunoId=${student.id}`)} className="bg-green-600 hover:bg-green-700 text-white flex gap-2">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <Title level={3} className="!mb-0">Histórico de Pagamentos</Title>
+                            <Button onClick={() => navigate(`/lancamentos/receitas?alunoId=${student.id}`)} className="bg-green-600 hover:bg-green-700 text-white flex gap-2 w-full sm:w-auto justify-center">
                                 <Banknote className="w-4 h-4" /> Novo Pagamento
                             </Button>
                         </div>
@@ -198,11 +227,11 @@ export default function VisualizarDados() {
                                 <p>Nenhum pagamento registrado.</p>
                             </div>
                         ) : (
-                            <div className="overflow-hidden rounded-lg border border-slate-200">
-                                <table className="w-full text-sm text-left">
+                            <div className="overflow-x-auto rounded-lg border border-slate-200">
+                                <table className="w-full text-sm text-left whitespace-nowrap">
                                     <thead className="bg-slate-50 text-slate-500 uppercase font-medium">
                                         <tr>
-                                            <th className="px-4 py-3">Mês Ref.</th>
+                                            <th className="px-4 py-3">Referência</th>
                                             <th className="px-4 py-3">Valor</th>
                                             <th className="px-4 py-3 text-center">Situação</th>
                                             <th className="px-4 py-3 text-right">Ações</th>
@@ -210,11 +239,35 @@ export default function VisualizarDados() {
                                     </thead>
                                     <tbody className="divide-y divide-slate-100">
                                         {movimentacoes.map((mov) => (
-                                            <tr key={mov.id || mov.id_mensalidade} className="hover:bg-slate-50 transition">
-                                                <td className="px-4 py-3 font-medium text-slate-700">{mov.mes_referencia}</td>
+                                            <tr key={mov.id || mov.id_mensalidade} className="hover:bg-slate-50 transition group">
+                                                {/* --- AQUI ESTÁ A ALTERAÇÃO --- */}
+                                                <td className="px-4 py-3 font-medium text-slate-700">
+                                                    <span className="capitalize">{mov.mes_referencia}</span>
+                                                    <span className="text-slate-400"> / {mov.ano_referencia || dayjs(mov.data_pagamento).format('YYYY')}</span>
+                                                </td>
+                                                {/* ----------------------------- */}
                                                 <td className="px-4 py-3 text-slate-600">{formatarParaBRL(mov.valor)}</td>
-                                                <td className="px-4 py-3 text-center"><span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700"><span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>Pago</span></td>
-                                                <td className="px-4 py-3 text-right"><button onClick={() => setSelectedPayment(mov)} className="text-slate-400 hover:text-blue-600 transition p-1"><Eye className="w-4 h-4" /></button></td>
+                                                <td className="px-4 py-3 text-center">
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>Pago
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-3 text-right flex justify-end gap-1">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleSendReceipt(mov); }}
+                                                        className="text-slate-400 hover:text-green-600 transition p-2 bg-slate-50 hover:bg-green-50 rounded-lg"
+                                                        title="Enviar Recibo no WhatsApp"
+                                                    >
+                                                        <MessageCircle className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setSelectedPayment(mov)}
+                                                        className="text-slate-400 hover:text-blue-600 transition p-2 bg-slate-50 hover:bg-blue-50 rounded-lg"
+                                                        title="Ver Detalhes"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
@@ -224,7 +277,12 @@ export default function VisualizarDados() {
                     </div>
                 </div>
             </div>
-            <PaymentModal isOpen={!!selectedPayment} onClose={() => setSelectedPayment(null)} data={selectedPayment} />
+            <PaymentModal
+                isOpen={!!selectedPayment}
+                onClose={() => setSelectedPayment(null)}
+                data={selectedPayment}
+                onSendWhatsapp={handleSendReceipt}
+            />
         </Container>
     );
 }
