@@ -1,165 +1,235 @@
-import { useEffect, useState } from "react";
-import api from "../../services/api.js";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Container, Paragraph, Title } from "../../components/Container";
-import { Button } from "../../components/Button";
 import {
     ChevronLeftIcon,
-    Eye,
     Pencil,
     Trash,
     UserRoundPlus,
 } from "lucide-react";
-import { formatarParaBRL } from "../../utils/format.js";
+
+import { Button } from "../../components/Button";
+import { Container, Title } from "../../components/Container";
+import api from "../../services/api";
+import { formatarParaBRL } from "../../utils/format";
+import { paginate } from "../../utils/paginate";
 
 export function Professores() {
     const navigate = useNavigate();
     const [teachers, setTeachers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [onlyActive, setOnlyActive] = useState(false);
-    let filteredTeachers = teachers;
+    const [showInactive, setShowInactive] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
+    const itemsPerPage = 10;
 
+    // Busca inicial
     useEffect(() => {
-        async function getTeacher() {
+        let isMounted = true;
+
+        async function getTeachers() {
             try {
+                setIsLoading(true);
                 const { data } = await api.get("/professores");
-                setTeachers(data);
+                if (isMounted) setTeachers(data);
             } catch (error) {
                 console.error("Erro ao buscar professores:", error.message);
+                alert("Não foi possível carregar a lista de professores.");
+            } finally {
+                if (isMounted) setIsLoading(false);
             }
         }
-        getTeacher();
+        getTeachers();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    if (searchTerm) {
-        filteredTeachers = teachers.filter((t) =>
-            t.nome.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-    }
-    if (onlyActive) {
-        filteredTeachers = filteredTeachers.filter((t) => t.status === 'ativo')
-    }
+    // Resetar página quando filtrar
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, showInactive]);
+
+    const filteredTeachers = useMemo(() => {
+        return teachers
+            .filter((teacher) => {
+                const matchesSearch =
+                    teacher.nome.toLowerCase().includes(searchTerm.toLowerCase());
+
+                // Regra de Status
+                const matchesStatus = showInactive
+                    ? teacher.status === "inativo"
+                    : teacher.status === "ativo";
+
+                return matchesSearch && matchesStatus;
+            })
+            .sort((a, b) => a.nome.localeCompare(b.nome));
+    }, [teachers, searchTerm, showInactive]);
+
+    const paginatedTeachers = paginate(
+        filteredTeachers,
+        currentPage,
+        itemsPerPage
+    );
+    const totalPages = Math.ceil(filteredTeachers.length / itemsPerPage);
+
+    // Função de Excluir (Mantendo a lógica de segurança que você tinha antes)
     async function handleDelete(id) {
+        // Se quiser manter a senha de exclusão, descomente as linhas abaixo
+        /*
         const senha = prompt("Digite a senha para excluir o professor(a):");
         const senhaCorreta = import.meta.env.VITE_SENHA_EXCLUSAO;
-
         if (senha !== senhaCorreta) {
-            alert("Senha incorreta. Exclusão cancelada.");
+            alert("Senha incorreta.");
             return;
         }
-        const confirm = window.confirm("Tem certeza que deseja excluir este professor(a)?");
-        if (!confirm) return;
+        */
+
+        const confirmar = window.confirm(
+            "Tem certeza que deseja remover este professor?"
+        );
+
+        if (!confirmar) return;
 
         try {
             await api.delete(`/professores/${id}`);
+            // Atualização Otimista
             setTeachers((prev) => prev.filter((t) => t.id !== id));
-            alert("Professor(a) excluído com sucesso!");
         } catch (error) {
-            console.error("Erro ao excluir professor(a):", error.message);
-            alert("Erro ao excluir professor(a).");
+            console.error(error);
+            alert("Erro ao excluir. Verifique vínculos.");
         }
     }
 
     return (
         <Container>
-            {/* Header */}
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-6">
                 <Button onClick={() => navigate("/")}>
                     <ChevronLeftIcon className="w-5 h-5" /> Voltar
                 </Button>
-                <Title level={1} className="text-2xl font-bold">Professores</Title>
-                <div className="flex gap-2">
+                <Title level={1}>Professores</Title>
+                <Button onClick={() => navigate("/professores/cadastrar")}>
+                    <UserRoundPlus className="w-5 h-5" />
+                </Button>
+            </div>
 
-                    <Button onClick={() => navigate("/professores/cadastrar")}>
-                        <UserRoundPlus className="w-5 h-5" />
-                    </Button>
+            <div className="mb-8">
+                {/* Filtros */}
+                <div className="flex flex-col md:flex-row justify-end gap-4 mb-6">
+                    <input
+                        type="text"
+                        placeholder="Pesquisar..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-80"
+                    />
+                    <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                        <input
+                            type="checkbox"
+                            checked={showInactive}
+                            onChange={(e) => setShowInactive(e.target.checked)}
+                            className="w-4 h-4 accent-blue-600"
+                        />
+                        Mostrar apenas inativos
+                    </label>
                 </div>
-            </div>
 
-            <Paragraph muted className="text-center text-sm text-slate-600 mb-4">
-                Informações sobre os professores serão exibidas abaixo.
-            </Paragraph>
+                {isLoading ? (
+                    <div className="text-center py-10 text-slate-500">
+                        Carregando professores...
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto shadow-sm rounded-lg border border-gray-200">
+                        <ul className="min-w-[700px] divide-y divide-gray-200 bg-white">
+                            <li className="grid grid-cols-7 gap-4 p-3 bg-slate-100 font-bold text-xs text-slate-600 uppercase">
+                                <span className="col-span-3">Nome</span>
+                                <span className="col-span-2">Turno</span>
+                                <span className="col-span-1">Salário</span>
+                                <span className="col-span-1 text-center">Ações</span>
+                            </li>
 
-            {/* Campo de busca */}
-            <div className="mb-4 flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2">
-                <input
-                    type="text"
-                    placeholder="Pesquisar por nome..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full sm:w-72 p-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                />
-            </div>
-            <label className="flex items-center gap-2 text-sm mb-4">
-                <input
-                    type="checkbox"
-                    checked={onlyActive}
-                    onChange={(e) => setOnlyActive(e.target.checked)}
-                    className="w-4 h-4"
-                />
-                Mostrar apenas professores ativos
-            </label>
+                            {paginatedTeachers.length === 0 ? (
+                                <li className="p-4 text-center text-slate-500">
+                                    Nenhum professor encontrado.
+                                </li>
+                            ) : (
+                                paginatedTeachers.map((teacher) => (
+                                    <li
+                                        key={teacher.id}
+                                        onClick={() => navigate(`/professores/${teacher.id}`)} // Navegação ao clicar na linha
+                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition"
+                                    >
+                                        <span className="col-span-3 font-medium flex flex-col">
+                                            {teacher.nome}
+                                            <span className={`text-[10px] w-fit px-2 rounded-full ${teacher.status === "ativo" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                                                {teacher.status}
+                                            </span>
+                                        </span>
 
-            {/* Tabela */}
-            <div className="overflow-x-auto">
-                <ul className="min-w-[700px] divide-y divide-slate-200 rounded-md border border-slate-300 bg-white shadow-sm">
-                    {/* Cabeçalho */}
-                    <li className="grid grid-cols-6 gap-4 p-3 bg-slate-100 font-semibold text-slate-600 text-xs uppercase tracking-wide">
-                        <span>ID</span>
-                        <span>Nome</span>
-                        <span>Salário</span>
-                        <span>Turno</span>
-                        <span>Status</span>
-                        <span className="text-center col-span-1">Ações</span>
-                    </li>
+                                        <span className="col-span-2 text-slate-500">
+                                            {teacher.turno || "—"}
+                                        </span>
 
-                    {/* Linhas */}
-                    {filteredTeachers.map((t) => (
-                        <li
-                            key={t.id}
-                            className="grid grid-cols-6 gap-4 p-3 text-sm odd:bg-white even:bg-slate-50 hover:bg-slate-100 transition-colors"
+                                        <span className="col-span-1 text-slate-600">
+                                            {formatarParaBRL(teacher.salario)}
+                                        </span>
+
+                                        <div className="col-span-1 flex justify-center gap-2">
+                                            <ActionBtn
+                                                icon={Pencil}
+                                                color="text-blue-600"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    navigate(`/professores/editar/${teacher.id}`);
+                                                }}
+                                            />
+                                            <ActionBtn
+                                                icon={Trash}
+                                                color="text-red-500"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDelete(teacher.id);
+                                                }}
+                                            />
+                                        </div>
+                                    </li>
+                                ))
+                            )}
+                        </ul>
+                    </div>
+                )}
+
+                {/* Paginação */}
+                {totalPages > 1 && (
+                    <div className="flex justify-center gap-4 mt-6">
+                        <Button
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage((p) => p - 1)}
                         >
-                            <span className="text-slate-500">{t.id}</span>
-                            <span className="font-medium text-slate-800">{t.nome}</span>
-                            <span className="text-slate-500 ">
-                                {formatarParaBRL(t.salario)}
-                            </span>
-                            <span className="font-medium text-slate-500">{t.turno}</span>
-                            <span className={`font-semibold ${t.status === "ativo" ? "text-green-600" : "text-red-600"}`}>
-                                {t.status}
-                            </span>
-                            <span className="flex justify-center gap-2 col-span-1">
-                                <button
-                                    onClick={() => navigate(`/professores/editar/${t.id}`)}
-                                    className="p-1.5 rounded-md hover:bg-blue-50 transition"
-                                >
-                                    <Pencil className="w-4 h-4 text-blue-600" />
-                                </button>
-                                <button
-                                    onClick={() => handleDelete(t.id)}
-                                    className="p-1.5 rounded-md hover:bg-red-50 transition"
-                                >
-                                    <Trash className="w-4 h-4 text-red-600" />
-                                </button>
-                                <button
-                                    onClick={() => navigate(`/professores/${t.id}`)}
-                                    className="p-1.5 rounded-md hover:bg-slate-200 transition"
-                                >
-                                    <Eye className="w-4 h-4 text-slate-600" />
-                                </button>
-                            </span>
-                        </li>
-                    ))}
-                </ul>
+                            Anterior
+                        </Button>
+                        <span className="self-center text-sm">
+                            Página {currentPage} de {totalPages}
+                        </span>
+                        <Button
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage((p) => p + 1)}
+                        >
+                            Próxima
+                        </Button>
+                    </div>
+                )}
             </div>
-
-            {
-                filteredTeachers.length === 0 && (
-                    <p className="text-center text-sm text-slate-500 mt-4">
-                        Nenhum professor(a) encontrado com esse termo.
-                    </p>
-                )
-            }
-        </Container >
+        </Container>
     );
 }
+
+// Mini componente reutilizável (igual ao de Alunos)
+const ActionBtn = ({ icon: Icon, color, onClick }) => (
+    <button
+        onClick={onClick}
+        className={`p-1.5 rounded hover:bg-gray-100 transition ${color}`}
+    >
+        <Icon className="w-4 h-4" />
+    </button>
+);
