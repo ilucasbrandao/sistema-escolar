@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Container } from "../../components/Container";
-
 import api from "../../services/api";
 import { Button } from "../../components/Button";
 import { toast } from "react-toastify";
@@ -17,10 +15,12 @@ import {
     BookOpen,
     Brain,
     Image as ImageIcon,
-    FileText,
     UploadCloud,
     Trash2,
-    Pencil
+    Pencil,
+    Eye,
+    MessageSquare,
+    Star
 } from "lucide-react";
 
 export default function Diario() {
@@ -33,11 +33,11 @@ export default function Diario() {
     const [sending, setSending] = useState(false);
 
     // Controle de Edição
-    const [editingId, setEditingId] = useState(null); // Null = Criando Novo, ID = Editando
+    const [editingId, setEditingId] = useState(null);
 
     // Controle de Upload
-    const [arquivosSelecionados, setArquivosSelecionados] = useState([]); // Novos arquivos (File objects)
-    const [previewUrls, setPreviewUrls] = useState([]); // Previews dos novos arquivos
+    const [arquivosSelecionados, setArquivosSelecionados] = useState([]);
+    const [previewUrls, setPreviewUrls] = useState([]);
     const [uploading, setUploading] = useState(false);
 
     // Formulário
@@ -48,25 +48,24 @@ export default function Diario() {
             escrita: "Em desenvolvimento",
             foco: "Em desenvolvimento",
             comportamento: "Em desenvolvimento",
-
         },
         psico: {
             atencao_memoria: "",
             interacao_social: "",
             regulacao_emocional: "",
-            parecer_geral: "",
+            parecer_geral: "", // Adicionei caso queira usar
             habilidades_cognitivas: "",
             coordenacao_motora: "",
             raciocinio_logico: ""
         },
-        fotos: [], // URLs já salvas no banco
+        fotos: [],
         observacao: ""
     };
 
     const [form, setForm] = useState(initialFormState);
 
     const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const canManage = user.role === "admin" || user.role === "professor"; // Pode criar/editar/excluir
+    const canManage = user.role === "admin" || user.role === "professor";
     const isResponsavel = user.role === "responsavel";
 
     // Buscar dados
@@ -84,7 +83,6 @@ export default function Diario() {
     useEffect(() => { loadData(); }, [id]);
 
     // --- FUNÇÕES DE FOTO ---
-
     function handleFileSelect(e) {
         const files = Array.from(e.target.files);
         if (files.length > 0) {
@@ -106,32 +104,7 @@ export default function Diario() {
         }));
     }
 
-    async function uploadImages() {
-        if (arquivosSelecionados.length === 0) return [];
-
-        const formData = new FormData();
-        arquivosSelecionados.forEach(file => {
-            formData.append("imagens", file);
-        });
-
-
-        try {
-            setUploading(true);
-            const res = await api.post("/feedbacks", formData);
-            console.log("Dados do upload:", res.data);
-            return res.data.urls;
-        } catch (error) {
-            toast.error("Erro ao fazer upload das imagens.");
-            console.log("Erro no upload:", error);
-            return [];
-        } finally {
-            setUploading(false);
-        }
-    }
-
     // --- AÇÕES DO CRUD ---
-
-    // 1. Abrir Modal para CRIAR
     function handleOpenNew() {
         setForm(initialFormState);
         setArquivosSelecionados([]);
@@ -140,7 +113,6 @@ export default function Diario() {
         setIsModalOpen(true);
     }
 
-    // 2. Abrir Modal para EDITAR
     function handleOpenEdit(item) {
         setForm({
             bimestre: item.bimestre,
@@ -151,14 +123,12 @@ export default function Diario() {
         });
         setArquivosSelecionados([]);
         setPreviewUrls([]);
-        setEditingId(item.id); // Define o ID que estamos editando
+        setEditingId(item.id);
         setIsModalOpen(true);
     }
 
-    // 3. EXCLUIR
     async function handleExcluir(feedbackId) {
         if (!window.confirm("Tem certeza que deseja excluir este relatório?")) return;
-
         try {
             await api.delete(`/feedbacks/${feedbackId}`);
             toast.success("Relatório excluído.");
@@ -168,19 +138,18 @@ export default function Diario() {
         }
     }
 
-    // 4. SALVAR (Criar ou Atualizar)
     async function handleSalvar(e) {
         e.preventDefault();
         setSending(true);
 
         try {
             const formData = new FormData();
-
             formData.append("aluno_id", id);
             formData.append("bimestre", form.bimestre);
             formData.append("avaliacao_pedagogica", JSON.stringify(form.pedagogico));
             formData.append("avaliacao_psico", JSON.stringify(form.psico));
             formData.append("observacao", form.observacao);
+            formData.append("fotos_existentes", JSON.stringify(form.fotos));
 
             arquivosSelecionados.forEach(file => {
                 formData.append("imagens", file);
@@ -214,180 +183,179 @@ export default function Diario() {
             await api.put(`/feedbacks/ler/${feedbackId}`);
             setFeedbacks(prev => prev.map(item => item.id === feedbackId ? { ...item, lido_pelos_pais: true } : item));
             toast.success("Confirmado!");
-        } catch (error) { toast.error("Erro."); }
+        } catch (error) { toast.error("Erro ao confirmar leitura."); }
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-10">
+        <div className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans">
 
             {/* Header */}
-            <div className="max-w-4xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
+            <div className="max-w-5xl mx-auto mb-8 flex flex-col md:flex-row justify-between items-start gap-4">
                 <div>
-                    <button onClick={() => navigate(-1)} className="flex items-center text-slate-500 hover:text-indigo-600 mb-2 gap-1 font-medium">
+                    <button onClick={() => navigate(-1)} className="flex items-center text-slate-500 hover:text-indigo-600 mb-2 gap-1 font-medium transition-colors">
                         <ArrowLeft size={18} /> Voltar
                     </button>
-                    <h1 className="text-3xl font-bold text-slate-800">Relatórios de Desenvolvimento</h1>
+                    <h1 className="text-3xl font-bold text-slate-800">Diário Escolar</h1>
+                    <p className="text-slate-500 text-sm mt-1">Acompanhamento pedagógico e comportamental.</p>
                 </div>
                 {canManage && (
-                    <Button onClick={handleOpenNew} className="bg-indigo-600 hover:bg-indigo-700 text-white flex gap-2 shadow-sm">
+                    <Button onClick={handleOpenNew} className="bg-indigo-600 hover:bg-indigo-700 text-white flex gap-2 shadow-lg shadow-indigo-200 border-none transition-all">
                         <Plus size={20} /> Novo Relatório
                     </Button>
                 )}
             </div>
 
-            {/* Lista de Relatórios */}
-            <main className="max-w-4xl mx-auto space-y-8">
-                {loading ? <p className="text-center text-slate-400">Carregando...</p> :
-                    feedbacks.length === 0 ? (
-                        <div className="bg-white rounded-2xl p-10 text-center border border-dashed border-slate-300">
-                            <FileText className="mx-auto h-12 w-12 text-slate-300 mb-3" />
-                            <p className="text-slate-500">Nenhum relatório bimestral lançado ainda.</p>
+            {/* Timeline de Relatórios */}
+            <main className="max-w-5xl mx-auto space-y-8 pb-20">
+                {loading ? (
+                    <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-indigo-600"></div></div>
+                ) : feedbacks.length === 0 ? (
+                    <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-slate-300 shadow-sm">
+                        <div className="bg-slate-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FileText className="h-10 w-10 text-slate-300" />
                         </div>
-                    ) : (
-                        feedbacks.map((item) => (
-                            <div key={item.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden ${item.lido_pelos_pais ? 'border-slate-200' : 'border-indigo-200 ring-1 ring-indigo-50'}`}>
+                        <h3 className="text-lg font-bold text-slate-700">Nenhum relatório encontrado</h3>
+                        <p className="text-slate-500 text-sm mt-2">Os relatórios de desenvolvimento aparecerão aqui.</p>
+                    </div>
+                ) : (
+                    feedbacks.map((item) => (
+                        <div key={item.id} className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all hover:shadow-md ${item.lido_pelos_pais ? 'border-slate-200' : 'border-indigo-200 ring-2 ring-indigo-50'}`}>
 
-                                {/* Cabeçalho do Card */}
-                                <div className="bg-slate-50 px-6 py-4 border-b border-slate-100 flex justify-between items-center">
-                                    <div className="flex items-center gap-3">
-                                        <div className="bg-white p-2 rounded-lg border border-slate-200 text-indigo-600 font-bold shadow-sm">
-                                            {item.bimestre || "Relatório Geral"}
-                                        </div>
-                                        <span className="text-sm text-slate-400 flex items-center gap-1">
-                                            <Calendar size={14} /> {dayjs(item.data_aula).format("DD/MM/YYYY")}
+                            {/* Header do Card */}
+                            <div className="bg-slate-50/50 px-6 py-4 border-b border-slate-100 flex flex-wrap justify-between items-center gap-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm font-bold shadow-sm shadow-indigo-200">
+                                        {item.bimestre || "Relatório Geral"}
+                                    </div>
+                                    <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                                        <Calendar size={14} /> {dayjs(item.created_at).format("DD/MM/YYYY")}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center gap-3">
+                                    {item.lido_pelos_pais ? (
+                                        <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full flex items-center gap-1 border border-green-100">
+                                            <CheckCircle size={12} /> Ciente
                                         </span>
-                                    </div>
+                                    ) : (
+                                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full border border-indigo-100 flex items-center gap-1">
+                                            <Star size={10} fill="currentColor" /> Novo
+                                        </span>
+                                    )}
 
-                                    <div className="flex items-center gap-2">
-                                        {item.lido_pelos_pais && (
-                                            <span className="text-xs font-bold text-green-600 flex items-center gap-1 mr-2">
-                                                <CheckCircle size={12} /> Visto
-                                            </span>
-                                        )}
+                                    {canManage && (
+                                        <div className="flex items-center gap-1 pl-3 ml-1 border-l border-slate-200">
+                                            <button onClick={() => handleOpenEdit(item)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition"><Pencil size={16} /></button>
+                                            <button onClick={() => handleExcluir(item.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"><Trash2 size={16} /></button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
 
-                                        {/* --- BOTÕES DE ADMINISTRAÇÃO (EDITAR / EXCLUIR) --- */}
-                                        {canManage && (
-                                            <div className="flex items-center gap-1 border-l pl-3 border-slate-300 ml-2">
-                                                <button
-                                                    onClick={() => handleOpenEdit(item)}
-                                                    className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition"
-                                                    title="Editar"
-                                                >
-                                                    <Pencil size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleExcluir(item.id)}
-                                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"
-                                                    title="Excluir"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                            {/* Corpo do Relatório */}
+                            <div className="p-6">
+                                {/* Linha 1: Pedagógico (Grid Horizontal) */}
+                                <div className="mb-6">
+                                    <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                        <BookOpen size={14} /> Desempenho Pedagógico
+                                    </h3>
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        {item.avaliacao_pedagogica && Object.entries(item.avaliacao_pedagogica).map(([key, value]) => (
+                                            <div key={key} className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center">
+                                                <span className="block text-xs text-slate-400 uppercase font-bold mb-1">{key}</span>
+                                                <span className={`text-sm font-semibold ${value === 'Precisa de atenção' ? 'text-red-500' : 'text-slate-700'}`}>
+                                                    {value}
+                                                </span>
                                             </div>
-                                        )}
+                                        ))}
                                     </div>
                                 </div>
 
-                                <div className="p-6 grid md:grid-cols-2 gap-8">
-
-                                    {/* Conteúdo Pedagógico/Psico */}
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold text-indigo-700 uppercase tracking-wide flex items-center gap-2 border-b pb-2">
-                                            <BookOpen size={16} /> Desempenho Escolar
+                                {/* Linha 2: Psicopedagógico (Grid) */}
+                                {item.avaliacao_psico && Object.values(item.avaliacao_psico).some(v => v) && (
+                                    <div className="mb-6">
+                                        <h3 className="text-xs font-bold text-pink-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                            <Brain size={14} /> Parecer Psicopedagógico
                                         </h3>
-                                        {item.avaliacao_pedagogica && (
-                                            <div className="grid grid-cols-1 gap-2 text-sm">
-                                                {Object.entries(item.avaliacao_pedagogica).map(([key, value]) => (
-                                                    <div key={key} className="flex justify-between bg-slate-50 p-2 rounded border border-slate-100">
-                                                        <span className="capitalize text-slate-600 font-medium">{key}:</span>
-                                                        <span className="font-bold text-slate-800">{value}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {item.observacao && (
-                                            <div className="text-sm text-slate-600 mt-2 bg-yellow-50 p-3 rounded border border-yellow-100">
-                                                <span className="font-bold text-yellow-700 block text-xs uppercase mb-1">Observações Gerais:</span>
-                                                {item.observacao}
-                                            </div>
-                                        )}
+                                        <div className="grid md:grid-cols-2 gap-4">
+                                            {Object.entries(item.avaliacao_psico).map(([key, value]) => value && (
+                                                <div key={key} className="bg-pink-50/30 p-3 rounded-lg border border-pink-100">
+                                                    <span className="block text-xs text-pink-400 uppercase font-bold mb-1">{key.replace(/_/g, ' ')}</span>
+                                                    <p className="text-sm text-slate-600 leading-relaxed">{value}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Linha 3: Obs + Fotos */}
+                                <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
+                                    {/* Observação (ocupa 2/3 se tiver foto, ou tudo) */}
+                                    <div className={`${item.fotos?.length > 0 ? 'md:col-span-2' : 'md:col-span-3'}`}>
+                                        <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                                            <MessageSquare size={14} /> Observações Gerais
+                                        </h4>
+                                        <div className="text-sm text-slate-600 bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
+                                            {item.observacao || "Sem observações adicionais."}
+                                        </div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <h3 className="text-sm font-bold text-pink-600 uppercase tracking-wide flex items-center gap-2 border-b pb-2">
-                                            <Brain size={16} /> Avaliação Psicopedagógica
-                                        </h3>
-                                        {item.avaliacao_psico && Object.keys(item.avaliacao_psico).length > 0 ? (
-                                            <div className="space-y-3 text-sm">
-                                                {Object.entries(item.avaliacao_psico).map(([key, value]) => value && (
-                                                    <div key={key}>
-                                                        <span className="block text-xs font-bold text-slate-400 uppercase mb-1">{key.replace("_", " ")}</span>
-                                                        <p className="text-slate-700 bg-pink-50/50 p-2 rounded border border-pink-100 leading-relaxed">
-                                                            {value}
-                                                        </p>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : (
-                                            <p className="text-xs text-slate-400 italic">Nenhum parecer registrado.</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Fotos */}
-                                <div className="px-6 pb-6 pt-0">
+                                    {/* Fotos */}
                                     {item.fotos && item.fotos.length > 0 && (
-                                        <div className="mt-4 pt-4 border-t border-slate-100">
-                                            <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1"><ImageIcon size={14} /> Registros de Atividades</h4>
-                                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                                        <div className="md:col-span-1">
+                                            <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                                                <ImageIcon size={14} /> Galeria ({item.fotos.length})
+                                            </h4>
+                                            <div className="grid grid-cols-3 gap-2">
                                                 {item.fotos.map((foto, idx) => (
-                                                    <a key={idx} href={foto} target="_blank" rel="noreferrer" className="block w-24 h-24 bg-slate-100 rounded-lg border overflow-hidden hover:opacity-80 transition shrink-0 relative group">
-                                                        <img
-                                                            src={foto}
-                                                            alt="Atividade"
-                                                            className="w-full h-full object-cover"
-                                                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/100x100?text=Erro"; }}
-                                                        />
+                                                    <a key={idx} href={foto} target="_blank" rel="noreferrer" className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:opacity-80 transition block relative">
+                                                        <img src={foto} className="w-full h-full object-cover" alt="Atividade" onError={(e) => { e.target.src = "https://placehold.co/100x100?text=IMG"; }} />
                                                     </a>
                                                 ))}
                                             </div>
                                         </div>
                                     )}
-
-                                    <div className="mt-6 flex justify-between items-end border-t pt-4">
-                                        <div className="flex items-center gap-2 text-slate-500 text-xs">
-                                            <div className="bg-slate-200 p-1.5 rounded-full"><User size={12} /></div>
-                                            <div>
-                                                <p className="uppercase font-bold text-[10px] tracking-wider">Lançado por</p>
-                                                <p className="font-medium text-slate-700">Prof. {item.autor_nome}</p>
-                                            </div>
-                                        </div>
-                                        {!item.lido_pelos_pais && isResponsavel && (
-                                            <Button onClick={() => handleCiente(item.id)} className="bg-indigo-600 h-9 text-xs text-white cursor-pointer">Marcar como Lido</Button>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
-                        ))
-                    )}
+
+                            {/* Footer Responsável */}
+                            {!item.lido_pelos_pais && isResponsavel && (
+                                <div className="bg-indigo-50 px-6 py-3 border-t border-indigo-100 text-center">
+                                    <Button onClick={() => handleCiente(item.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full md:w-auto shadow-sm">
+                                        <CheckCircle size={16} className="mr-2" /> Confirmar Leitura
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
+                    ))
+                )}
             </main>
 
-            {/* --- MODAL (CRIAR / EDITAR) --- */}
+            {/* --- MODAL DE EDIÇÃO OTIMIZADO --- */}
             {isModalOpen && (
-                <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+                    <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">
+
+                        {/* Header Fixo */}
                         <div className="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white shrink-0">
-                            <h3 className="font-bold flex items-center gap-2">
-                                {editingId ? <Pencil size={18} /> : <Plus size={18} />}
-                                {editingId ? "Editar Relatório" : "Novo Relatório"}
-                            </h3>
-                            <button onClick={() => setIsModalOpen(false)}><X /></button>
+                            <div>
+                                <h3 className="font-bold text-lg">{editingId ? "Editar Relatório" : "Novo Relatório"}</h3>
+                                <p className="text-indigo-200 text-xs">Preencha os campos abaixo com atenção.</p>
+                            </div>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/20 rounded-full transition"><X size={20} /></button>
                         </div>
 
-                        <div className="overflow-y-auto p-6 space-y-6">
-                            {/* Seletor de Bimestre */}
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Referência</label>
-                                <select className="w-full border rounded p-2" value={form.bimestre} onChange={e => setForm({ ...form, bimestre: e.target.value })}>
+                        {/* Corpo com Scroll */}
+                        <div className="overflow-y-auto p-6 space-y-8 custom-scrollbar bg-slate-50/50">
+
+                            {/* 1. SELEÇÃO DE BIMESTRE */}
+                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Referência Bimestral</label>
+                                <select
+                                    className="w-full md:w-1/3 bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm font-semibold text-slate-700 focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    value={form.bimestre}
+                                    onChange={e => setForm({ ...form, bimestre: e.target.value })}
+                                >
                                     <option>1º Bimestre</option>
                                     <option>2º Bimestre</option>
                                     <option>3º Bimestre</option>
@@ -395,15 +363,17 @@ export default function Diario() {
                                 </select>
                             </div>
 
-                            <div className="grid md:grid-cols-2 gap-6">
-                                {/* Pedagógico */}
-                                <div className="space-y-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
-                                    <h4 className="font-bold text-indigo-700 text-sm flex gap-2"><BookOpen size={16} /> Pedagógico</h4>
+                            {/* 2. AVALIAÇÃO PEDAGÓGICA (GRID HORIZONTAL) */}
+                            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                                <h4 className="font-bold text-indigo-700 text-sm uppercase tracking-wide flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                                    <BookOpen size={18} /> Avaliação Pedagógica
+                                </h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                                     {Object.keys(form.pedagogico).map((campo) => (
-                                        <div key={campo}>
-                                            <label className="block text-xs uppercase font-bold text-slate-500 mb-1">{campo}</label>
+                                        <div key={campo} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                            <label className="block text-xs font-bold text-slate-500 mb-2 capitalize text-center">{campo}</label>
                                             <select
-                                                className="w-full border rounded p-1.5 text-sm"
+                                                className="w-full bg-white border border-slate-200 rounded-md p-2 text-xs focus:border-indigo-500 outline-none"
                                                 value={form.pedagogico[campo]}
                                                 onChange={e => setForm({ ...form, pedagogico: { ...form.pedagogico, [campo]: e.target.value } })}
                                             >
@@ -415,109 +385,84 @@ export default function Diario() {
                                         </div>
                                     ))}
                                 </div>
+                            </div>
 
-                                {/* Psico */}
-                                <div className="space-y-3 p-4 bg-pink-50 rounded-lg border border-pink-100">
-                                    <h4 className="font-bold text-pink-700 text-sm flex gap-2"><Brain size={16} /> Psicopedagógico</h4>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Atenção e Memória</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.atencao_memoria} onChange={e => setForm({ ...form, psico: { ...form.psico, atencao_memoria: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Interação Social</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.interacao_social} onChange={e => setForm({ ...form, psico: { ...form.psico, interacao_social: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Habilidades Cognitivas</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.habilidades_cognitivas} onChange={e => setForm({ ...form, psico: { ...form.psico, habilidades_cognitivas: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Coordenação Motora</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.coordenacao_motora} onChange={e => setForm({ ...form, psico: { ...form.psico, coordenacao_motora: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Raciocínio Lógico</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.raciocinio_logico} onChange={e => setForm({ ...form, psico: { ...form.psico, raciocinio_logico: e.target.value } })} />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs uppercase font-bold text-slate-500 mb-1">Regulação Emocional</label>
-                                        <textarea rows="2" className="w-full border rounded p-2 text-sm"
-                                            value={form.psico.regulacao_emocional} onChange={e => setForm({ ...form, psico: { ...form.psico, regulacao_emocional: e.target.value } })} />
-                                    </div>
+                            {/* 3. PSICOPEDAGÓGICO (GRID 2 COLUNAS) */}
+                            <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                                <h4 className="font-bold text-pink-600 text-sm uppercase tracking-wide flex items-center gap-2 border-b border-slate-100 pb-3 mb-4">
+                                    <Brain size={18} /> Desenvolvimento Cognitivo e Social
+                                </h4>
+                                <div className="grid md:grid-cols-2 gap-5">
+                                    {['atencao_memoria', 'interacao_social', 'habilidades_cognitivas', 'coordenacao_motora', 'raciocinio_logico', 'regulacao_emocional'].map((campo) => (
+                                        <div key={campo}>
+                                            <label className="block text-xs font-bold text-slate-400 mb-1.5 capitalize ml-1">{campo.replace(/_/g, ' ')}</label>
+                                            <textarea
+                                                rows="3"
+                                                className="w-full bg-pink-50/20 border border-slate-200 rounded-lg p-3 text-sm focus:border-pink-400 focus:ring-1 focus:ring-pink-200 outline-none resize-none transition"
+                                                placeholder="Descreva o desenvolvimento..."
+                                                value={form.psico[campo]}
+                                                onChange={e => setForm({ ...form, psico: { ...form.psico, [campo]: e.target.value } })}
+                                            />
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-1">Observações Gerais</label>
-                                <textarea rows="2" className="w-full border rounded p-2" placeholder="Observações..."
-                                    value={form.observacao} onChange={e => setForm({ ...form, observacao: e.target.value })} />
-                            </div>
+                            {/* 4. OBSERVAÇÕES E FOTOS */}
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <div className="md:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                                    <h4 className="font-bold text-slate-600 text-sm uppercase mb-3 flex gap-2"><MessageSquare size={16} /> Observações Gerais</h4>
+                                    <textarea
+                                        rows="4"
+                                        className="w-full bg-slate-50 border border-slate-200 rounded-lg p-3 text-sm focus:border-indigo-500 outline-none resize-none"
+                                        placeholder="Recados importantes para os pais..."
+                                        value={form.observacao}
+                                        onChange={e => setForm({ ...form, observacao: e.target.value })}
+                                    />
+                                </div>
 
-                            {/* --- AREA DE FOTOS (ATUALIZADA) --- */}
-                            <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 border-dashed">
-                                <label className="block text-sm font-bold text-indigo-800 mb-2 items-center gap-2">
-                                    <ImageIcon size={18} /> Fotos da Atividade
-                                </label>
+                                <div className="md:col-span-1 bg-indigo-50 p-5 rounded-xl border border-indigo-100 border-dashed flex flex-col justify-center text-center">
+                                    <div className="mb-4">
+                                        <div className="bg-white w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 shadow-sm text-indigo-500">
+                                            <ImageIcon size={24} />
+                                        </div>
+                                        <label className="block text-sm font-bold text-indigo-800">Anexar Fotos</label>
+                                        <p className="text-xs text-indigo-400 mt-1">Atividades e eventos</p>
+                                    </div>
 
-                                <div className="flex items-center gap-4">
-                                    <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium text-sm flex items-center gap-2 transition">
-                                        <UploadCloud size={16} /> Adicionar Fotos
+                                    <label className="cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg text-sm font-medium transition shadow-md hover:shadow-lg">
+                                        Selecionar
                                         <input type="file" multiple accept="image/*" className="hidden" onChange={handleFileSelect} />
                                     </label>
+
+                                    {/* Lista de Fotos (Misto de Novas e Antigas) */}
+                                    <div className="mt-4 grid grid-cols-4 gap-2 max-h-[100px] overflow-y-auto custom-scrollbar pr-1">
+                                        {form.fotos.map((url, idx) => (
+                                            <div key={`old-${idx}`} className="relative aspect-square group">
+                                                <img src={url} className="w-full h-full object-cover rounded border border-indigo-200" alt="Antiga" />
+                                                <button onClick={() => removeExistingPhoto(url)} className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded"><Trash2 size={12} /></button>
+                                            </div>
+                                        ))}
+                                        {previewUrls.map((url, idx) => (
+                                            <div key={`new-${idx}`} className="relative aspect-square group">
+                                                <img src={url} className="w-full h-full object-cover rounded border-2 border-green-400" alt="Nova" />
+                                                <button onClick={() => removeNewFile(idx)} className="absolute inset-0 bg-red-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition rounded"><X size={12} /></button>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-
-                                {/* FOTOS JÁ EXISTENTES (Vindas do Banco) */}
-                                {form.fotos.length > 0 && (
-                                    <div className="mt-4">
-                                        <p className="text-xs font-bold text-indigo-400 mb-2 uppercase">Fotos Salvas:</p>
-                                        <div className="flex gap-2 overflow-x-auto pb-2">
-                                            {form.fotos.map((url, idx) => (
-                                                <div key={idx} className="relative w-20 h-20 shrink-0 group">
-                                                    <img src={url} className="w-full h-full object-cover rounded-lg border border-indigo-200" alt="Existente" />
-                                                    <button
-                                                        onClick={() => removeExistingPhoto(url)}
-                                                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 z-10"
-                                                        title="Remover foto"
-                                                    >
-                                                        <Trash2 size={12} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* NOVAS FOTOS (Preview) */}
-                                {previewUrls.length > 0 && (
-                                    <div className="mt-4">
-                                        <p className="text-xs font-bold text-green-600 mb-2 uppercase">Novas fotos para enviar:</p>
-                                        <div className="flex gap-2 overflow-x-auto pb-2">
-                                            {previewUrls.map((url, idx) => (
-                                                <div key={idx} className="relative w-20 h-20 shrink-0 group">
-                                                    <img src={url} className="w-full h-full object-cover rounded-lg border-2 border-green-400" alt="Novo Preview" />
-                                                    <button
-                                                        onClick={() => removeNewFile(idx)}
-                                                        className="absolute -top-2 -right-2 bg-slate-500 text-white rounded-full p-1 shadow-md hover:bg-slate-600 z-10"
-                                                    >
-                                                        <X size={12} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         </div>
 
-                        <div className="p-4 border-t bg-slate-50 flex justify-end gap-2 shrink-0">
+                        {/* Footer Fixo */}
+                        <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3 shrink-0">
                             <Button variant="secondary" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                            <Button onClick={handleSalvar} disabled={sending || uploading} className="bg-indigo-600 text-white min-w-[140px]">
-                                {sending || uploading ? "Salvando..." : (editingId ? "Atualizar" : "Salvar Relatório")}
+                            <Button
+                                onClick={handleSalvar}
+                                disabled={sending || uploading}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 shadow-lg shadow-indigo-200 border-none h-10"
+                            >
+                                {sending || uploading ? "Salvando..." : (editingId ? "Salvar Alterações" : "Publicar Relatório")}
                             </Button>
                         </div>
                     </div>

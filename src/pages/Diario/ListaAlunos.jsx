@@ -7,7 +7,8 @@ import {
     Crown,
     ChevronRight,
     ChevronLeft,
-    GraduationCap
+    GraduationCap,
+    User
 } from "lucide-react";
 
 export default function ListaAlunosDiario() {
@@ -24,9 +25,10 @@ export default function ListaAlunosDiario() {
         async function loadAlunos() {
             try {
                 const { data } = await api.get("/alunos");
+                // Garante que só traga ativos para o diário
                 const ativos = data.filter(a => a.status === "ativo");
 
-                // Ordena: Premium primeiro, depois A-Z
+                // Ordenação: Premium primeiro, depois A-Z
                 const ordenados = ativos.sort((a, b) => {
                     if (a.plano === 'premium' && b.plano !== 'premium') return -1;
                     if (a.plano !== 'premium' && b.plano === 'premium') return 1;
@@ -42,7 +44,7 @@ export default function ListaAlunosDiario() {
         loadAlunos();
     }, []);
 
-    // Lógica de Busca
+    // Lógica de Busca e Filtro
     const alunosFiltrados = alunos.filter(aluno =>
         aluno.nome.toLowerCase().includes(busca.toLowerCase())
     );
@@ -56,33 +58,34 @@ export default function ListaAlunosDiario() {
     const mudarPagina = (numero) => setPaginaAtual(numero);
 
     return (
-        <div className="min-h-screen bg-slate-50 p-6 md:p-10">
-            <main className="max-w-5xl mx-auto space-y-6">
+        <div className="min-h-screen bg-slate-50 p-6 md:p-10 font-sans text-slate-600">
+            <main className="max-w-5xl mx-auto space-y-8">
 
-                {/* Cabeçalho Padrão */}
+                {/* Cabeçalho */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                            <GraduationCap className="text-indigo-600" /> Diário de Classe
+                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                            <GraduationCap className="text-indigo-600 w-8 h-8" />
+                            Diário de Classe
                         </h1>
-                        <p className="text-slate-500 text-sm mt-1">
-                            Lançamento de relatórios bimestrais e avaliações.
+                        <p className="text-slate-500 mt-2 text-sm max-w-md">
+                            Selecione um aluno abaixo para lançar frequências, notas e ocorrências no diário escolar.
                         </p>
                     </div>
                 </div>
 
-                {/* Barra de Busca Padrão */}
-                <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                {/* Barra de Busca */}
+                <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-2">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
                         <input
                             type="text"
                             placeholder="Buscar aluno por nome..."
-                            className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none transition text-slate-700"
+                            className="w-full pl-12 pr-4 py-3 rounded-xl bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
                             value={busca}
                             onChange={(e) => {
                                 setBusca(e.target.value);
-                                setPaginaAtual(1); // Reseta para pág 1 ao buscar
+                                setPaginaAtual(1);
                             }}
                         />
                     </div>
@@ -92,19 +95,30 @@ export default function ListaAlunosDiario() {
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-bold tracking-wider">
+                            <thead className="bg-slate-50 text-slate-500 uppercase text-xs font-bold tracking-wider border-b border-slate-100">
                                 <tr>
-                                    <th className="p-5 border-b pl-8">Nome do Aluno</th>
-                                    <th className="p-5 border-b">Plano</th>
-                                    <th className="p-5 border-b">Série/Turma</th>
-                                    <th className="p-5 border-b text-right pr-8">Ação</th>
+                                    <th className="p-5 pl-8">Aluno</th>
+                                    <th className="p-5">Plano</th>
+                                    <th className="p-5">Série/Turma</th>
+                                    <th className="p-5 text-right pr-8">Ação</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {loading ? (
-                                    <tr><td colSpan="4" className="p-10 text-center text-slate-400">Carregando lista...</td></tr>
+                                    <tr>
+                                        <td colSpan="4" className="p-12 text-center text-slate-400 animate-pulse">
+                                            Carregando lista de alunos...
+                                        </td>
+                                    </tr>
                                 ) : alunosAtuais.length === 0 ? (
-                                    <tr><td colSpan="4" className="p-10 text-center text-slate-400">Nenhum aluno encontrado.</td></tr>
+                                    <tr>
+                                        <td colSpan="4" className="p-12 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <User className="w-10 h-10 text-slate-200" />
+                                                <span className="text-slate-500">Nenhum aluno encontrado.</span>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 ) : (
                                     alunosAtuais.map((aluno) => {
                                         const isPremium = aluno.plano === 'premium';
@@ -116,28 +130,40 @@ export default function ListaAlunosDiario() {
                                             >
                                                 <td className="p-4 pl-8">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold ${isPremium ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-100 group-hover:text-indigo-600'}`}>
-                                                            {aluno.nome.charAt(0)}
+                                                        {/* Avatar / Foto */}
+                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold border-2 overflow-hidden ${isPremium ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-slate-100 text-slate-500 border-white'
+                                                            }`}>
+                                                            {aluno.foto_url ? (
+                                                                <img src={aluno.foto_url} alt="" className="w-full h-full object-cover" />
+                                                            ) : (
+                                                                aluno.nome.charAt(0)
+                                                            )}
                                                         </div>
-                                                        <span className="font-bold text-slate-700">{aluno.nome}</span>
+                                                        <div>
+                                                            <span className="font-bold text-slate-700 block">{aluno.nome}</span>
+                                                            {/* Opcional: mostrar matrícula pequena */}
+                                                            {/* <span className="text-xs text-slate-400">#{aluno.id}</span> */}
+                                                        </div>
                                                     </div>
                                                 </td>
                                                 <td className="p-4">
                                                     {isPremium ? (
-                                                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                                            <Crown size={12} className="fill-current" /> Premium
+                                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide">
+                                                            <Crown size={10} className="fill-current" /> Premium
                                                         </span>
                                                     ) : (
-                                                        <span className="text-xs font-medium text-slate-400 bg-slate-100 px-2 py-1 rounded">Padrão</span>
+                                                        <span className="inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500 border border-slate-200 uppercase tracking-wide">
+                                                            Padrão
+                                                        </span>
                                                     )}
                                                 </td>
-                                                <td className="p-4 text-sm text-slate-600">
-                                                    {aluno.serie || "-"}
+                                                <td className="p-4 text-sm font-medium text-slate-600">
+                                                    {aluno.serie || <span className="text-slate-300 italic">Sem enturmação</span>}
                                                 </td>
                                                 <td className="p-4 pr-8 text-right">
-                                                    <Button variant="ghost" className="text-indigo-600 hover:bg-indigo-50 text-sm">
-                                                        Abrir <ChevronRight size={16} />
-                                                    </Button>
+                                                    <div className="inline-flex items-center gap-1 text-indigo-600 font-semibold text-sm group-hover:gap-2 transition-all">
+                                                        Abrir Diário <ChevronRight size={16} />
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -150,32 +176,46 @@ export default function ListaAlunosDiario() {
                     {/* Rodapé de Paginação */}
                     {totalPaginas > 1 && (
                         <div className="flex items-center justify-between p-4 border-t border-slate-100 bg-slate-50/50">
-                            <span className="text-xs text-slate-400">
+                            <span className="text-xs text-slate-400 font-medium ml-2">
                                 Mostrando {indexPrimeiro + 1} a {Math.min(indexUltimo, alunosFiltrados.length)} de {alunosFiltrados.length} alunos
                             </span>
                             <div className="flex gap-2">
                                 <button
                                     onClick={() => mudarPagina(paginaAtual - 1)}
                                     disabled={paginaAtual === 1}
-                                    className="p-2 rounded hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 border border-transparent hover:border-slate-200 transition"
+                                    className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed text-slate-500 border border-transparent hover:border-slate-200 hover:shadow-sm transition"
                                 >
-                                    <ChevronLeft size={16} />
+                                    <ChevronLeft size={18} />
                                 </button>
-                                {Array.from({ length: totalPaginas }, (_, i) => (
-                                    <button
-                                        key={i + 1}
-                                        onClick={() => mudarPagina(i + 1)}
-                                        className={`w-8 h-8 rounded text-xs font-bold transition ${paginaAtual === i + 1 ? 'bg-indigo-600 text-white' : 'text-slate-600 hover:bg-white border border-transparent hover:border-slate-200'}`}
-                                    >
-                                        {i + 1}
-                                    </button>
-                                ))}
+
+                                {Array.from({ length: totalPaginas }, (_, i) => {
+                                    const pageNum = i + 1;
+                                    // Lógica simples para não mostrar muitos botões se tiver muitas páginas
+                                    if (totalPaginas > 7 && Math.abs(pageNum - paginaAtual) > 2 && pageNum !== 1 && pageNum !== totalPaginas) {
+                                        if (Math.abs(pageNum - paginaAtual) === 3) return <span key={i} className="text-slate-300 self-end px-1">...</span>;
+                                        return null;
+                                    }
+
+                                    return (
+                                        <button
+                                            key={pageNum}
+                                            onClick={() => mudarPagina(pageNum)}
+                                            className={`w-9 h-9 rounded-lg text-xs font-bold transition flex items-center justify-center ${paginaAtual === pageNum
+                                                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
+                                                : 'text-slate-600 hover:bg-white border border-transparent hover:border-slate-200 hover:shadow-sm'
+                                                }`}
+                                        >
+                                            {pageNum}
+                                        </button>
+                                    );
+                                })}
+
                                 <button
                                     onClick={() => mudarPagina(paginaAtual + 1)}
                                     disabled={paginaAtual === totalPaginas}
-                                    className="p-2 rounded hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 border border-transparent hover:border-slate-200 transition"
+                                    className="p-2 rounded-lg hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed text-slate-500 border border-transparent hover:border-slate-200 hover:shadow-sm transition"
                                 >
-                                    <ChevronRight size={16} />
+                                    <ChevronRight size={18} />
                                 </button>
                             </div>
                         </div>
