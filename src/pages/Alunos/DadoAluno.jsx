@@ -36,11 +36,10 @@ const StatusBadge = ({ status }) => {
     );
 };
 
-// --- Modal de Pagamento (Atualizado com Ano) ---
+// --- Modal de Pagamento ---
 const PaymentModal = ({ isOpen, onClose, data, onSendWhatsapp }) => {
     if (!isOpen || !data) return null;
 
-    // Garante que temos o ano (do campo explícito ou da data)
     const anoRef = data.ano_referencia || dayjs(data.data_pagamento).format('YYYY');
 
     return (
@@ -120,7 +119,6 @@ export default function VisualizarDados() {
             return;
         }
 
-        // Recupera o ano também para o recibo ficar correto
         const anoRef = payment.ano_referencia || dayjs(payment.data_pagamento).format('YYYY');
         const phone = student.telefone.replace(/\D/g, '');
 
@@ -161,9 +159,25 @@ export default function VisualizarDados() {
                         )}
 
                         <div className="flex flex-col items-center text-center mb-6 mt-2">
-                            <div className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold mb-4 border-4 shadow-sm ${isPremium ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-100 text-slate-500 border-white'}`}>
-                                {student.nome.charAt(0)}
-                            </div>
+
+                            {/* --- ÁREA DA FOTO DO ALUNO --- */}
+                            {student.foto_url ? (
+                                // Se tiver foto (vinda do app dos pais)
+                                <div className={`w-24 h-24 rounded-full mb-4 border-4 shadow-sm overflow-hidden flex items-center justify-center bg-slate-50 ${isPremium ? 'border-amber-200' : 'border-white'}`}>
+                                    <img
+                                        src={student.foto_url}
+                                        alt={student.nome}
+                                        className="w-full h-full object-cover"
+                                    // Adiciona um timestamp falso se quiser evitar cache: src={`${student.foto_url}?t=${Date.now()}`}
+                                    />
+                                </div>
+                            ) : (
+                                // Se NÃO tiver foto (Mostra inicial)
+                                <div className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold mb-4 border-4 shadow-sm ${isPremium ? 'bg-amber-50 text-amber-600 border-amber-200' : 'bg-slate-100 text-slate-500 border-white'}`}>
+                                    {student.nome.charAt(0)}
+                                </div>
+                            )}
+                            {/* ----------------------------- */}
 
                             <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                                 {student.nome}
@@ -240,12 +254,10 @@ export default function VisualizarDados() {
                                     <tbody className="divide-y divide-slate-100">
                                         {movimentacoes.map((mov) => (
                                             <tr key={mov.id || mov.id_mensalidade} className="hover:bg-slate-50 transition group">
-                                                {/* --- AQUI ESTÁ A ALTERAÇÃO --- */}
                                                 <td className="px-4 py-3 font-medium text-slate-700">
                                                     <span className="capitalize">{mov.mes_referencia}</span>
                                                     <span className="text-slate-400"> / {mov.ano_referencia || dayjs(mov.data_pagamento).format('YYYY')}</span>
                                                 </td>
-                                                {/* ----------------------------- */}
                                                 <td className="px-4 py-3 text-slate-600">{formatarParaBRL(mov.valor)}</td>
                                                 <td className="px-4 py-3 text-center">
                                                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700">

@@ -154,13 +154,31 @@ export function Alunos() {
                                 paginatedStudents.map((student) => (
                                     <li key={student.id}
                                         onClick={() => navigate(`/alunos/${student.id}`)}
-                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition">
 
-                                        <span className="col-span-3 font-medium flex flex-col">
-                                            {student.nome}
-                                            <span className={`text-[10px] w-fit px-2 rounded-full ${student.status === "ativo" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                                                }`}>
-                                                {student.status}
+                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition">
+                                        <span className="col-span-3 font-medium flex items-center gap-3">
+
+                                            {/* Miniatura da Foto */}
+                                            <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
+                                                {student.foto_url ? (
+                                                    <img
+                                                        src={student.foto_url}
+                                                        alt=""
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-slate-500 font-bold text-xs">
+                                                        {student.nome.charAt(0)}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <span className="col-span-3 font-medium flex flex-col">
+                                                {student.nome}
+                                                <span className={`text-[10px] w-fit px-2 rounded-full ${student.status === "ativo" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                                    }`}>
+                                                    {student.status}
+                                                </span>
                                             </span>
                                         </span>
                                         <span className="col-span-2 text-slate-500">{student.responsavel}</span>
