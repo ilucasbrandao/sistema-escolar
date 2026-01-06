@@ -20,7 +20,8 @@ import {
     Pencil,
     Eye,
     MessageSquare,
-    Star
+    Star,
+    FileText
 } from "lucide-react";
 
 export default function Diario() {
@@ -146,24 +147,27 @@ export default function Diario() {
             const formData = new FormData();
             formData.append("aluno_id", id);
             formData.append("bimestre", form.bimestre);
+
             formData.append("avaliacao_pedagogica", JSON.stringify(form.pedagogico));
             formData.append("avaliacao_psico", JSON.stringify(form.psico));
+
             formData.append("observacao", form.observacao);
+
             formData.append("fotos_existentes", JSON.stringify(form.fotos));
 
             arquivosSelecionados.forEach(file => {
                 formData.append("imagens", file);
             });
 
+            const config = {
+                headers: { "Content-Type": "multipart/form-data" }
+            };
+
             if (editingId) {
-                await api.put(`/feedbacks/${editingId}`, formData, {
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
+                await api.put(`/feedbacks/${editingId}`, formData, config);
                 toast.success("Relatório atualizado!");
             } else {
-                await api.post("/feedbacks", formData, {
-                    headers: { "Content-Type": "multipart/form-data" }
-                });
+                await api.post("/feedbacks", formData, config);
                 toast.success("Relatório criado!");
             }
 
@@ -171,8 +175,20 @@ export default function Diario() {
             loadData();
 
         } catch (error) {
-            toast.error("Erro ao salvar relatório.");
             console.error(error);
+
+            // Tratamento específico para arquivo muito grande
+            if (error.response?.data?.error === "File too large") {
+                toast.error("Uma das fotos é muito grande! O limite é 20MB.");
+            }
+            // Tratamento para outros erros conhecidos
+            else if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            }
+            // Erro genérico
+            else {
+                toast.error("Erro ao salvar relatório.");
+            }
         } finally {
             setSending(false);
         }
