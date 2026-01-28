@@ -20,7 +20,8 @@ export function Alunos() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showInactive, setShowInactive] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(true); // <--- Feedback visual
+    const [isLoading, setIsLoading] = useState(true);
+    const [turnoFilter, setTurnoFilter] = useState("todos");
     const itemsPerPage = 10;
 
     // Busca inicial
@@ -50,7 +51,7 @@ export function Alunos() {
     // Resetar página quando filtrar
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, showInactive]);
+    }, [searchTerm, showInactive, turnoFilter]);
 
     const filteredStudents = useMemo(() => {
         return students
@@ -59,22 +60,39 @@ export function Alunos() {
                     student.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                     student.responsavel.toLowerCase().includes(searchTerm.toLowerCase());
 
-                // 🔹 REGRA PRINCIPAL:
                 const matchesStatus = showInactive
                     ? student.status === "inativo"
                     : student.status === "ativo";
 
-                return matchesSearch && matchesStatus;
+                const matchesTurno =
+                    turnoFilter === "todos" ? true : student.turno === turnoFilter;
+
+                return matchesSearch && matchesStatus && matchesTurno;
             })
             .sort((a, b) => a.nome.localeCompare(b.nome));
-    }, [students, searchTerm, showInactive]);
+    }, [students, searchTerm, showInactive, turnoFilter]);
 
+    // Contagem de alunos por turno
+    const studentsByTurno = useMemo(() => {
+        const counters = {
+            Manhã: 0,
+            Tarde: 0,
+            Noite: 0,
+        };
 
+        students.forEach((student) => {
+            if (student.status === "ativo" && student.turno) {
+                counters[student.turno] = (counters[student.turno] || 0) + 1;
+            }
+        });
+
+        return counters;
+    }, [students]);
 
     const paginatedStudents = paginate(
         filteredStudents,
         currentPage,
-        itemsPerPage
+        itemsPerPage,
     );
     const totalPages = Math.ceil(filteredStudents.length / itemsPerPage);
 
@@ -83,7 +101,7 @@ export function Alunos() {
         // Substituir o prompt nativo por um Modal no futuro é o ideal.
         // O prompt bloqueia a thread do navegador.
         const confirmar = window.confirm(
-            "Tem certeza que deseja remover este registro?"
+            "Tem certeza que deseja remover este registro?",
         );
 
         if (!confirmar) return;
@@ -112,26 +130,50 @@ export function Alunos() {
 
             <div className="mb-8">
                 {/* Filtros */}
-                <div className="flex flex-col md:flex-row justify-end gap-4 mb-6">
-                    <input
-                        type="text"
-                        placeholder="Pesquisar..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="p-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-80"
-                    />
-                    <label className="flex items-center gap-2 text-sm cursor-pointer select-none">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between bg-white p-4 rounded-lg border border-slate-200 shadow-sm">
+                    {/* Busca */}
+                    <div className="relative w-full md:w-80">
                         <input
-                            type="checkbox"
-                            checked={showInactive}
-                            onChange={(e) => setShowInactive(e.target.checked)}
-                            className="w-4 h-4 accent-blue-600"
+                            type="text"
+                            placeholder="Buscar aluno ou responsável..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
-                        Mostrar apenas inativos
-                    </label>
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            🔍
+                        </span>
+                    </div>
 
+                    {/* Filtros à direita */}
+                    <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                        {/* Turno */}
+                        <select
+                            value={turnoFilter}
+                            onChange={(e) => setTurnoFilter(e.target.value)}
+                            className="px-3 py-2.5 text-sm border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        >
+                            <option value="todos">Todos os turnos</option>
+                            <option value="Manhã">Manhã</option>
+                            <option value="Tarde">Tarde</option>
+                        </select>
+
+                        {/* Status */}
+                        <button
+                            type="button"
+                            onClick={() => setShowInactive((prev) => !prev)}
+                            className={`px-4 py-2.5 text-sm rounded-md border transition
+                    ${showInactive
+                                    ? "bg-red-50 text-red-600 border-red-200"
+                                    : "bg-slate-50 text-slate-600 border-slate-200"
+                                }`}
+                        >
+                            {showInactive ? "Mostrando inativos" : "Mostrar inativos"}
+                        </button>
+                    </div>
                 </div>
-
+            </div>
+            <div>
                 {isLoading ? (
                     <div className="text-center py-10 text-slate-500">
                         Carregando alunos...
@@ -152,12 +194,12 @@ export function Alunos() {
                                 </li>
                             ) : (
                                 paginatedStudents.map((student) => (
-                                    <li key={student.id}
+                                    <li
+                                        key={student.id}
                                         onClick={() => navigate(`/alunos/${student.id}`)}
-
-                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition">
+                                        className="grid grid-cols-7 gap-4 p-3 text-sm items-center cursor-pointer hover:bg-slate-50 transition"
+                                    >
                                         <span className="col-span-3 font-medium flex items-center gap-3">
-
                                             {/* Miniatura da Foto */}
                                             <div className="w-10 h-10 rounded-full overflow-hidden bg-slate-100 flex-shrink-0 border border-slate-200">
                                                 {student.foto_url ? (
@@ -175,14 +217,22 @@ export function Alunos() {
 
                                             <span className="col-span-3 font-medium flex flex-col">
                                                 {student.nome}
-                                                <span className={`text-[10px] w-fit px-2 rounded-full ${student.status === "ativo" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                                                    }`}>
+                                                <span
+                                                    className={`text-[10px] w-fit px-2 rounded-full ${student.status === "ativo"
+                                                        ? "bg-green-100 text-green-700"
+                                                        : "bg-red-100 text-red-700"
+                                                        }`}
+                                                >
                                                     {student.status}
                                                 </span>
                                             </span>
                                         </span>
-                                        <span className="col-span-2 text-slate-500">{student.responsavel}</span>
-                                        <span className="col-span-1">{formatarParaBRL(student.valor_mensalidade)}</span>
+                                        <span className="col-span-2 text-slate-500">
+                                            {student.responsavel}
+                                        </span>
+                                        <span className="col-span-1">
+                                            {formatarParaBRL(student.valor_mensalidade)}
+                                        </span>
 
                                         <div className="col-span-1 flex justify-center gap-2">
                                             <ActionBtn
@@ -202,7 +252,6 @@ export function Alunos() {
                                                 }}
                                             />
                                         </div>
-
                                     </li>
                                 ))
                             )}
