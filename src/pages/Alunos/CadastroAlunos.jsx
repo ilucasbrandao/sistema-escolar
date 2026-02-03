@@ -72,9 +72,7 @@ export default function CadastroAlunos() {
         setIsLoading(true);
 
         try {
-            // Extrai apenas o DIA da data escolhida para salvar no banco como "dia_vencimento" (ex: "15")
-            // Ou salva a data completa se seu banco preferir. Aqui vou extrair o dia para manter a lógica de recorrência.
-            const diaVencimento = new Date(formData.dia_vencimento).getDate();
+            const diaVencimento = formData.dia_vencimento.split("-")[2];
 
             const payload = {
                 ...formData,

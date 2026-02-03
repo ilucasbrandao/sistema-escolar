@@ -126,8 +126,7 @@ export function EditarAluno() {
         try {
             setIsSaving(true);
 
-            // Extrai apenas o DIA da data escolhida no input
-            const diaVencimento = new Date(formData.dia_vencimento).getDate();
+            const diaVencimento = dayjs(formData.dia_vencimento).date();
 
             const payload = {
                 ...formData,
