@@ -54,7 +54,7 @@ export default function Diario() {
             atencao_memoria: "",
             interacao_social: "",
             regulacao_emocional: "",
-            parecer_geral: "", // Adicionei caso queira usar
+            parecer_geral: "",
             habilidades_cognitivas: "",
             coordenacao_motora: "",
             raciocinio_logico: ""

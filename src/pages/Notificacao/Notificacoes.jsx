@@ -98,10 +98,7 @@ export function Notificacoes() {
         const carregar = async () => {
             setLoading(true);
             try {
-                // Reaproveitando a rota dashboard para pegar os dados
-                // Se preferir, crie uma rota específica no back: /notificacoes
                 const { data } = await api.get("/dashboard", { params: { mes, ano } });
-
                 setInadimplentes(data.inadimplentes || []);
                 setAniversariantes(data.aniversariantes || []);
             } catch (err) {
