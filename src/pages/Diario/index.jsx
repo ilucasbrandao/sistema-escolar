@@ -196,7 +196,7 @@ export default function Diario() {
 
     async function handleCiente(feedbackId) {
         try {
-            await api.put(`/feedbacks/ler/${feedbackId}`);
+            await api.patch(`/feedbacks/ler/${feedbackId}`);
             setFeedbacks(prev => prev.map(item => item.id === feedbackId ? { ...item, lido_pelos_pais: true } : item));
             toast.success("Confirmado!");
         } catch (error) { toast.error("Erro ao confirmar leitura."); }
@@ -245,6 +245,9 @@ export default function Diario() {
                                     </div>
                                     <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
                                         <Calendar size={14} /> {dayjs(item.created_at).format("DD/MM/YYYY")}
+                                    </span>
+                                    <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                                        <User size={14} /> {item.autor?.nome || "Professor Desconhecido"}
                                     </span>
                                 </div>
 
@@ -347,7 +350,7 @@ export default function Diario() {
                 )}
             </main>
 
-            {/* --- MODAL DE EDIÇÃO OTIMIZADO --- */}
+            {/* --- MODAL DE EDIÇÃO --- */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
                     <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col">

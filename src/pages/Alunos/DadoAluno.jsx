@@ -189,7 +189,8 @@ export default function VisualizarDados() {
                                 </span>
                             )}
 
-                            <p className="text-sm text-gray-500 mb-3">{student.serie}</p>
+                            <p className="text-sm text-gray-500">{student.serie}</p>
+                            <p className="text-sm text-gray-500 mb-3">Vencimento: {student.dia_vencimento}</p>
                             <StatusBadge status={student.status} />
                         </div>
 
