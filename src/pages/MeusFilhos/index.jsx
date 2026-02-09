@@ -6,8 +6,6 @@ import {
   User,
   ArrowRight,
   Camera,
-  // Bell, // Não usado
-  // MessageCircle, // Não usado
   GraduationCap,
   CalendarDays,
   MessageCircle
@@ -16,7 +14,7 @@ import {
 // IMPORTANDO AS CONFIGURAÇÕES ESTÁTICAS
 import { SCHOOL_INFO } from "../../config/schoolConfig";
 
-// Componente de Banner (Mantido igual)
+// Componente de Banner de Marketing
 const MarketingBanner = () => {
   const { banner, whatsapp } = SCHOOL_INFO;
 
@@ -57,7 +55,7 @@ const MarketingBanner = () => {
 export default function MeusFilhos() {
   const [filhos, setFilhos] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [uploadingId, setUploadingId] = useState(null); // Estado para loading de upload individual
+  const [uploadingId, setUploadingId] = useState(null);
   const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -76,13 +74,10 @@ export default function MeusFilhos() {
     }
 
     const formData = new FormData();
-    formData.append("foto", file); // O nome "foto" deve bater com o que o backend espera (routeAlunos)
-
+    formData.append("foto", file);
     setUploadingId(alunoId); // Ativa loading no card específico
 
     try {
-      // Ajuste a rota conforme seu backend. Geralmente é PUT ou PATCH.
-      // Verifique se a rota '/alunos/:id/foto' existe no seu backend e usa o middleware de upload correto.
       await api.patch(`/alunos/${alunoId}/foto`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -205,7 +200,6 @@ export default function MeusFilhos() {
                           <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-400 border-t-cyan-600"></div>
                         </div>
                       ) : filho.foto_url ? (
-                        // Adicionamos um timestamp na URL para evitar cache do navegador ao atualizar a foto
                         <img
                           src={`${filho.foto_url}?t=${new Date().getTime()}`}
                           alt={filho.nome}

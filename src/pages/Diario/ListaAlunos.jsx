@@ -141,8 +141,6 @@ export default function ListaAlunosDiario() {
                                                         </div>
                                                         <div>
                                                             <span className="font-bold text-slate-700 block">{aluno.nome}</span>
-                                                            {/* Opcional: mostrar matrícula pequena */}
-                                                            {/* <span className="text-xs text-slate-400">#{aluno.id}</span> */}
                                                         </div>
                                                     </div>
                                                 </td>
