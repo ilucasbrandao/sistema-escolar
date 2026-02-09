@@ -6,16 +6,17 @@ import {
   User,
   ArrowRight,
   Camera,
-  Bell,
-  MessageCircle,
+  // Bell, // Não usado
+  // MessageCircle, // Não usado
   GraduationCap,
-  CalendarDays
+  CalendarDays,
+  MessageCircle
 } from "lucide-react";
 
 // IMPORTANDO AS CONFIGURAÇÕES ESTÁTICAS
 import { SCHOOL_INFO } from "../../config/schoolConfig";
 
-// Componente de Banner (Agora usa os dados estáticos)
+// Componente de Banner (Mantido igual)
 const MarketingBanner = () => {
   const { banner, whatsapp } = SCHOOL_INFO;
 
@@ -25,16 +26,13 @@ const MarketingBanner = () => {
     if (banner.link) {
       window.open(banner.link, '_blank');
     } else {
-      // Se não tiver link específico, abre o WhatsApp da escola
       window.open(`https://wa.me/${whatsapp}?text=Olá, gostaria de saber sobre: ${banner.titulo}`, '_blank');
     }
   };
 
   return (
     <div className="mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-6 text-white shadow-lg relative overflow-hidden animate-fade-in">
-      {/* Efeito de fundo */}
       <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl"></div>
-
       <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <span className="bg-white/20 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
@@ -59,9 +57,9 @@ const MarketingBanner = () => {
 export default function MeusFilhos() {
   const [filhos, setFilhos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [uploadingId, setUploadingId] = useState(null); // Estado para loading de upload individual
   const navigate = useNavigate();
 
-  // Recupera usuário logado
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   // =========================
@@ -70,22 +68,39 @@ export default function MeusFilhos() {
   async function handleUploadFoto(e, alunoId) {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Validação simples de tamanho (ex: 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert("A foto deve ter no máximo 5MB.");
+      return;
+    }
+
     const formData = new FormData();
-    formData.append("foto", file);
+    formData.append("foto", file); // O nome "foto" deve bater com o que o backend espera (routeAlunos)
+
+    setUploadingId(alunoId); // Ativa loading no card específico
 
     try {
+      // Ajuste a rota conforme seu backend. Geralmente é PUT ou PATCH.
+      // Verifique se a rota '/alunos/:id/foto' existe no seu backend e usa o middleware de upload correto.
       await api.patch(`/alunos/${alunoId}/foto`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      // Recarrega a lista para pegar a nova URL
       const { data } = await api.get("/alunos/meus-filhos");
       setFilhos(data);
+
     } catch (error) {
-      console.error("Erro foto:", error);
+      console.error("Erro ao enviar foto:", error);
+      alert("Erro ao atualizar a foto. Tente novamente.");
+    } finally {
+      setUploadingId(null);
     }
   }
 
   // =========================
-  // Buscar filhos (Apenas filhos via API)
+  // Buscar filhos
   // =========================
   useEffect(() => {
     async function loadFilhos() {
@@ -112,24 +127,25 @@ export default function MeusFilhos() {
     }
   }
 
-  // Função WhatsApp (Usa a constante)
   function openSecretaria() {
     window.open(`https://wa.me/${SCHOOL_INFO.whatsapp}`, "_blank");
   }
 
+  // Função auxiliar para disparar o input file sem usar ID
+  const triggerFileInput = (alunoId) => {
+    const input = document.getElementById(`input-foto-${alunoId}`);
+    if (input) input.click();
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans">
-
-      {/* HEADER - Agora usa SCHOOL_INFO */}
       <header className="bg-white sticky top-0 z-30 shadow-sm border-b border-slate-100">
         <div className="max-w-5xl mx-auto px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            {/* Logo com as iniciais definidas no config */}
             <div className="w-10 h-10 bg-cyan-600 rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-cyan-200">
               {SCHOOL_INFO.logo_texto}
             </div>
             <div>
-              {/* Nome da Escola definido no config */}
               <h1 className="text-lg font-bold text-slate-800 leading-tight">
                 {SCHOOL_INFO.nome}
               </h1>
@@ -149,11 +165,8 @@ export default function MeusFilhos() {
       </header>
 
       <main className="max-w-5xl mx-auto px-6 py-8">
-
-        {/* Banner Estático Importado */}
         <MarketingBanner />
 
-        {/* Título */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
             <GraduationCap className="text-cyan-600" /> Área do Aluno
@@ -181,36 +194,58 @@ export default function MeusFilhos() {
                 className="group bg-white rounded-3xl p-6 shadow-sm border border-slate-100 hover:shadow-lg hover:border-cyan-100 transition-all duration-300 relative overflow-hidden"
               >
                 <div className="flex items-start gap-5 relative z-10">
-                  {/* FOTO */}
+                  {/* ÁREA DA FOTO */}
                   <div className="relative shrink-0">
                     <div
-                      className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-100 cursor-pointer shadow-sm group-hover:ring-2 ring-cyan-200 transition-all"
-                      onClick={() => document.getElementById(`foto-${filho.id}`).click()}
+                      className="w-24 h-24 rounded-2xl overflow-hidden bg-slate-100 cursor-pointer shadow-sm group-hover:ring-4 ring-cyan-50 transition-all relative"
+                      onClick={() => triggerFileInput(filho.id)}
                     >
-                      {filho.foto_url ? (
-                        <img src={`${filho.foto_url}?t=${Date.now()}`} alt={filho.nome} className="w-full h-full object-cover" />
+                      {uploadingId === filho.id ? (
+                        <div className="w-full h-full flex items-center justify-center bg-slate-200">
+                          <div className="animate-spin rounded-full h-6 w-6 border-2 border-slate-400 border-t-cyan-600"></div>
+                        </div>
+                      ) : filho.foto_url ? (
+                        // Adicionamos um timestamp na URL para evitar cache do navegador ao atualizar a foto
+                        <img
+                          src={`${filho.foto_url}?t=${new Date().getTime()}`}
+                          alt={filho.nome}
+                          className="w-full h-full object-cover"
+                          onError={(e) => { e.target.src = "https://placehold.co/100?text=Foto"; }} // Fallback simples
+                        />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-slate-400">
                           <User size={32} />
                         </div>
                       )}
-                      <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Camera className="text-white w-6 h-6" />
-                      </div>
+
+                      {/* Overlay de Câmera (só aparece se não estiver carregando) */}
+                      {uploadingId !== filho.id && (
+                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Camera className="text-white w-8 h-8 drop-shadow-md" />
+                        </div>
+                      )}
                     </div>
-                    <input type="file" id={`foto-${filho.id}`} hidden accept="image/*" onChange={(e) => handleUploadFoto(e, filho.id)} />
+
+                    {/* INPUT OCULTO - FORA DA DIV CLICÁVEL VISUALMENTE MAS LOGICAMENTE VINCULADO */}
+                    <input
+                      type="file"
+                      id={`input-foto-${filho.id}`}
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => handleUploadFoto(e, filho.id)}
+                    />
                   </div>
 
                   {/* DADOS */}
-                  <div className="flex-1">
-                    <h3 className="text-lg font-bold text-slate-800">{filho.nome}</h3>
-                    <div className="mt-1 space-y-1">
-                      <p className="text-xs text-slate-500 flex items-center gap-1">
-                        <GraduationCap size={12} className="text-cyan-500" />
+                  <div className="flex-1 pt-1">
+                    <h3 className="text-lg font-bold text-slate-800 line-clamp-1" title={filho.nome}>{filho.nome}</h3>
+                    <div className="mt-2 space-y-1.5">
+                      <p className="text-xs font-medium text-slate-500 flex items-center gap-2 bg-slate-50 py-1 px-2 rounded-lg w-fit">
+                        <GraduationCap size={14} className="text-cyan-600" />
                         {filho.serie || "Série não def."}
                       </p>
-                      <p className="text-xs text-slate-500 flex items-center gap-1">
-                        <CalendarDays size={12} className="text-cyan-500" />
+                      <p className="text-xs font-medium text-slate-500 flex items-center gap-2 bg-slate-50 py-1 px-2 rounded-lg w-fit">
+                        <CalendarDays size={14} className="text-cyan-600" />
                         {filho.turno || "Turno não def."}
                       </p>
                     </div>
@@ -223,7 +258,7 @@ export default function MeusFilhos() {
                     className="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-50 text-slate-600 text-xs font-bold hover:bg-slate-100 transition"
                     onClick={openSecretaria}
                   >
-                    <MessageCircle size={14} />
+                    <MessageCircle size={16} />
                     Secretaria
                   </button>
                   <button
@@ -231,7 +266,7 @@ export default function MeusFilhos() {
                     onClick={() => navigate(`/meus-filhos/diario/${filho.id}`)}
                   >
                     Ver Diário
-                    <ArrowRight size={14} />
+                    <ArrowRight size={16} />
                   </button>
                 </div>
               </div>
