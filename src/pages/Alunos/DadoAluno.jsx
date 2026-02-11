@@ -101,6 +101,7 @@ export default function VisualizarDados() {
     const [student, setStudent] = useState(null);
     const [movimentacoes, setMovimentacoes] = useState([]);
     const [selectedPayment, setSelectedPayment] = useState(null);
+    const [ultimoAcesso, setUltimoAcesso] = useState(null);
 
     useEffect(() => {
         async function getStudentById() {
@@ -108,6 +109,9 @@ export default function VisualizarDados() {
                 const { data } = await api.get(`/alunos/${id}`);
                 setStudent(data);
                 setMovimentacoes(data.movimentacoes || []);
+                const acesso = data.responsaveis_alunos?.[0]?.responsavel?.ultimo_acesso;
+                setUltimoAcesso(acesso);
+
             } catch (error) { console.error("Erro:", error); }
         }
         getStudentById();
@@ -191,6 +195,15 @@ export default function VisualizarDados() {
 
                             <p className="text-sm text-gray-500">{student.serie}</p>
                             <p className="text-sm text-gray-500 mb-3">Vencimento: {student.dia_vencimento}</p>
+                            <div className="flex items-center justify-center gap-1.5 mt-1 mb-3">
+                                <Eye size={14} className="text-slate-400" />
+                                <span className="text-[11px] font-medium text-slate-500">
+                                    Visto por último: {ultimoAcesso
+                                        ? dayjs(ultimoAcesso).format("DD/MM [às] HH:mm")
+                                        : "Nunca acessou"}
+                                </span>
+                            </div>
+
                             <StatusBadge status={student.status} />
                         </div>
 
