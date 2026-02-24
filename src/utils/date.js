@@ -14,3 +14,10 @@ export function formatarParaISO(dataString) {
 export function formatarParaInputDate(dataISO) {
   return dayjs(dataISO).format("YYYY-MM-DD");
 }
+
+// Função utilitária para data segura
+export function formatDateForInputSafe(dateISO) {
+  if (!dateISO) return "";
+  const [ano, mes, dia] = dateISO.split("T")[0].split("-");
+  return `${ano}-${mes}-${dia}`;
+}

@@ -1,0 +1,1 @@
+export const inputBaseClass = "w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all placeholder:text-slate-400";

@@ -2,10 +2,10 @@ import PropTypes from "prop-types";
 import clsx from "clsx";
 
 export default function Footer({
-    appName = "Reforço Escolar Tia Jeane",
+    appName = "Espaço ao Pé da Letra",
     year = new Date().getFullYear(),
     author = "Lucas Brandão",
-    authorLink = null,
+    authorLink = "https://github.com/ilucasbrandao",
     className,
 }) {
     return (
