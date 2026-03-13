@@ -73,7 +73,7 @@ export function Dashboard() {
     };
 
     const handleFecharCaixa = async () => {
-        const senhaCorreta = import.meta.env.VITE_SENHA_FECHAMENTO || "JulianneKelly2025";
+        const senhaCorreta = import.meta.env.VITE_SENHA_FECHAMENTO || "JulianneKelly2026";
         const senha = prompt("🔒 Digite a senha administrativa para fechar o caixa:");
 
         if (senha !== senhaCorreta) {
