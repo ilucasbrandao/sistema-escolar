@@ -20,7 +20,11 @@ export function SectionAluno({ formData, handleChange, hoje }) {
                         <select name="serie" value={formData.serie} onChange={handleChange} className={`${inputBaseClass} bg-white`} required>
                             <option value="">Selecione</option>
                             <option value="Infantil III">Infantil III</option>
-                            {/* ... outras opções */}
+                            <option value="Infantil IV">Infantil IV</option>
+                            <option value="Infantil V">Infantil V</option>
+                            <option value="Fundamental I">Fundamental I</option>
+                            <option value="Fundamental II">Fundamental II</option>
+
                         </select>
                     </Field>
                     <Field label="Turno *">
