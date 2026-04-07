@@ -9,7 +9,8 @@ import {
     Settings,
     Home,
     X,
-    BookOpen
+    BookOpen,
+    FileSpreadsheet
 } from "lucide-react";
 import logo from "../assets/favicon.png";
 import { useNotifications } from "../context/NotificationContext";
@@ -37,6 +38,7 @@ export function Sidebar({ isOpen, onClose }) {
             { label: "Professores (RH)", path: "/professores", icon: Users },
             { label: "Financeiro", path: "/lancamentos", icon: Wallet },
             { label: "Notificações", path: "/notificacoes", icon: Bell },
+            { label: "Relatórios", path: "/relatorios", icon: FileSpreadsheet },
         ];
     } else {
         // --- VISÃO DO PROFESSOR (RESTRITA) ---

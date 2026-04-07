@@ -31,11 +31,12 @@ import VisualizarReceita from "./pages/Gestao/DetalheReceita.jsx";
 import CadastroDespesa from "./pages/Gestao/Despesa.jsx";
 import DetalheDespesa from "./pages/Gestao/DetalheDespesa.jsx";
 
-// Dashboard & Notificações
+// Dashboard & Notificações & Relatórios
 import { Dashboard } from "./pages/Dashboard/index.jsx";
 import RelatorioMensal from "./pages/Dashboard/RelatorioMensal.jsx";
 import { Notificacoes } from "./pages/Notificacao/Notificacoes.jsx";
 import { NotificationProvider } from "./context/NotificationContext";
+import Relatorios from "./pages/Relatorios/index.jsx";
 
 // Pais & Diário
 import MeusFilhos from './pages/MeusFilhos';
@@ -141,6 +142,12 @@ const router = createBrowserRouter([
         path: "relatorio",
         element: <OnlyAdmin><RelatorioMensal /></OnlyAdmin>
       },
+
+      {
+        path: "relatorios",
+        element: <OnlyAdmin><Relatorios /></OnlyAdmin>,
+      },
+
       {
         path: "professores",
         element: <OnlyAdmin><Outlet /></OnlyAdmin>, // Protege todo o bloco
@@ -163,6 +170,7 @@ const router = createBrowserRouter([
       },
     ],
   },
+
 
   // --- ÁREA DOS PAIS (Sem Sidebar) ---
   {
