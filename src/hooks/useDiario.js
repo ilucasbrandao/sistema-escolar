@@ -15,20 +15,9 @@ export function useDiario(alunoId) {
 
   const initialFormState = {
     bimestre: "1º Bimestre",
-    pedagogico: {
-      leitura: "Em desenvolvimento",
-      escrita: "Em desenvolvimento",
-      foco: "Em desenvolvimento",
-      comportamento: "Em desenvolvimento",
-    },
-    psico: {
-      atencao_memoria: "",
-      interacao_social: "",
-      regulacao_emocional: "",
-      habilidades_cognitivas: "",
-      coordenacao_motora: "",
-      raciocinio_logico: "",
-    },
+    parecer_atendimento: "",
+    pedagogico: {},
+    psico: {},
     fotos: [],
     observacao: "",
   };
@@ -77,8 +66,11 @@ export function useDiario(alunoId) {
       const formData = new FormData();
       formData.append("aluno_id", alunoId);
       formData.append("bimestre", form.bimestre);
+
+      formData.append("parecer_atendimento", form.parecer_atendimento);
       formData.append("avaliacao_pedagogica", JSON.stringify(form.pedagogico));
       formData.append("avaliacao_psico", JSON.stringify(form.psico));
+
       formData.append("observacao", form.observacao);
       formData.append("fotos_existentes", JSON.stringify(form.fotos));
 
@@ -94,6 +86,9 @@ export function useDiario(alunoId) {
         toast.success("Relatório publicado!");
       }
 
+      // Limpa os arquivos temporários locais
+      setArquivosSelecionados([]);
+      setPreviewUrls([]);
       setIsModalOpen(false);
       loadData();
     } catch (error) {
@@ -105,10 +100,8 @@ export function useDiario(alunoId) {
 
   const handleCiente = async (feedbackId) => {
     try {
-      // Chamada para a API marcar como lido
       await api.patch(`/feedbacks/ler/${feedbackId}`);
 
-      // Atualiza o estado local para refletir a mudança instantaneamente na tela
       setFeedbacks((prev) =>
         prev.map((item) =>
           item.id === feedbackId ? { ...item, lido_pelos_pais: true } : item,

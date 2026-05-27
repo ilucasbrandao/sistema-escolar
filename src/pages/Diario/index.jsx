@@ -18,13 +18,15 @@ export default function Diario() {
     } = useDiario(id);
 
     const handleOpenEdit = (item) => {
-        // Removemos o campo 'parecer_geral' via desestruturação
+        // Mantemos a compatibilidade: se for um registro antigo, limpamos o parecer_geral
         const { parecer_geral, ...psicoFiltrado } = item.avaliacao_psico || {};
 
         setForm({
             bimestre: item.bimestre,
-            pedagogico: item.avaliacao_pedagogica,
-            psico: psicoFiltrado, // Agora o objeto só tem as chaves que você quer
+            // 🆕 Novo campo unificado de texto descritivo
+            parecer_atendimento: item.parecer_atendimento || "",
+            pedagogico: item.avaliacao_pedagogica || {},
+            psico: psicoFiltrado,
             fotos: item.fotos || [],
             observacao: item.observacao || ""
         });
@@ -42,7 +44,10 @@ export default function Diario() {
                     <h1 className="text-3xl font-bold text-slate-800">Diário Escolar</h1>
                 </div>
                 {canManage && (
-                    <Button onClick={() => { setForm(initialFormState); setEditingId(null); setIsModalOpen(true); }} className="bg-indigo-600 text-white">
+                    <Button
+                        onClick={() => { setForm(initialFormState); setEditingId(null); setIsModalOpen(true); }}
+                        className="bg-indigo-600 text-white shadow-md hover:bg-indigo-700 transition-all"
+                    >
                         <Plus size={20} /> Novo Relatório
                     </Button>
                 )}
@@ -50,11 +55,14 @@ export default function Diario() {
 
             <main className="max-w-5xl mx-auto space-y-8 pb-20">
                 {loading ? (
-                    <div className="flex justify-center p-10"><div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-indigo-600"></div></div>
+                    <div className="flex justify-center p-10">
+                        <div className="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-indigo-600"></div>
+                    </div>
                 ) : feedbacks.length === 0 ? (
-                    <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-slate-300">
+                    <div className="bg-white rounded-3xl p-16 text-center border border-dashed border-slate-300 shadow-sm">
                         <FileText className="h-10 w-10 text-slate-300 mx-auto mb-4" />
                         <h3 className="text-lg font-bold text-slate-700">Nenhum relatório encontrado</h3>
+                        <p className="text-sm text-slate-400 mt-1">Este aluno ainda não possui atendimentos registrados.</p>
                     </div>
                 ) : (
                     feedbacks.map(item => (

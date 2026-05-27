@@ -1,8 +1,15 @@
-import { Calendar, User, BookOpen, Brain, MessageSquare, ImageIcon, CheckCircle, Star, Pencil } from "lucide-react";
+import { Calendar, User, BookOpen, Brain, MessageSquare, ImageIcon, CheckCircle, Star, Pencil, FileText } from "lucide-react";
 import dayjs from "dayjs";
 import { Button } from "../../../components/Button";
 
 export function TimelineCard({ item, canManage, isResponsavel, onEdit, onCiente }) {
+    // 🆕 Detecta se este é um registro do formato novo ou do histórico antigo
+    const isNovoFormato = !!item.parecer_atendimento;
+
+    // Verifica se existem dados reais nos campos antigos para evitar renderizar blocos vazios
+    const temDadosPedagogicosAntigos = item.avaliacao_pedagogica && Object.keys(item.avaliacao_pedagogica).length > 0;
+    const temDadosPsicoAntigos = item.avaliacao_psico && Object.keys(item.avaliacao_psico).length > 0;
+
     return (
         <div className={`bg-white rounded-2xl shadow-sm border overflow-hidden transition-all hover:shadow-md ${item.lido_pelos_pais ? 'border-slate-200' : 'border-indigo-200 ring-2 ring-indigo-50'}`}>
 
@@ -13,10 +20,10 @@ export function TimelineCard({ item, canManage, isResponsavel, onEdit, onCiente 
                         {item.bimestre}
                     </div>
                     <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                        <Calendar size={14} /> {dayjs(item.created_at).format("DD/MM/YYYY")}
+                        <Calendar size={14} /> {dayjs(item.created_at || item.criado_em).format("DD/MM/YYYY")}
                     </span>
                     <span className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                        <User size={14} /> {item.autor?.nome}
+                        <User size={14} /> {item.autor?.nome || "Professor"}
                     </span>
                 </div>
 
@@ -40,47 +47,67 @@ export function TimelineCard({ item, canManage, isResponsavel, onEdit, onCiente 
                 </div>
             </div>
 
-            {/* Conteúdo */}
+            {/* Corpo do Conteúdo */}
             <div className="p-6">
-                {/* Seção Pedagógica */}
-                <div className="mb-6">
-                    <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-2 mb-3">
-                        <BookOpen size={14} /> Desempenho Pedagógico
-                    </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.entries(item.avaliacao_pedagogica || {}).map(([key, value]) => (
-                            <div key={key} className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center">
-                                <span className="block text-xs text-slate-400 uppercase font-bold mb-1">{key}</span>
-                                <span className={`text-sm font-semibold ${value === 'Precisa de atenção' ? 'text-red-500' : 'text-slate-700'}`}>
-                                    {value}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
 
-                {/* Seção Psicopedagógica */}
-                <div className="mb-6">
-                    <h3 className="text-xs font-bold text-pink-500 uppercase tracking-wider flex items-center gap-2 mb-3">
-                        <Brain size={14} /> Parecer Psicopedagógico
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                        {Object.entries(item.avaliacao_psico || {}).map(([key, value]) => value && (
-                            <div key={key} className="bg-pink-50/30 p-3 rounded-lg border border-pink-100">
-                                <span className="block text-xs text-pink-400 uppercase font-bold mb-1">{key.replace(/_/g, ' ')}</span>
-                                <p className="text-sm text-slate-600 leading-relaxed">{value}</p>
-                            </div>
-                        ))}
+                {/* 🆕 LAYOUT NOVO: Exibição do Parecer Unificado Detalhado */}
+                {isNovoFormato ? (
+                    <div className="mb-6">
+                        <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                            <FileText size={14} /> Parecer de Evolução do Aluno
+                        </h3>
+                        <div className="text-sm text-slate-700 bg-slate-50 p-5 rounded-xl border border-slate-100 leading-relaxed whitespace-pre-wrap font-normal">
+                            {item.parecer_atendimento}
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    /* 📜 LAYOUT ANTIGO: Fallback seguro para o histórico retroativo */
+                    <>
+                        {/* Seção Pedagógica Antiga */}
+                        {temDadosPedagogicosAntigos && (
+                            <div className="mb-6">
+                                <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                    <BookOpen size={14} /> Desempenho Pedagógico (Histórico)
+                                </h3>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    {Object.entries(item.avaliacao_pedagogica).map(([key, value]) => (
+                                        <div key={key} className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-center">
+                                            <span className="block text-xs text-slate-400 uppercase font-bold mb-1">{key.replace(/_/g, ' ')}</span>
+                                            <span className={`text-sm font-semibold ${value === 'Precisa de atenção' ? 'text-red-500' : 'text-slate-700'}`}>
+                                                {value}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
 
-                {/* Obs e Fotos */}
+                        {/* Seção Psicopedagógica Antiga */}
+                        {temDadosPsicoAntigos && (
+                            <div className="mb-6">
+                                <h3 className="text-xs font-bold text-pink-500 uppercase tracking-wider flex items-center gap-2 mb-3">
+                                    <Brain size={14} /> Parecer Psicopedagógico (Histórico)
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {Object.entries(item.avaliacao_psico).map(([key, value]) => value && (
+                                        <div key={key} className="bg-pink-50/30 p-3 rounded-lg border border-pink-100">
+                                            <span className="block text-xs text-pink-400 uppercase font-bold mb-1">{key.replace(/_/g, ' ')}</span>
+                                            <p className="text-sm text-slate-600 leading-relaxed">{value}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+
+                {/* Bloco de Observações e Fotos (Comum a ambos os formatos) */}
                 <div className="grid md:grid-cols-3 gap-6 pt-4 border-t border-slate-100">
                     <div className={item.fotos?.length > 0 ? 'md:col-span-2' : 'md:col-span-3'}>
                         <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                            <MessageSquare size={14} /> Observações
+                            <MessageSquare size={14} /> Observações Gerais / Recados
                         </h4>
-                        <div className="text-sm text-slate-600 bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
+                        <div className="text-sm text-slate-600 bg-yellow-50/40 p-4 rounded-xl border border-yellow-100 leading-relaxed">
                             {item.observacao || "Sem observações adicionais."}
                         </div>
                     </div>
@@ -88,12 +115,18 @@ export function TimelineCard({ item, canManage, isResponsavel, onEdit, onCiente 
                     {item.fotos?.length > 0 && (
                         <div className="md:col-span-1">
                             <h4 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
-                                <ImageIcon size={14} /> Galeria ({item.fotos.length})
+                                <ImageIcon size={14} /> Galeria de Atividades ({item.fotos.length})
                             </h4>
                             <div className="grid grid-cols-3 gap-2">
                                 {item.fotos.map((foto, idx) => (
-                                    <a key={idx} href={foto} target="_blank" rel="noreferrer" className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:opacity-80 transition block">
-                                        <img src={foto} className="w-full h-full object-cover" alt="Atividade" />
+                                    <a
+                                        key={idx}
+                                        href={foto}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="aspect-square bg-slate-100 rounded-lg border border-slate-200 overflow-hidden hover:opacity-80 transition block"
+                                    >
+                                        <img src={foto} className="w-full h-full object-cover" alt="Registro da Atividade" />
                                     </a>
                                 ))}
                             </div>
@@ -102,7 +135,7 @@ export function TimelineCard({ item, canManage, isResponsavel, onEdit, onCiente 
                 </div>
             </div>
 
-            {/* Botão Ciente */}
+            {/* Botão de Confirmação de Leitura para os Pais */}
             {!item.lido_pelos_pais && isResponsavel && (
                 <div className="bg-indigo-50 px-6 py-3 border-t border-indigo-100 text-center">
                     <Button onClick={onCiente} className="bg-indigo-600 hover:bg-indigo-700 text-white w-full md:w-auto">
