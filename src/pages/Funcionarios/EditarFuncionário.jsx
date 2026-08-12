@@ -9,13 +9,15 @@ import {
     Briefcase,
     Banknote,
     MapPin,
-    Phone
+    Phone,
+    Mail,
+    Loader2,
+    Users
 } from "lucide-react";
 import api from "../../services/api";
-import dayjs from "dayjs";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
-// Função de máscara (Mesma do cadastro)
+// Função para aplicar máscara de telefone
 const maskPhone = (value) => {
     if (!value) return "";
     return value
@@ -25,23 +27,37 @@ const maskPhone = (value) => {
         .replace(/(-\d{4})\d+?$/, "$1");
 };
 
-// Formata data ISO para input date (YYYY-MM-DD)
-const formatToInputDate = (isoString) => {
-    if (!isoString) return "";
-    return dayjs(isoString).format("YYYY-MM-DD");
+// Converte strings de data ISO do banco para 'YYYY-MM-DD' sem perda por timezone
+const formatToInputDate = (dateStr) => {
+    if (!dateStr) return "";
+
+    // Se já for um objeto Date, converte para ISO
+    const str = dateStr instanceof Date ? dateStr.toISOString() : String(dateStr);
+
+    // Extrai apenas os primeiros 10 caracteres "YYYY-MM-DD"
+    // sem passar por new Date() ou fusos horários
+    const dateOnly = str.split("T")[0];
+
+    // Validação simples de formato YYYY-MM-DD
+    if (/^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+        return dateOnly;
+    }
+
+    return "";
 };
 
 export function EditarFuncionario() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const hoje = new Date().toLocaleDateString("en-CA");
+    const hoje = new Date().toISOString().split("T")[0];
 
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [alunosDisponiveis, setAlunosDisponiveis] = useState([]);
 
-    // Estado igual ao do Cadastro
     const [formData, setFormData] = useState({
         nome: "",
+        email: "",
         data_nascimento: "",
         telefone: "",
         endereco: "",
@@ -50,38 +66,54 @@ export function EditarFuncionario() {
         turno: "",
         salario: "",
         status: "ativo",
+        alunos_ids: [],
     });
 
-    // 1. CARREGAR DADOS
+    // 1. CARREGAR DADOS DO PROFESSOR E LISTA DE ALUNOS
     useEffect(() => {
-        async function fetchProfessor() {
+        async function fetchData() {
             try {
-                const { data } = await api.get(`/professores/${id}`);
+                setIsLoadingData(true);
+                const [resProf, resAlunos] = await Promise.all([
+                    api.get(`/professores/${id}`),
+                    api.get("/alunos").catch(() => ({ data: [] })),
+                ]);
+
+                const data = resProf.data;
+                const alunosList = resAlunos.data || [];
+                setAlunosDisponiveis(alunosList);
+
+                // Extrai os IDs dos alunos atualmente alocados ao professor
+                const alunosVinculadosIds = data.alunos
+                    ? data.alunos.map((a) => a.id)
+                    : data.professores_alunos
+                        ? data.professores_alunos.map((pa) => pa.aluno_id || pa.aluno?.id)
+                        : [];
 
                 setFormData({
                     ...data,
-                    // Garante que campos de texto não sejam null
                     nome: data.nome || "",
+                    email: data.email || data.user?.email || "",
                     telefone: maskPhone(data.telefone || ""),
                     endereco: data.endereco || "",
                     nivel_ensino: data.nivel_ensino || "",
                     turno: data.turno || "",
                     salario: data.salario || "",
                     status: data.status || "ativo",
-                    // Formata Datas para o Input
+                    // Garante a data exata sem recuar 1 dia
                     data_nascimento: formatToInputDate(data.data_nascimento),
                     data_contratacao: formatToInputDate(data.data_contratacao),
+                    alunos_ids: alunosVinculadosIds.filter(Boolean),
                 });
-
             } catch (error) {
-                console.error("Erro:", error);
+                console.error("❌ Erro ao buscar dados do professor:", error);
                 toast.error("Erro ao carregar dados do professor.");
                 navigate("/professores");
             } finally {
                 setIsLoadingData(false);
             }
         }
-        fetchProfessor();
+        fetchData();
     }, [id, navigate]);
 
     const handleChange = (e) => {
@@ -92,13 +124,25 @@ export function EditarFuncionario() {
             newValue = maskPhone(value);
         }
 
-        setFormData(prev => ({ ...prev, [name]: newValue }));
+        setFormData((prev) => ({ ...prev, [name]: newValue }));
+    };
+
+    // Manipulador para marcar/desmarcar alunos
+    const handleAlunoToggle = (alunoId) => {
+        setFormData((prev) => {
+            const jaSelecionado = prev.alunos_ids.includes(alunoId);
+            return {
+                ...prev,
+                alunos_ids: jaSelecionado
+                    ? prev.alunos_ids.filter((aId) => aId !== alunoId)
+                    : [...prev.alunos_ids, alunoId],
+            };
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validações básicas
         if (!formData.nome.trim()) return toast.warn("Nome é obrigatório");
         if (!formData.salario) return toast.warn("Salário é obrigatório");
 
@@ -107,16 +151,18 @@ export function EditarFuncionario() {
         try {
             const payload = {
                 ...formData,
+                email: formData.email ? formData.email.trim().toLowerCase() : undefined,
                 salario: parseFloat(formData.salario),
+                alunos_ids: formData.alunos_ids,
             };
 
             await api.put(`/professores/${id}`, payload);
-            toast.success("Professor atualizado com sucesso!");
+            toast.success("Professor(a) atualizado(a) com sucesso!");
             navigate("/professores");
-
         } catch (error) {
-            console.error("Erro:", error);
-            toast.error("Erro ao salvar alterações.");
+            console.error("❌ Erro ao atualizar professor:", error);
+            const msg = error.response?.data?.error || "Erro ao salvar alterações.";
+            toast.error(msg);
         } finally {
             setIsSaving(false);
         }
@@ -125,44 +171,54 @@ export function EditarFuncionario() {
     if (isLoadingData) {
         return (
             <Container className="flex justify-center items-center h-screen">
-                <div className="animate-pulse text-blue-600 font-bold">Carregando dados...</div>
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                    <span className="text-slate-500 font-medium text-sm">
+                        Carregando dados do professor...
+                    </span>
+                </div>
             </Container>
         );
     }
 
-    // Estilos padronizados (Idênticos ao Alunos e Cadastro Professor)
-    const labelClass = "block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1";
-    const inputClass = "w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed";
+    const labelClass =
+        "block text-xs font-bold text-slate-500 uppercase tracking-wide mb-1.5 ml-1";
+    const inputClass =
+        "w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-slate-400 text-sm";
 
     return (
-        <Container>
+        <Container className="pb-28">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-                <Button
-                    variant="ghost"
-                    onClick={() => navigate("/professores")}
-                    className="pl-0 text-slate-500 hover:text-slate-800"
-                >
-                    <ChevronLeftIcon className="w-5 h-5 mr-1" /> Voltar
-                </Button>
-
-                <div className="text-center">
-                    <Title level={2} className="!mb-0">Editar Professor</Title>
-                    <span className="text-xs text-slate-400 font-mono">ID #{id}</span>
+            <header className="flex items-center justify-between mb-8 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => navigate("/professores")}
+                        className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
+                    >
+                        <ChevronLeftIcon className="w-5 h-5" />
+                    </Button>
+                    <div>
+                        <Title level={2} className="!mb-0 text-2xl font-bold text-slate-800">
+                            Editar Professor
+                        </Title>
+                        <span className="text-xs text-slate-400 font-mono">ID #{id}</span>
+                    </div>
                 </div>
+            </header>
 
-                <div className="w-20"></div>
-            </div>
+            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
 
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto pb-10">
-
-                {/* 1. DADOS PESSOAIS */}
+                {/* 1. DADOS PESSOAIS E LOGIN */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-2">
-                        <div className="p-2 bg-blue-50 rounded-lg text-blue-600">
+                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
+                        <div className="p-2 bg-blue-50 rounded-xl text-blue-600">
                             <User className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-slate-700">Dados Pessoais</h3>
+                        <h3 className="font-bold text-slate-800 text-base">
+                            Dados Pessoais & Credenciais
+                        </h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -177,6 +233,23 @@ export function EditarFuncionario() {
                             />
                         </div>
 
+                        {/* Campo E-mail Liberado para edição */}
+                        <div>
+                            <label className={labelClass}>E-mail de Acesso (Login)</label>
+                            <div className="relative">
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email}
+                                    onChange={handleChange}
+                                    className={`${inputClass} pl-10`}
+                                    placeholder="professor@espacoalpe.com.br"
+                                />
+                                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                            </div>
+                        </div>
+
+                        {/* Campo Data de Nascimento Liberado para edição */}
                         <div>
                             <label className={labelClass}>Data de Nascimento</label>
                             <input
@@ -186,7 +259,6 @@ export function EditarFuncionario() {
                                 onChange={handleChange}
                                 max={hoje}
                                 className={inputClass}
-                                disabled // Data de nascimento desabilitada na edição (padrão do sistema)
                             />
                         </div>
 
@@ -199,12 +271,13 @@ export function EditarFuncionario() {
                                     onChange={handleChange}
                                     className={`${inputClass} pl-10`}
                                     maxLength={15}
+                                    placeholder="(00) 00000-0000"
                                 />
-                                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+                                <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                             </div>
                         </div>
 
-                        <div className="md:col-span-2">
+                        <div>
                             <label className={labelClass}>Endereço Completo</label>
                             <div className="relative">
                                 <input
@@ -212,8 +285,9 @@ export function EditarFuncionario() {
                                     value={formData.endereco}
                                     onChange={handleChange}
                                     className={`${inputClass} pl-10`}
+                                    placeholder="Rua, Número, Bairro, Cidade"
                                 />
-                                <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3.5" />
+                                <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                             </div>
                         </div>
                     </div>
@@ -221,14 +295,16 @@ export function EditarFuncionario() {
 
                 {/* 2. CONTRATO E FUNÇÃO */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-2">
-                        <div className="p-2 bg-purple-50 rounded-lg text-purple-600">
+                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
+                        <div className="p-2 bg-purple-50 rounded-xl text-purple-600">
                             <Briefcase className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-slate-700">Contrato e Função</h3>
+                        <h3 className="font-bold text-slate-800 text-base">
+                            Contrato e Função
+                        </h3>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                         <div>
                             <label className={labelClass}>Data de Contratação</label>
                             <input
@@ -240,46 +316,47 @@ export function EditarFuncionario() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className={labelClass}>Nível de Ensino</label>
-                                <select
-                                    name="nivel_ensino"
-                                    value={formData.nivel_ensino}
-                                    onChange={handleChange}
-                                    className={`${inputClass} bg-white`}
-                                >
-                                    <option value="">Selecione</option>
-                                    <option value="Infantil">Infantil</option>
-                                    <option value="Fundamental">Fundamental</option>
-                                    <option value="Especialista">Especialista</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label className={labelClass}>Turno</label>
-                                <select
-                                    name="turno"
-                                    value={formData.turno}
-                                    onChange={handleChange}
-                                    className={`${inputClass} bg-white`}
-                                >
-                                    <option value="">Selecione</option>
-                                    <option value="Manhã">Manhã</option>
-                                    <option value="Tarde">Tarde</option>
-                                    <option value="Integral">Integral</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label className={labelClass}>Nível de Ensino</label>
+                            <select
+                                name="nivel_ensino"
+                                value={formData.nivel_ensino}
+                                onChange={handleChange}
+                                className={`${inputClass} bg-slate-50`}
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Educação Infantil">Educação Infantil</option>
+                                <option value="Ensino Fundamental I">Ensino Fundamental I</option>
+                                <option value="Ensino Fundamental II">Ensino Fundamental II</option>
+                                <option value="Acompanhamento Geral">Acompanhamento Geral</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label className={labelClass}>Turno</label>
+                            <select
+                                name="turno"
+                                value={formData.turno}
+                                onChange={handleChange}
+                                className={`${inputClass} bg-slate-50`}
+                            >
+                                <option value="">Selecione...</option>
+                                <option value="Manhã">Manhã</option>
+                                <option value="Tarde">Tarde</option>
+                                <option value="Noite">Noite</option>
+                                <option value="Integral">Integral</option>
+                            </select>
                         </div>
                     </div>
                 </div>
 
-                {/* 3. FINANCEIRO */}
+                {/* 3. FINANCEIRO & STATUS */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-2">
-                        <div className="p-2 bg-green-50 rounded-lg text-green-600">
+                    <div className="flex items-center gap-2 mb-6 border-b border-slate-100 pb-3">
+                        <div className="p-2 bg-emerald-50 rounded-xl text-emerald-600">
                             <Banknote className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-slate-700">Financeiro</h3>
+                        <h3 className="font-bold text-slate-800 text-base">Financeiro</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -290,18 +367,22 @@ export function EditarFuncionario() {
                                 name="salario"
                                 value={formData.salario}
                                 onChange={handleChange}
-                                className={`${inputClass} text-lg font-bold text-slate-700`}
+                                className={`${inputClass} font-semibold text-slate-800 text-base`}
                                 step="0.01"
                                 required
                             />
                         </div>
+
                         <div>
                             <label className={labelClass}>Status do Contrato</label>
                             <select
                                 name="status"
                                 value={formData.status}
                                 onChange={handleChange}
-                                className={`${inputClass} font-bold ${formData.status === 'ativo' ? 'text-green-600 bg-green-50 border-green-200' : 'text-red-600 bg-red-50 border-red-200'}`}
+                                className={`${inputClass} font-semibold ${formData.status === "ativo"
+                                    ? "text-emerald-700 bg-emerald-50/50"
+                                    : "text-rose-700 bg-rose-50/50"
+                                    }`}
                             >
                                 <option value="ativo">Ativo</option>
                                 <option value="inativo">Inativo (Desligado)</option>
@@ -310,29 +391,79 @@ export function EditarFuncionario() {
                     </div>
                 </div>
 
-                {/* BOTÕES */}
-                <div className="flex items-center justify-end gap-4 pt-4">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => navigate("/professores")}
-                        className="text-slate-500"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-700 text-white min-w-[200px] h-12 shadow-lg shadow-blue-200 border-none"
-                    >
-                        {isSaving ? "Salvando..." : (
-                            <span className="flex items-center gap-2">
-                                <Save className="w-5 h-5" /> Salvar Alterações
-                            </span>
-                        )}
-                    </Button>
-                </div>
+                {/* 4. ALOCAÇÃO DE ALUNOS VINCULADOS */}
+                {alunosDisponiveis.length > 0 && (
+                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                            <div className="p-2 bg-amber-50 rounded-xl text-amber-600">
+                                <Users className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800 text-base">
+                                    Alunos Acompanhados ({formData.alunos_ids.length})
+                                </h3>
+                                <p className="text-xs text-slate-500">
+                                    Marque ou desmarque os estudantes alocados a este professor
+                                </p>
+                            </div>
+                        </div>
 
+                        <div className="max-h-52 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-1">
+                            {alunosDisponiveis.map((aluno) => {
+                                const checked = formData.alunos_ids.includes(aluno.id);
+                                return (
+                                    <label
+                                        key={aluno.id}
+                                        className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition ${checked
+                                            ? "bg-blue-50 border-blue-300 text-blue-800"
+                                            : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
+                                            }`}
+                                    >
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => handleAlunoToggle(aluno.id)}
+                                            className="rounded text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span className="truncate">{aluno.nome}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
+                {/* Footer Flutuante / Sticky */}
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-40 shadow-lg">
+                    <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => navigate("/professores")}
+                            className="hidden sm:inline-flex text-slate-600 hover:bg-slate-100"
+                        >
+                            Descartar e Voltar
+                        </Button>
+
+                        <Button
+                            type="submit"
+                            disabled={isSaving}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-blue-200 transition flex items-center gap-2 min-w-[200px] justify-center ml-auto"
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span>Salvando...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    <span>Salvar Alterações</span>
+                                </>
+                            )}
+                        </Button>
+                    </div>
+                </div>
             </form>
         </Container>
     );
