@@ -9,7 +9,10 @@ import {
     User,
     Users,
     Wallet,
-    Crown
+    Crown,
+    Loader2,
+    Clock,
+    Briefcase
 } from "lucide-react";
 import dayjs from "dayjs";
 import { toast } from 'react-toastify';
@@ -33,10 +36,10 @@ const formatToInputDate = (isoString) => {
 export function EditarAluno() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const hoje = new Date().toLocaleDateString("en-CA");
 
     const [isLoadingData, setIsLoadingData] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [professoresList, setProfessoresList] = useState([]);
 
     // Estado Inicial
     const [formData, setFormData] = useState({
@@ -51,53 +54,62 @@ export function EditarAluno() {
         dia_vencimento: "",
         serie: "",
         turno: "",
+        horario_atendimento: "",
+        professor_id: "",
         observacao: "",
         status: "ativo",
     });
 
-    // 1. CARREGAR DADOS (Corrigido para garantir Série e Turno)
+    // 1. CARREGAR DADOS DO ALUNO E PROFESSORES
     useEffect(() => {
-        async function fetchAluno() {
+        async function loadData() {
             try {
-                const { data } = await api.get(`/alunos/${id}`);
+                const [resAluno, resProfessores] = await Promise.all([
+                    api.get(`/alunos/${id}`),
+                    api.get("/professores").catch(() => ({ data: [] }))
+                ]);
+
+                const data = resAluno.data;
+                const profsAtivos = (resProfessores.data || []).filter(p => p.status === "ativo");
+                setProfessoresList(profsAtivos);
+
+                // Identifica se existe um professor vinculado no array professores_alunos
+                const profVinculadoId = data.professores_alunos?.[0]?.professor_id
+                    || data.professor_id
+                    || "";
 
                 // Lógica para o dia de vencimento
                 const diaVenc = data.dia_vencimento ? parseInt(data.dia_vencimento) : 5;
                 const dataVencimentoFake = dayjs().date(diaVenc).format("YYYY-MM-DD");
 
-                // Preenche o formulário garantindo que nada venha null/undefined
+                // Preenche o formulário
                 setFormData({
-                    // Espalha os dados originais (caso haja campos extras)
                     ...data,
-
-                    // Campos de Texto/Select (Garante string vazia se for null)
                     nome: data.nome || "",
                     responsavel: data.responsavel || "",
-                    serie: data.serie || "", // <--- Aqui garante que a série venha do banco
-                    turno: data.turno || "", // <--- Aqui garante que o turno venha do banco
+                    serie: data.serie || "",
+                    turno: data.turno || "",
+                    horario_atendimento: data.horario_atendimento || "",
+                    professor_id: profVinculadoId,
                     observacao: data.observacao || "",
                     status: data.status || "ativo",
-
-                    // Campos Formatados
                     data_nascimento: formatToInputDate(data.data_nascimento),
                     data_matricula: formatToInputDate(data.data_matricula),
                     dia_vencimento: dataVencimentoFake,
                     telefone: maskPhone(data.telefone || ""),
-
-                    // Lógica Premium
                     plano: data.plano || "basico",
                     email_responsavel: data.email_responsavel || ""
                 });
 
             } catch (error) {
-                console.error("Erro:", error);
+                console.error("Erro ao carregar dados:", error);
                 toast.error("Erro ao carregar dados do aluno.");
                 navigate("/alunos");
             } finally {
                 setIsLoadingData(false);
             }
         }
-        fetchAluno();
+        loadData();
     }, [id, navigate]);
 
     const handleChange = (e) => {
@@ -132,7 +144,8 @@ export function EditarAluno() {
                 ...formData,
                 valor_mensalidade: Number(formData.valor_mensalidade),
                 dia_vencimento: diaVencimento.toString(),
-                email_responsavel: formData.plano === 'basico' ? null : formData.email_responsavel
+                email_responsavel: formData.plano === 'basico' ? null : formData.email_responsavel,
+                professor_id: formData.professor_id ? Number(formData.professor_id) : null,
             };
 
             await api.put(`/alunos/${id}`, payload);
@@ -149,7 +162,10 @@ export function EditarAluno() {
     if (isLoadingData) {
         return (
             <Container className="flex justify-center items-center h-screen">
-                <div className="animate-pulse text-blue-600 font-bold">Carregando dados...</div>
+                <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+                    <span className="text-slate-500 font-medium text-sm">Carregando dados do aluno...</span>
+                </div>
             </Container>
         );
     }
@@ -158,26 +174,26 @@ export function EditarAluno() {
     const inputClass = "w-full p-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all placeholder:text-slate-400 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed";
 
     return (
-        <Container>
+        <Container className="pb-24">
             {/* Cabeçalho */}
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                 <Button
                     variant="ghost"
                     onClick={() => navigate("/alunos")}
-                    className="pl-0 text-slate-500 hover:text-slate-800"
+                    className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
                 >
                     <ChevronLeftIcon className="w-5 h-5 mr-1" /> Voltar
                 </Button>
 
                 <div className="text-center">
-                    <Title level={2} className="!mb-0">Editar Aluno</Title>
+                    <Title level={2} className="!mb-0 text-2xl font-bold text-slate-800">Editar Aluno</Title>
                     <span className="text-xs text-slate-400 font-mono">Matrícula #{id}</span>
                 </div>
 
                 <div className="w-20"></div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto pb-10">
+            <form onSubmit={handleSubmit} className="space-y-6 max-w-4xl mx-auto">
 
                 {/* 1. DADOS PESSOAIS */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
@@ -199,6 +215,7 @@ export function EditarAluno() {
                                 required
                             />
                         </div>
+
                         <div>
                             <label className={labelClass}>Data de Nascimento</label>
                             <input
@@ -207,40 +224,122 @@ export function EditarAluno() {
                                 value={formData.data_nascimento}
                                 onChange={handleChange}
                                 className={inputClass}
-                                disabled={true}
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+
+                        <div>
+                            <label className={labelClass}>Data de Matrícula</label>
+                            <input
+                                type="date"
+                                name="data_matricula"
+                                value={formData.data_matricula}
+                                onChange={handleChange}
+                                className={inputClass}
+                            />
+                        </div>
+
+                        {/* Série e Turno */}
+                        <div className="grid grid-cols-2 gap-4 md:col-span-2">
                             <div>
-                                <label className={labelClass}>Série</label>
+                                <label className={labelClass}>Série *</label>
                                 <select
                                     name="serie"
                                     value={formData.serie}
                                     onChange={handleChange}
                                     className={`${inputClass} bg-white`}
+                                    required
                                 >
-                                    <option value="">Selecione</option>
-                                    <option value="Infantil III">Infantil III</option>
-                                    <option value="Infantil IV">Infantil IV</option>
-                                    <option value="Infantil V">Infantil V</option>
-                                    <option value="Fundamental 1">Fund. 1</option>
-                                    <option value="Fundamental 2">Fund. 2</option>
+                                    <option value="">Selecione a série</option>
+                                    <optgroup label="Educação Infantil">
+                                        <option value="Infantil III">Infantil III</option>
+                                        <option value="Infantil IV">Infantil IV</option>
+                                        <option value="Infantil V">Infantil V</option>
+                                    </optgroup>
+                                    <optgroup label="Ensino Fundamental I">
+                                        <option value="1º ano">1º ano</option>
+                                        <option value="2º ano">2º ano</option>
+                                        <option value="3º ano">3º ano</option>
+                                        <option value="4º ano">4º ano</option>
+                                        <option value="5º ano">5º ano</option>
+                                    </optgroup>
+                                    <optgroup label="Ensino Fundamental II">
+                                        <option value="6º ano">6º ano</option>
+                                        <option value="7º ano">7º ano</option>
+                                        <option value="8º ano">8º ano</option>
+                                        <option value="9º ano">9º ano</option>
+                                    </optgroup>
                                 </select>
                             </div>
+
                             <div>
-                                <label className={labelClass}>Turno</label>
+                                <label className={labelClass}>Turno *</label>
                                 <select
                                     name="turno"
                                     value={formData.turno}
                                     onChange={handleChange}
                                     className={`${inputClass} bg-white`}
+                                    required
                                 >
-                                    <option value="">Selecione</option>
+                                    <option value="">Selecione o turno</option>
                                     <option value="Manhã">Manhã</option>
                                     <option value="Tarde">Tarde</option>
                                 </select>
                             </div>
+
+                            {/* Faixa Horária (2h) */}
+                            <div className="col-span-2">
+                                <label className={labelClass}>Faixa Horária (2h) *</label>
+                                <select
+                                    name="horario_atendimento"
+                                    value={formData.horario_atendimento}
+                                    onChange={handleChange}
+                                    className={`${inputClass} bg-white`}
+                                    disabled={!formData.turno}
+                                >
+                                    <option value="">Selecione o horário</option>
+                                    {formData.turno === "Manhã" && (
+                                        <>
+                                            <option value="08:00 - 10:00">08:00 às 10:00</option>
+                                            <option value="09:00 - 11:00">09:00 às 11:00</option>
+                                        </>
+                                    )}
+                                    {formData.turno === "Tarde" && (
+                                        <>
+                                            <option value="13:00 - 15:00">13:00 às 15:00</option>
+                                            <option value="14:00 - 16:00">14:00 às 16:00</option>
+                                            <option value="15:00 - 17:00">15:00 às 17:00</option>
+                                            <option value="16:00 - 18:00">16:00 às 18:00</option>
+                                        </>
+                                    )}
+                                </select>
+                            </div>
                         </div>
+
+                        {/* Professor Responsável / Tutor */}
+                        <div className="md:col-span-2">
+                            <label className={labelClass}>Professor Responsável / Tutor</label>
+                            <select
+                                name="professor_id"
+                                value={formData.professor_id}
+                                onChange={handleChange}
+                                className={`${inputClass} bg-white`}
+                            >
+                                <option value="">
+                                    {professoresList.length === 0
+                                        ? "Nenhum professor ativo encontrado"
+                                        : "Nenhum professor selecionado"}
+                                </option>
+                                {professoresList.map((prof) => (
+                                    <option key={prof.id} value={prof.id}>
+                                        {prof.nome} {prof.materia ? `(${prof.materia})` : ""}
+                                    </option>
+                                ))}
+                            </select>
+                            <p className="text-[11px] text-slate-400 mt-1 ml-1">
+                                Vincula o aluno ao diário de classe do professor selecionado.
+                            </p>
+                        </div>
+
                     </div>
                 </div>
 
@@ -264,6 +363,7 @@ export function EditarAluno() {
                                 required
                             />
                         </div>
+
                         <div>
                             <label className={labelClass}>WhatsApp / Telefone</label>
                             <input
@@ -275,7 +375,7 @@ export function EditarAluno() {
                             />
                         </div>
 
-                        <div className={formData.plano === 'premium' ? 'block' : 'hidden md:block'}>
+                        <div className={formData.plano === 'premium' ? 'block' : 'block md:block'}>
                             <label className={labelClass}>
                                 Email {formData.plano === 'premium' && <span className="text-amber-500">(Obrigatório)</span>}
                             </label>
@@ -297,7 +397,7 @@ export function EditarAluno() {
                         <div className="p-2 bg-green-50 rounded-lg text-green-600">
                             <Wallet className="w-5 h-5" />
                         </div>
-                        <h3 className="font-bold text-slate-700">Financeiro</h3>
+                        <h3 className="font-bold text-slate-700">Financeiro & Plano</h3>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
@@ -314,7 +414,7 @@ export function EditarAluno() {
                             />
                         </div>
                         <div>
-                            <label className={labelClass}>Dia de Vencimento</label>
+                            <label className={labelClass}>Data de Vencimento</label>
                             <input
                                 type="date"
                                 name="dia_vencimento"
@@ -367,37 +467,49 @@ export function EditarAluno() {
                 </div>
 
                 {/* 4. OBSERVAÇÕES */}
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                    <label className={labelClass}>Observações</label>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <label className={labelClass}>Observações Pedagógicas & Restrições</label>
                     <textarea
                         name="observacao"
                         value={formData.observacao}
                         onChange={handleChange}
-                        className={`${inputClass} min-h-[80px]`}
+                        className={`${inputClass} min-h-[90px] resize-y`}
+                        placeholder="Alergias, restrições alimentares, dificuldades de aprendizagem ou observações gerais..."
                     />
                 </div>
 
-                {/* BOTÕES */}
-                <div className="flex items-center justify-end gap-4 pt-4">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => navigate("/alunos")}
-                        className="text-slate-500"
-                    >
-                        Cancelar
-                    </Button>
-                    <Button
-                        type="submit"
-                        disabled={isSaving}
-                        className="bg-blue-600 hover:bg-blue-700 text-white min-w-[200px] h-12 shadow-lg shadow-blue-200 border-none"
-                    >
-                        {isSaving ? "Salvando..." : (
-                            <span className="flex items-center gap-2">
-                                <Save className="w-5 h-5" /> Salvar Alterações
-                            </span>
-                        )}
-                    </Button>
+                {/* FOOTER STICKY/FIXO */}
+                <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-40 shadow-lg">
+                    <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            onClick={() => navigate("/alunos")}
+                            className="text-slate-600 hover:bg-slate-100"
+                        >
+                            Descartar e Voltar
+                        </Button>
+
+                        <div className="flex items-center gap-3">
+                            <Button
+                                type="submit"
+                                disabled={isSaving}
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-3 rounded-xl shadow-md hover:shadow-blue-200 transition flex items-center gap-2 min-w-[200px] justify-center"
+                            >
+                                {isSaving ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <span>Salvando...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Save className="w-5 h-5" />
+                                        <span>Salvar Alterações</span>
+                                    </>
+                                )}
+                            </Button>
+                        </div>
+                    </div>
                 </div>
 
             </form>

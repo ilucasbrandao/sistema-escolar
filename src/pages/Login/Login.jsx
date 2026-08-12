@@ -2,28 +2,31 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../services/api";
 import { Button } from "../../components/Button";
-import { Eye, EyeOff, Heart, Mail, Lock, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, Loader2 } from "lucide-react";
 import logo from "../../assets/logo.jpeg";
+import { toast } from "react-toastify";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
-  const [msg, setMsg] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   async function handleLogin(e) {
-    e.preventDefault();
+    if (e) e.preventDefault();
 
     if (!email || !senha) {
-      setMsg("Preencha e-mail e senha para continuar.");
+      toast.error("Preencha e-mail e senha para continuar.");
       return;
     }
 
     setIsLoading(true);
-    setMsg("");
+
+    // Limpa credenciais antigas
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
 
     try {
       const res = await api.post("/login", { email, senha });
@@ -33,14 +36,20 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(user));
       api.defaults.headers.Authorization = `Bearer ${token}`;
 
-      navigate(user.role === "responsavel" ? "/meus-filhos" : "/");
-    } catch (err) {
-      if (!err?.response) {
-        setMsg("Não foi possível conectar ao servidor.");
-      } else if (err.response.status === 401) {
-        setMsg("E-mail ou senha incorretos.");
+      toast.success("Login realizado com sucesso!");
+
+      if (user.role === "responsavel") {
+        navigate("/meus-filhos", { replace: true });
       } else {
-        setMsg("Erro inesperado ao acessar o sistema.");
+        navigate("/", { replace: true });
+      }
+    } catch (err) {
+      if (err.response) {
+        toast.error(err.response.data?.message || "E-mail ou senha incorretos.");
+      } else if (err.request) {
+        toast.error("Servidor indisponível. Verifique sua conexão.");
+      } else {
+        toast.error("Erro ao tentar realizar o login.");
       }
     } finally {
       setIsLoading(false);
@@ -125,13 +134,6 @@ export default function Login() {
                 </button>
               </div>
             </div>
-
-            {/* Mensagem de Erro */}
-            {msg && (
-              <div className="bg-red-50 border border-red-100 text-red-600 px-4 py-3 rounded-lg text-sm text-center font-medium animate-fade-in">
-                {msg}
-              </div>
-            )}
 
             {/* Botão de Login */}
             <Button

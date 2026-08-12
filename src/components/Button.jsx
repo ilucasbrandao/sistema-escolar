@@ -1,13 +1,14 @@
 import PropTypes from "prop-types";
-import clsx from "clsx"; // opcional, mas ajuda muito a organizar classes
+import clsx from "clsx";
 
 const variants = {
-    chalk: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-300", // tom de quadro branco
-    paper: "bg-stone-100 text-stone-700 hover:bg-stone-200 focus:ring-stone-300", // tom de papel reciclado
-    pencil: "bg-zinc-200 text-zinc-800 hover:bg-zinc-300 focus:ring-zinc-400", // tom grafite
-    pastelBlue: "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-300", // azul bebê suave
-    pastelGreen: "bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-300", // verde menta
-    outline: "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-gray-200", // estilo neutro
+    primary: "bg-[#4AA3B8] text-white hover:bg-[#3c8d9e] focus:ring-[#4AA3B8]/50 shadow-md shadow-[#4AA3B8]/20",
+    chalk: "bg-neutral-100 text-neutral-700 hover:bg-neutral-200 focus:ring-neutral-300",
+    paper: "bg-stone-100 text-stone-700 hover:bg-stone-200 focus:ring-stone-300",
+    pencil: "bg-zinc-200 text-zinc-800 hover:bg-zinc-300 focus:ring-zinc-400",
+    pastelBlue: "bg-blue-100 text-blue-700 hover:bg-blue-200 focus:ring-blue-300",
+    pastelGreen: "bg-green-100 text-green-700 hover:bg-green-200 focus:ring-green-300",
+    outline: "border border-gray-300 text-gray-700 bg-white hover:bg-gray-50 focus:ring-gray-200",
     danger: "border border-red-300 text-white bg-red-500 hover:bg-red-600 focus:ring-red-200"
 };
 
@@ -19,6 +20,7 @@ const sizes = {
 
 export function Button({
     children,
+    type = "button",
     variant = "primary",
     size = "md",
     className,
@@ -26,6 +28,7 @@ export function Button({
 }) {
     return (
         <button
+            type={type}
             {...props}
             className={clsx(
                 "inline-flex items-center justify-center gap-2",
@@ -45,6 +48,7 @@ export function Button({
 
 Button.propTypes = {
     children: PropTypes.node.isRequired,
+    type: PropTypes.oneOf(["button", "submit", "reset"]),
     variant: PropTypes.oneOf(Object.keys(variants)),
     size: PropTypes.oneOf(Object.keys(sizes)),
     className: PropTypes.string,
