@@ -315,29 +315,37 @@ export function EditarAluno() {
                             </div>
                         </div>
 
-                        {/* Professor Responsável / Tutor */}
+                        {/* PROFESSOR RESPONSÁVEL / TUTOR (SOMENTE LEITURA) */}
                         <div className="md:col-span-2">
                             <label className={labelClass}>Professor Responsável / Tutor</label>
-                            <select
-                                name="professor_id"
-                                value={formData.professor_id}
-                                onChange={handleChange}
-                                className={`${inputClass} bg-white`}
-                            >
-                                <option value="">
-                                    {professoresList.length === 0
-                                        ? "Nenhum professor ativo encontrado"
-                                        : "Nenhum professor selecionado"}
-                                </option>
-                                {professoresList.map((prof) => (
-                                    <option key={prof.id} value={prof.id}>
-                                        {prof.nome} {prof.materia ? `(${prof.materia})` : ""}
-                                    </option>
-                                ))}
-                            </select>
-                            <p className="text-[11px] text-slate-400 mt-1 ml-1">
-                                Vincula o aluno ao diário de classe do professor selecionado.
-                            </p>
+
+                            {(() => {
+                                const profAtual = professoresList.find(
+                                    (p) => String(p.id) === String(formData.professor_id)
+                                );
+
+                                return (
+                                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-blue-100 text-blue-700 rounded-lg font-bold">
+                                                <Users className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                                                    Tutor Responsável
+                                                </span>
+                                                <p className="text-sm font-bold text-slate-800">
+                                                    {profAtual ? profAtual.nome : "Aguardando Alocação no Módulo de Professores"}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <span className="text-[11px] font-medium text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-lg shadow-2xs">
+                                            Definido via Gestão de Professores
+                                        </span>
+                                    </div>
+                                );
+                            })()}
                         </div>
 
                     </div>

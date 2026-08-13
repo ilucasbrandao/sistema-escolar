@@ -69,21 +69,21 @@ export function EditarFuncionario() {
         alunos_ids: [],
     });
 
-    // 1. CARREGAR DADOS DO PROFESSOR E LISTA DE ALUNOS
+    // 1. CARREGAR DADOS DO PROFESSOR E LISTA DE ALUNOS DISPONÍVEIS
     useEffect(() => {
         async function fetchData() {
             try {
                 setIsLoadingData(true);
                 const [resProf, resAlunos] = await Promise.all([
                     api.get(`/professores/${id}`),
-                    api.get("/alunos").catch(() => ({ data: [] })),
+                    api.get(`/alunos/disponiveis?professor_id=${id}`).catch(() => ({ data: [] })),
                 ]);
 
                 const data = resProf.data;
                 const alunosList = resAlunos.data || [];
                 setAlunosDisponiveis(alunosList);
 
-                // Extrai os IDs dos alunos atualmente alocados ao professor
+                // Extrai os IDs dos alunos atualmente alocados a este professor
                 const alunosVinculadosIds = data.alunos
                     ? data.alunos.map((a) => a.id)
                     : data.professores_alunos
@@ -100,7 +100,6 @@ export function EditarFuncionario() {
                     turno: data.turno || "",
                     salario: data.salario || "",
                     status: data.status || "ativo",
-                    // Garante a data exata sem recuar 1 dia
                     data_nascimento: formatToInputDate(data.data_nascimento),
                     data_contratacao: formatToInputDate(data.data_contratacao),
                     alunos_ids: alunosVinculadosIds.filter(Boolean),
@@ -392,9 +391,9 @@ export function EditarFuncionario() {
                 </div>
 
                 {/* 4. ALOCAÇÃO DE ALUNOS VINCULADOS */}
-                {alunosDisponiveis.length > 0 && (
-                    <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <div className="flex items-center gap-2 mb-4 border-b border-slate-100 pb-3">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                    <div className="flex items-center justify-between mb-4 border-b border-slate-100 pb-3">
+                        <div className="flex items-center gap-2">
                             <div className="p-2 bg-amber-50 rounded-xl text-amber-600">
                                 <Users className="w-5 h-5" />
                             </div>
@@ -403,19 +402,31 @@ export function EditarFuncionario() {
                                     Alunos Acompanhados ({formData.alunos_ids.length})
                                 </h3>
                                 <p className="text-xs text-slate-500">
-                                    Marque ou desmarque os estudantes alocados a este professor
+                                    Apenas alunos sem tutor ou alocados a este professor aparecem na lista.
                                 </p>
                             </div>
                         </div>
 
-                        <div className="max-h-52 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-1">
+                        <span className="text-[11px] font-semibold bg-slate-100 text-slate-600 px-3 py-1 rounded-full border border-slate-200">
+                            {alunosDisponiveis.length} disponíveis na fila
+                        </span>
+                    </div>
+
+                    {alunosDisponiveis.length === 0 ? (
+                        <div className="p-8 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                            <p className="text-xs font-semibold text-slate-500">
+                                🎉 Todos os alunos cadastrados já possuem um professor responsável!
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="max-h-56 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 p-1">
                             {alunosDisponiveis.map((aluno) => {
                                 const checked = formData.alunos_ids.includes(aluno.id);
                                 return (
                                     <label
                                         key={aluno.id}
                                         className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs font-medium cursor-pointer transition ${checked
-                                            ? "bg-blue-50 border-blue-300 text-blue-800"
+                                            ? "bg-blue-50 border-blue-300 text-blue-800 font-bold shadow-xs"
                                             : "bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100"
                                             }`}
                                     >
@@ -425,13 +436,18 @@ export function EditarFuncionario() {
                                             onChange={() => handleAlunoToggle(aluno.id)}
                                             className="rounded text-blue-600 focus:ring-blue-500"
                                         />
-                                        <span className="truncate">{aluno.nome}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="truncate font-semibold">{aluno.nome}</p>
+                                            <p className="text-[10px] text-slate-400 font-normal">
+                                                {aluno.serie || "Série n/a"} {aluno.turno ? `• ${aluno.turno}` : ""}
+                                            </p>
+                                        </div>
                                     </label>
                                 );
                             })}
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
 
                 {/* Footer Flutuante / Sticky */}
                 <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 z-40 shadow-lg">
